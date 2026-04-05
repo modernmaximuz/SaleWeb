@@ -1,21 +1,26 @@
-const content = document.getElementById("content");
+// script.js
+import { db } from './firebase.js'; // import Firestore
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const contentTextarea = document.getElementById("content");
 const saveBtn = document.getElementById("saveBtn");
+const pasteId = "PKzNiJG1";
 
-async function load() {
-    const res = await fetch("/load");
-    const data = await res.json();
-    content.value = data.content || data.paste?.content || "";
+// Load paste on page load
+async function loadPaste() {
+    const docRef = doc(db, "pastes", pasteId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        contentTextarea.value = docSnap.data().content;
+    } else {
+        contentTextarea.value = "";
+    }
 }
 
-async function savePaste() {
-    await fetch("/save", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.value })
-    });
+saveBtn.addEventListener("click", async () => {
+    const docRef = doc(db, "pastes", pasteId);
+    await setDoc(docRef, { content: contentTextarea.value });
     alert("Saved!");
-}
+});
 
-saveBtn.addEventListener("click", savePaste);
-
-load();
+loadPaste();
