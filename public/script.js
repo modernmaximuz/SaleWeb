@@ -4,7 +4,7 @@ const saveBtn = document.getElementById("saveBtn");
 async function load() {
     const res = await fetch("/load");
     const data = await res.json();
-    content.value = data.content || data.paste?.content || "";
+    content.value = data.content || "";
 }
 
 async function savePaste() {
