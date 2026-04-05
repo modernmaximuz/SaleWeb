@@ -1,29 +1,34 @@
-import { auth } from './firebase.js';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { initAuth } from './auth.js';
+import { initPasteEditor } from './paste.js';
 
-export function initAuth(emailInput, passwordInput, loginBtn, onLogin) {
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            onLogin(user.uid);
-        }
-    });
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const contentTextarea = document.getElementById("content");
+const saveBtn = document.getElementById("saveBtn");
 
-    loginBtn.addEventListener("click", async () => {
-        const email = emailInput.value;
-        const password = passwordInput.value;
+initAuth(emailInput, passwordInput, loginBtn, (uid) => {
+    initPasteEditor(contentTextarea, saveBtn, uid);
+});
 
-        try {
-            // Try to sign in
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            onLogin(userCredential.user.uid);
-        } catch (err) {
-            if (err.code === "auth/user-not-found") {
-                // Create account if not exists
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                onLogin(userCredential.user.uid);
-            } else {
-                alert(err.message);
-            }
-        }
-    });
+const content = document.getElementById("content");
+const saveBtn = document.getElementById("saveBtn");
+
+async function load() {
+    const res = await fetch("/load");
+    const data = await res.json();
+    content.value = data.content || "";
 }
+
+async function savePaste() {
+    await fetch("/save", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: content.value })
+    });
+    alert("Saved!");
+}
+
+saveBtn.addEventListener("click", savePaste);
+
+load();
