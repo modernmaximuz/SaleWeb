@@ -1,100 +1,53 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { 
-  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-// --- Firebase config ---
-const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// --- DOM elements ---
-const loginDiv = document.getElementById("loginDiv");
-const editorDiv = document.getElementById("editorDiv");
 const loginBtn = document.getElementById("loginBtn");
-const signupBtn = document.getElementById("signupBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const loginError = document.getElementById("loginError");
+
+let token = null;
+
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+        token = await user.getIdToken();
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline";
+        load(); // your existing function
+    } else {
+        token = null;
+        loginBtn.style.display = "inline";
+        logoutBtn.style.display = "none";
+    }
+});
+
+loginBtn.onclick = async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await firebase.auth().signInWithPopup(provider);
+};
+
+logoutBtn.onclick = () => firebase.auth().signOut();
+
+
 const content = document.getElementById("content");
 const saveBtn = document.getElementById("saveBtn");
 
-let currentToken = null;
-
-// --- Login ---
-loginBtn.addEventListener("click", async () => {
-  loginError.textContent = "";
-  try {
-    const userCred = await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    currentToken = await userCred.user.getIdToken();
-  } catch (err) {
-    loginError.textContent = err.message;
-  }
-});
-
-// --- Signup ---
-signupBtn.addEventListener("click", async () => {
-  loginError.textContent = "";
-  try {
-    const userCred = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    currentToken = await userCred.user.getIdToken();
-  } catch (err) {
-    loginError.textContent = err.message;
-  }
-});
-
-// --- Logout ---
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  currentToken = null;
-  editorDiv.style.display = "none";
-  loginDiv.style.display = "block";
-});
-
-// --- Auth state watcher ---
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    loginDiv.style.display = "none";
-    editorDiv.style.display = "block";
-    currentToken = await user.getIdToken();
-    loadPaste();
-  } else {
-    loginDiv.style.display = "block";
-    editorDiv.style.display = "none";
-  }
-});
-
-// --- Load paste ---
-async function loadPaste() {
-  try {
+async function load() {
     const res = await fetch("/load", {
-      headers: { Authorization: `Bearer ${currentToken}` }
-    });
+    headers: { Authorization: `Bearer ${token}` }
+});
     const data = await res.json();
     content.value = data.content || data.paste?.content || "";
-  } catch (err) {
-    console.error("Load failed", err);
-  }
 }
 
-// --- Save paste ---
-saveBtn.addEventListener("click", async () => {
-  try {
+async function savePaste() {
     await fetch("/save", {
-      method: "PUT",
-      headers: {
+    headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${currentToken}`
-      },
-      body: JSON.stringify({ content: content.value })
+        Authorization: `Bearer ${token}`
+    },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: content.value })
     });
     alert("Saved!");
-  } catch (err) {
-    console.error("Save failed", err);
-  }
-});
+}
+
+saveBtn.addEventListener("click", savePaste);
+
+load();
