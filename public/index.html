@@ -7,9 +7,37 @@
 <body>
     <h1>Edit Paste PKzNiJG1</h1>
 
-    <textarea id="content"></textarea>
-    <button id="saveBtn">Save</button>
+    <!-- Login form -->
+    <div id="loginDiv">
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button id="loginBtn">Login / Register</button>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- Editor area, hidden until login -->
+    <div id="editorDiv" style="display:none;">
+        <textarea id="content"></textarea>
+        <button id="saveBtn">Save</button>
+    </div>
+
+    <!-- Use type="module" for ES imports -->
+    <script type="module">
+        import { initAuth } from './auth.js';
+        import { initPasteEditor } from './paste.js';
+
+        const loginDiv = document.getElementById("loginDiv");
+        const editorDiv = document.getElementById("editorDiv");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const loginBtn = document.getElementById("loginBtn");
+
+        const contentTextarea = document.getElementById("content");
+        const saveBtn = document.getElementById("saveBtn");
+
+        // Initialize authentication and paste editor
+        initAuth(loginDiv, editorDiv, emailInput, passwordInput, loginBtn, (userId) => {
+            initPasteEditor(contentTextarea, saveBtn, userId);
+        });
+    </script>
 </body>
 </html>
