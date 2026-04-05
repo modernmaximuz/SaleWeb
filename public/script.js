@@ -1,7 +1,3 @@
-import { db } from './firebase.js';
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-
-
 const content = document.getElementById("content");
 const saveBtn = document.getElementById("saveBtn");
 
