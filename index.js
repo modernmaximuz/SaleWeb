@@ -1,3 +1,22 @@
+const admin = require("firebase-admin");
+
+admin.initializeApp({
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+  )
+});
+
+async function verifyUser(req, res, next) {
+  try {
+    const token = req.headers.authorization.split("Bearer ")[1];
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).send("Unauthorized");
+  }
+}
+
 const express = require("express");
 
 const app = express();
@@ -9,7 +28,7 @@ const PASTE_ID = "PKzNiJG1";
 const BASE = "https://pastefy.app/api/v2";
 
 // Load paste
-app.get("/load", async (req, res) => {
+app.get("/load", verifyUser, async (req, res) => {
     const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
         headers: { Authorization: `Bearer ${API_KEY}` }
     });
@@ -22,7 +41,7 @@ app.get("/load", async (req, res) => {
 });
 
 // Save paste
-app.put("/save", async (req, res) => {
+app.put("/save", verifyUser, async (req, res) => {
     const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
         method: "PUT",
         headers: {
