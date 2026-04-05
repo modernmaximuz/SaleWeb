@@ -5,26 +5,32 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Edit Paste PKzNiJG1</h1>
-<div id="authBar">
-    <button id="loginBtn">Login with Google</button>
-    <button id="logoutBtn" style="display:none;">Logout</button>
+
+<div id="loginBox">
+    <h2>Login</h2>
+    <input id="email" placeholder="Email"><br>
+    <input id="password" type="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
+    <p id="error" style="color:red;"></p>
 </div>
+
+<div id="editor" style="display:none;">
+    <h1>Edit Paste PKzNiJG1</h1>
     <textarea id="content"></textarea>
     <button id="saveBtn">Save</button>
-
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <button id="logoutBtn">Logout</button>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyAJhF0Hkz1kIfjb75BKzcHXfHfdZQd-5fM",
+  apiKey: "YOUR_WEB_API_KEY",
   authDomain: "saleweb-ad2f4.firebaseapp.com",
   projectId: "saleweb-ad2f4"
 };
-
 firebase.initializeApp(firebaseConfig);
 </script>
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
