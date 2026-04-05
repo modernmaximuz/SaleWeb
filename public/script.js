@@ -1,23 +1,10 @@
-import { initAuth } from './auth.js';
-import { initPasteEditor } from './paste.js';
-
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
-const contentTextarea = document.getElementById("content");
-const saveBtn = document.getElementById("saveBtn");
-
-initAuth(emailInput, passwordInput, loginBtn, (uid) => {
-    initPasteEditor(contentTextarea, saveBtn, uid);
-});
-
 const content = document.getElementById("content");
 const saveBtn = document.getElementById("saveBtn");
 
 async function load() {
     const res = await fetch("/load");
     const data = await res.json();
-    content.value = data.content || "";
+    content.value = data.content || data.paste?.content || "";
 }
 
 async function savePaste() {
