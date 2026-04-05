@@ -1,15 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Paste Editor</title>
-    <link rel="stylesheet" href="style.css">
+  <title>Paste Editor with Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Edit Paste PKzNiJG1</h1>
+  <h1>Edit Paste PKzNiJG1</h1>
 
-    <textarea id="content"></textarea>
+  <div id="loginDiv">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <p id="loginError" style="color:red"></p>
+  </div>
+
+  <div id="editorDiv" style="display:none">
+    <textarea id="content" rows="10" cols="50"></textarea>
     <button id="saveBtn">Save</button>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-    <script src="script.js"></script>
+  <!-- Link external JS -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
