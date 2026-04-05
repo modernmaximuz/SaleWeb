@@ -1,53 +1,64 @@
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
+const loginBox = document.getElementById("loginBox");
+const editor = document.getElementById("editor");
+const errorP = document.getElementById("error");
 
-let token = null;
-
-firebase.auth().onAuthStateChanged(async (user) => {
-    if (user) {
-        token = await user.getIdToken();
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline";
-        load(); // your existing function
-    } else {
-        token = null;
-        loginBtn.style.display = "inline";
-        logoutBtn.style.display = "none";
-    }
-});
-
-loginBtn.onclick = async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await firebase.auth().signInWithPopup(provider);
-};
-
-logoutBtn.onclick = () => firebase.auth().signOut();
-
+const emailInput = document.getElementById("email");
+const passInput = document.getElementById("password");
 
 const content = document.getElementById("content");
 const saveBtn = document.getElementById("saveBtn");
 
+let token = null;
+
+// When auth state changes
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+        token = await user.getIdToken();
+        loginBox.style.display = "none";
+        editor.style.display = "block";
+        load();
+    } else {
+        token = null;
+        editor.style.display = "none";
+        loginBox.style.display = "block";
+    }
+});
+
+// Login
+document.getElementById("loginBtn").onclick = async () => {
+    try {
+        await firebase.auth().signInWithEmailAndPassword(
+            emailInput.value,
+            passInput.value
+        );
+    } catch (err) {
+        errorP.textContent = err.message;
+    }
+};
+
+// Logout
+document.getElementById("logoutBtn").onclick = () => {
+    firebase.auth().signOut();
+};
+
+// Load paste
 async function load() {
     const res = await fetch("/load", {
-    headers: { Authorization: `Bearer ${token}` }
-});
+        headers: { Authorization: `Bearer ${token}` }
+    });
     const data = await res.json();
     content.value = data.content || data.paste?.content || "";
 }
 
-async function savePaste() {
+// Save paste
+saveBtn.onclick = async () => {
     await fetch("/save", {
-    headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-    },
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({ content: content.value })
     });
     alert("Saved!");
-}
-
-saveBtn.addEventListener("click", savePaste);
-
-load();
+};
