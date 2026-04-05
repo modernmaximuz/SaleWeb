@@ -1,13 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { 
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-// --- Firebase setup ---
+// --- Firebase config ---
 const firebaseConfig = {
-  apiKey: "<YOUR_FIREBASE_API_KEY>",
-  authDomain: "<YOUR_FIREBASE_AUTH_DOMAIN>",
-  projectId: "<YOUR_FIREBASE_PROJECT_ID>",
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
@@ -15,6 +16,7 @@ const auth = getAuth(app);
 const loginDiv = document.getElementById("loginDiv");
 const editorDiv = document.getElementById("editorDiv");
 const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
@@ -35,6 +37,17 @@ loginBtn.addEventListener("click", async () => {
   }
 });
 
+// --- Signup ---
+signupBtn.addEventListener("click", async () => {
+  loginError.textContent = "";
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    currentToken = await userCred.user.getIdToken();
+  } catch (err) {
+    loginError.textContent = err.message;
+  }
+});
+
 // --- Logout ---
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
@@ -43,7 +56,7 @@ logoutBtn.addEventListener("click", async () => {
   loginDiv.style.display = "block";
 });
 
-// --- Watch auth state ---
+// --- Auth state watcher ---
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginDiv.style.display = "none";
@@ -72,7 +85,7 @@ async function loadPaste() {
 // --- Save paste ---
 saveBtn.addEventListener("click", async () => {
   try {
-    const res = await fetch("/save", {
+    await fetch("/save", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +93,6 @@ saveBtn.addEventListener("click", async () => {
       },
       body: JSON.stringify({ content: content.value })
     });
-    await res.json();
     alert("Saved!");
   } catch (err) {
     console.error("Save failed", err);
