@@ -11,17 +11,19 @@ const BASE = "https://pastefy.app/api/v2";
 // Load paste
 app.get("/load", async (req, res) => {
     const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
-        headers: {
-            Authorization: `Bearer ${API_KEY}`
-        }
+        headers: { Authorization: `Bearer ${API_KEY}` }
     });
-    const data = await r.json();
-    res.json(data);
+
+    const text = await r.text();
+    console.log("LOAD STATUS:", r.status);
+    console.log(text);
+
+    res.status(r.status).send(text);
 });
 
-// Save paste (PUT)
+// Save paste
 app.put("/save", async (req, res) => {
-    await fetch(`${BASE}/paste/${PASTE_ID}`, {
+    const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
         method: "PUT",
         headers: {
             Authorization: `Bearer ${API_KEY}`,
@@ -31,7 +33,12 @@ app.put("/save", async (req, res) => {
             content: req.body.content
         })
     });
-    res.sendStatus(200);
+
+    const text = await r.text();
+    console.log("SAVE STATUS:", r.status);
+    console.log(text);
+
+    res.status(r.status).send(text);
 });
 
 app.listen(process.env.PORT || 3000, () =>
