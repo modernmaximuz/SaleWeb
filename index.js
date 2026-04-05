@@ -1,6 +1,10 @@
 const express = require("express");
 const admin = require("firebase-admin");
 
+if (!process.env.FIREBASE_KEY) {
+    throw new Error("FIREBASE_KEY is missing in environment variables");
+}
+
 const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
 admin.initializeApp({
