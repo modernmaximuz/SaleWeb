@@ -7,9 +7,53 @@
 <body>
     <h1>Edit Paste PKzNiJG1</h1>
 
-    <textarea id="content"></textarea>
+    <textarea id="content" placeholder="Type your paste here..."></textarea>
     <button id="saveBtn">Save</button>
 
-    <script src="script.js"></script>
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJhF0Hkz1kIfjb75BKzcHXfHfdZQd-5fM",
+            authDomain: "saleweb-ad2f4.firebaseapp.com",
+            projectId: "saleweb-ad2f4",
+            storageBucket: "saleweb-ad2f4.firebasestorage.app",
+            messagingSenderId: "975719202425",
+            appId: "1:975719202425:web:458b304679a7456b549ea8",
+            measurementId: "G-TJZ93LR5KB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const contentTextarea = document.getElementById("content");
+        const saveBtn = document.getElementById("saveBtn");
+
+        const pasteId = "PKzNiJG1"; // your paste document ID
+
+        // Load paste on page load
+        async function loadPaste() {
+            const docRef = doc(db, "pastes", pasteId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                contentTextarea.value = docSnap.data().content;
+            } else {
+                contentTextarea.value = ""; // empty if not exists
+            }
+        }
+
+        // Save paste
+        saveBtn.addEventListener("click", async () => {
+            const docRef = doc(db, "pastes", pasteId);
+            await setDoc(docRef, { content: contentTextarea.value });
+            alert("Saved!");
+        });
+
+        loadPaste();
+    </script>
 </body>
 </html>
