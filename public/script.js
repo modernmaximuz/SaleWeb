@@ -2,6 +2,7 @@ const profileBox = document.getElementById("profileBox");
 const profileName = document.getElementById("profileName");
 const profileDropdown = document.getElementById("profileDropdown");
 const loginToggle = document.getElementById("loginToggle");
+const discordBtn = document.getElementById("discordBtn");
 
 async function loadDiscordUser() {
     const res = await fetch("/me");
@@ -19,7 +20,9 @@ async function loadDiscordUser() {
 }
 
 loadDiscordUser();
+const params = new URLSearchParams(window.location.search);
 const discordUser = params.get("username");
+discordBtn.style.display = "none";
 
 if (discordUser) {
     profileBox.classList.remove("hidden");
@@ -47,8 +50,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         token = await user.getIdToken();
 
-        loginBox.style.display = "none";
         editor.style.display = "block";
+        discordBtn.style.display = "none";
 
         // Show profile
         profileBox.classList.remove("hidden");
@@ -69,8 +72,11 @@ firebase.auth().onAuthStateChanged(async (user) => {
 });
 
 loginToggle.onclick = () => {
-    loginBox.style.display =
-        loginBox.style.display === "none" ? "block" : "none";
+    if (loginBox.style.display === "block") {
+        loginBox.style.display = "none";
+    } else {
+        loginBox.style.display = "block";
+    }
 };
 
 document.getElementById("profileMain").onclick = (e) => {
