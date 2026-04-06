@@ -1,3 +1,8 @@
+const profileBox = document.getElementById("profileBox");
+const profileName = document.getElementById("profileName");
+const profileDropdown = document.getElementById("profileDropdown");
+const loginToggle = document.getElementById("loginToggle");
+
 const loginBox = document.getElementById("loginBox");
 const editor = document.getElementById("editor");
 const errorP = document.getElementById("error");
