@@ -113,13 +113,21 @@ document.getElementById("loginBtn").onclick = async () => {
 // Logout
 document.getElementById("logoutBtn").onclick = async () => {
     try {
-        // If Firebase is logged in, sign out
+        // Firebase logout
         if (firebase.auth().currentUser) {
             await firebase.auth().signOut();
         }
 
-        // If Discord cookie exists, remove it
-        window.location.href = "/logout-discord";
+        // Discord logout
+        await fetch("/logout-discord");
+
+        // Reset front-end state
+        profileBox.classList.add("hidden");
+        discordBtn.style.display = "inline-block";
+        profileName.textContent = "User";
+
+        // Optional: reload to fully reset initDiscordUI
+        window.location.reload();
     } catch (err) {
         console.error(err);
     }
