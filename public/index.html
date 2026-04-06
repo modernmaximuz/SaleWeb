@@ -7,8 +7,24 @@
 <body>
 <div id="topbar">
     <a href="/">
-    <img src="/images/logo.png" class="logo">
-</a>
+        <img src="/images/logo.png" class="logo">
+    </a>
+
+    <!-- CENTER NAVIGATION -->
+    <div id="navCenter">
+        <button class="navBtn">Restocks</button>
+
+        <div class="dropdown">
+            <button class="navBtn">Shop ▾</button>
+            <div class="dropdownContent">
+                <a href="/shop/adoptme.html">Adopt Me</a>
+                <a href="/shop/mm2.html">Murder Mystery</a>
+            </div>
+        </div>
+
+        <button class="navBtn">Proofs</button>
+        <button class="navBtn">Support</button>
+    </div>
 
     <div id="navRight">
         <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
@@ -25,16 +41,9 @@
         </div>
     </div>
 </div>
-    <div id="loginBox" style="display:none;">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <p id="error"></p>
-</div>
-<div id="editor" style="display:none;">
-    <textarea id="content"></textarea>
-</div>
+
+<link rel="stylesheet" href="navbar.css">
+<script src="navbar.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
