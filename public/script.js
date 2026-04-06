@@ -113,21 +113,12 @@ document.getElementById("loginBtn").onclick = async () => {
 // Logout
 document.getElementById("logoutBtn").onclick = async () => {
     try {
-        // Firebase logout
-        if (firebase.auth().currentUser) {
-            await firebase.auth().signOut();
-        }
-
-        // Discord logout
-        await fetch("/logout-discord");
-
-        // Reset front-end state
+        await fetch("/logout-discord"); // call logout
+        // reset UI immediately
         profileBox.classList.add("hidden");
         discordBtn.style.display = "inline-block";
         profileName.textContent = "User";
-
-        // Optional: reload to fully reset initDiscordUI
-        window.location.reload();
+        window.location.reload(); // optional but ensures /me returns null
     } catch (err) {
         console.error(err);
     }
