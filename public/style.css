@@ -1,3 +1,92 @@
+/* Topbar */
+#topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 25px;
+    border-bottom: 1px solid #1f1f2b;
+    z-index: 999;
+}
+
+/* Logo */
+#logo {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #4c8dff;
+}
+
+/* Right side */
+#navRight {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Buttons */
+#navRight button {
+    background: transparent;
+    border: 1px solid #2a2a3a;
+    padding: 6px 14px;
+    border-radius: 6px;
+}
+
+#navRight button:hover {
+    background: #4c8dff;
+}
+
+/* Profile box */
+#profileBox {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Profile main */
+#profileMain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+}
+
+/* Avatar circle */
+.avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #555; /* placeholder */
+}
+
+/* Dropdown */
+#profileDropdown {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #121216;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 120px;
+}
+
+/* Hidden helper */
+.hidden {
+    display: none !important;
+}
+
+/* Push content down so header doesn't overlap */
+body {
+    padding-top: 70px;
+}
+
 /* Base */
 * {
     box-sizing: border-box;
