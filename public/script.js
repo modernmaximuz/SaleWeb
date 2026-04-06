@@ -3,6 +3,15 @@ const profileName = document.getElementById("profileName");
 const profileDropdown = document.getElementById("profileDropdown");
 const loginToggle = document.getElementById("loginToggle");
 
+const params = new URLSearchParams(window.location.search);
+const discordUser = params.get("username");
+
+if (discordUser) {
+    profileBox.classList.remove("hidden");
+    loginToggle.style.display = "none";
+    profileName.textContent = discordUser;
+}
+
 const loginBox = document.getElementById("loginBox");
 const editor = document.getElementById("editor");
 const errorP = document.getElementById("error");
