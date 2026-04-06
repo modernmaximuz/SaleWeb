@@ -109,3 +109,9 @@ button:hover {
         transform: translateY(0);
     }
 }
+
+#header {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}
