@@ -75,3 +75,58 @@ app.put("/save", verifyToken, async (req, res) => {
 app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
+
+// Redirect user to Discord OAuth
+app.get("/auth/discord", (req, res) => {
+    const url = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT)}&scope=identify guilds.join`;
+    res.redirect(url);
+});
+
+// Callback from Discord
+app.get("/auth/discord/callback", async (req, res) => {
+    const code = req.query.code;
+
+    // Exchange code for access token
+    const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+            client_id: process.env.DISCORD_CLIENT_ID,
+            client_secret: process.env.DISCORD_CLIENT_SECRET,
+            grant_type: "authorization_code",
+            code,
+            redirect_uri: process.env.DISCORD_REDIRECT
+        })
+    });
+
+    const tokenData = await tokenRes.json();
+
+    // Get user info
+    const userRes = await fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+
+    const user = await userRes.json();
+
+    // Force join to guild
+    await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            access_token: tokenData.access_token
+        })
+    });
+
+    // Give role
+    await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}/roles/${process.env.DISCORD_ROLE_ID}`, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
+        }
+    });
+
+    res.send("Discord linked! You can close this tab.");
+});
