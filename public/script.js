@@ -3,7 +3,22 @@ const profileName = document.getElementById("profileName");
 const profileDropdown = document.getElementById("profileDropdown");
 const loginToggle = document.getElementById("loginToggle");
 
-const params = new URLSearchParams(window.location.search);
+async function loadDiscordUser() {
+    const res = await fetch("/me");
+    const user = await res.json();
+    if (!user) return;
+
+    profileBox.classList.remove("hidden");
+    loginToggle.style.display = "none";
+    profileName.textContent = user.username;
+
+    const avatar = document.querySelector(".avatar");
+    avatar.style.backgroundImage =
+        `url(https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png)`;
+    avatar.style.backgroundSize = "cover";
+}
+
+loadDiscordUser();
 const discordUser = params.get("username");
 
 if (discordUser) {
@@ -99,7 +114,7 @@ document.getElementById("loginBtn").onclick = async () => {
 
 // Logout
 document.getElementById("logoutBtn").onclick = () => {
-    firebase.auth().signOut();
+    window.location = "/logout-discord";
 };
 
 // Load paste
