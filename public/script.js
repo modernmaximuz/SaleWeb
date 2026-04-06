@@ -1,36 +1,38 @@
+let isDiscordLoggedIn = false;
 const profileBox = document.getElementById("profileBox");
 const profileName = document.getElementById("profileName");
 const profileDropdown = document.getElementById("profileDropdown");
 const loginToggle = document.getElementById("loginToggle");
 const discordBtn = document.getElementById("discordBtn");
+let token = null;
 
 async function loadDiscordUser() {
-    const res = await fetch("/me");
-    const user = await res.json();
-    if (!user) return;
+    try {
+        const res = await fetch("/me");
+        const user = await res.json();
+        if (!user) return;
 
-    profileBox.classList.remove("hidden");
-    loginToggle.style.display = "none";
-    profileName.textContent = user.username;
+        isDiscordLoggedIn = true;
 
-    const avatar = document.querySelector(".avatar");
-    avatar.style.backgroundImage =
-        `url(https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png)`;
-    avatar.style.backgroundSize = "cover";
+        profileBox.classList.remove("hidden");
+        loginToggle.style.display = "none";
+        discordBtn.style.display = "none";
+
+        profileName.textContent = user.username;
+
+        const avatar = document.querySelector(".avatar");
+        avatar.style.backgroundImage =
+            `url(https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png)`;
+        avatar.style.backgroundSize = "cover";
+
+        // Hide login box if Discord is logged in
+        if (loginBox) {
+    loginBox.style.display = "none";
 }
 
-loadDiscordUser();
-const params = new URLSearchParams(window.location.search);
-const discordUser = params.get("username");
-discordBtn.style.display = "none";
-
-if (discordUser) {
-    profileBox.classList.remove("hidden");
-    loginToggle.style.display = "none";
-    profileName.textContent = discordUser;
-
-    const newUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({}, document.title, newUrl);
+    } catch (err) {
+        console.error("Discord load error:", err);
+    }
 }
 
 const loginBox = document.getElementById("loginBox");
@@ -43,23 +45,37 @@ const passInput = document.getElementById("password");
 const content = document.getElementById("content");
 const saveBtn = document.getElementById("saveBtn");
 
-let token = null;
+async function init() {
+    await loadDiscordUser();
+
+init();
 
 // When auth state changes
 firebase.auth().onAuthStateChanged(async (user) => {
-    if (user) {
-        token = await user.getIdToken();
+    if (user || isDiscordLoggedIn) {
 
-        editor.style.display = "block";
+        if (user) {
+            token = await user.getIdToken();
+
+            if (!isDiscordLoggedIn) {
+                profileName.textContent = "Administrator";
+            }
+        } else {
+            token = null; // Discord user
+        }
+
         discordBtn.style.display = "none";
-
-        // Show profile
         profileBox.classList.remove("hidden");
         loginToggle.style.display = "none";
 
-        profileName.textContent = "Administrator";
+        // Only Firebase users can edit
+        if (user) {
+            editor.style.display = "block";
+            load();
+        } else {
+            editor.style.display = "none";
+        }
 
-        load();
     } else {
         token = null;
 
@@ -72,11 +88,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
 });
 
 loginToggle.onclick = () => {
-    if (loginBox.style.display === "block") {
-        loginBox.style.display = "none";
-    } else {
-        loginBox.style.display = "block";
-    }
+    loginBox.style.display =
+        loginBox.style.display === "block" ? "none" : "block";
 };
 
 document.getElementById("profileMain").onclick = (e) => {
@@ -135,7 +148,6 @@ document.getElementById("logoutBtn").onclick = async () => {
     } catch (err) {
         console.error(err);
     }
-};
 };
 
 // Load paste
