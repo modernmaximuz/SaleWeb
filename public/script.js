@@ -4,6 +4,25 @@ const profileDropdown = document.getElementById("profileDropdown");
 const loginToggle = document.getElementById("loginToggle");
 const discordBtn = document.getElementById("discordBtn");
 
+async function initDiscordUI() {
+    const res = await fetch("/me");
+    const user = await res.json();
+
+    if (!user) return;
+
+    profileBox.classList.remove("hidden");
+    loginToggle.style.display = "none";
+    discordBtn.style.display = "none";
+
+    profileName.textContent = user.username;
+
+    const avatar = document.querySelector(".avatar");
+    avatar.style.backgroundImage =
+        `url(https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png)`;
+    avatar.style.backgroundSize = "cover";
+}
+
+initDiscordUI();
 async function loadDiscordUser() {
     const res = await fetch("/me");
     const user = await res.json();
@@ -20,18 +39,6 @@ async function loadDiscordUser() {
 }
 
 loadDiscordUser();
-const params = new URLSearchParams(window.location.search);
-const discordUser = params.get("username");
-discordBtn.style.display = "none";
-
-if (discordUser) {
-    profileBox.classList.remove("hidden");
-    loginToggle.style.display = "none";
-    profileName.textContent = discordUser;
-
-    const newUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({}, document.title, newUrl);
-}
 
 const loginBox = document.getElementById("loginBox");
 const editor = document.getElementById("editor");
