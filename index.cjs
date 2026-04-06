@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits } = require("discord.js");
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once("ready", () => console.log(`${client.user.tag} is online!`));
 client.login(process.env.DISCORD_BOT_TOKEN);
@@ -81,12 +81,6 @@ app.put("/save", verifyToken, async (req, res) => {
 app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
-
-// Redirect user to Discord OAuth
-app.get("/auth/discord", (req, res) => {
-    const url = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT)}&scope=identify guilds.join`;
-    res.redirect(url);
-});
 
 // Callback from Discord
 app.get("/auth/discord/callback", async (req, res) => {
