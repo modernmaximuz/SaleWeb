@@ -130,3 +130,17 @@ app.get("/auth/discord/callback", async (req, res) => {
 
     res.send("Discord linked! You can close this tab.");
 });
+
+const BASE_DISCORD = "https://discord.com/api";
+
+// Step A — Redirect user to Discord
+app.get("/auth/discord", (req, res) => {
+    const params = new URLSearchParams({
+        client_id: process.env.DISCORD_CLIENT_ID,
+        response_type: "code",
+        redirect_uri: process.env.DISCORD_REDIRECT,
+        scope: "identify guilds.join"
+    });
+
+    res.redirect(`https://discord.com/oauth2/authorize?${params.toString()}`);
+});
