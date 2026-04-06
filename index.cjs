@@ -160,7 +160,12 @@ app.get("/auth/discord/callback", async (req, res) => {
 const signature = sign(payload);
 
 res.setHeader("Set-Cookie",
-  `discord=${Buffer.from(payload).toString("base64")}.${signature}; Path=/; HttpOnly; SameSite=None; Secure`
+  `discord=${Buffer.from(payload).toString("base64")}.${signature};
+   Path=/;
+   HttpOnly;
+   SameSite=None;
+   Secure;
+   Domain=${req.headers.host.split(":")[0]}`
 );
 
 res.redirect("/");
