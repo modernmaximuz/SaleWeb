@@ -5,11 +5,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="header">
+    <button onclick="window.location='/auth/discord'">Link Discord</button>
+</div>
+    
+<div id="loginBox">
+    <h2>Login</h2>
+    <input id="email" placeholder="Email"><br>
+    <input id="password" type="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
+    <p id="error" style="color:red;"></p>
+</div>
+
+<div id="editor" style="display:none;">
     <h1>Edit Paste PKzNiJG1</h1>
-
     <textarea id="content"></textarea>
-    <button id="saveBtn">Save</button>
+    <button id="logoutBtn">Logout</button>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-    <script src="script.js"></script>
+<script src="firebase.js"></script>
+<script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
