@@ -125,8 +125,17 @@ document.getElementById("loginBtn").onclick = async () => {
 };
 
 // Logout
-document.getElementById("logoutBtn").onclick = () => {
-    window.location = "/logout-discord";
+document.getElementById("logoutBtn").onclick = async () => {
+    try {
+        // logout firebase
+        await firebase.auth().signOut();
+
+        // logout discord (cookie)
+        window.location.href = "/logout-discord";
+    } catch (err) {
+        console.error(err);
+    }
+};
 };
 
 // Load paste
