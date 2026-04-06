@@ -22,7 +22,6 @@ async function initDiscordUI() {
     avatar.style.backgroundSize = "cover";
 }
 
-initDiscordUI();
 loadDiscordUser();
 
 const loginBox = document.getElementById("loginBox");
@@ -45,21 +44,12 @@ firebase.auth().onAuthStateChanged(async (user) => {
         editor.style.display = "block";
         discordBtn.style.display = "none";
 
-        // Show profile
+        // Show profile only for Firebase users
         profileBox.classList.remove("hidden");
         loginToggle.style.display = "none";
-
         profileName.textContent = "Administrator";
 
         load();
-    } else {
-        token = null;
-
-        editor.style.display = "none";
-        loginBox.style.display = "block";
-
-        profileBox.classList.add("hidden");
-        loginToggle.style.display = "block";
     }
 });
 
