@@ -73,9 +73,15 @@ loginToggle.onclick = () => {
         loginBox.style.display === "none" ? "block" : "none";
 };
 
-profileBox.onclick = () => {
+document.getElementById("profileMain").onclick = (e) => {
+    e.stopPropagation();
     profileDropdown.classList.toggle("hidden");
 };
+
+// close when clicking outside
+document.addEventListener("click", () => {
+    profileDropdown.classList.add("hidden");
+});
 
 let saveTimeout = null;
 
