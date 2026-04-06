@@ -19,6 +19,33 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
+const crypto = require("crypto");
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
+
+function parseCookies(req) {
+    const list = {};
+    const rc = req.headers.cookie;
+    if (!rc) return list;
+
+    rc.split(";").forEach(cookie => {
+        const parts = cookie.split("=");
+        list[parts.shift().trim()] = decodeURI(parts.join("="));
+    });
+
+    return list;
+}
+
+const SECRET = "hades-secret";
+
+function sign(data) {
+    return crypto
+        .createHmac("sha256", SECRET)
+        .update(data)
+        .digest("hex");
+}
+
 async function verifyToken(req, res, next) {
     const header = req.headers.authorization;
 
@@ -36,10 +63,6 @@ async function verifyToken(req, res, next) {
         return res.status(401).send("Invalid token");
     }
 }
-
-const app = express();
-app.use(express.json());
-app.use(express.static("public"));
 
 const API_KEY = process.env.API_KEY;
 const PASTE_ID = "PKzNiJG1";
@@ -128,7 +151,19 @@ app.get("/auth/discord/callback", async (req, res) => {
         }
     });
 
-    res.redirect(`/?username=${encodeURIComponent(user.username)}`);
+    const payload = JSON.stringify({
+    id: user.id,
+    username: user.username,
+    avatar: user.avatar
+});
+
+const signature = sign(payload);
+
+res.setHeader("Set-Cookie",
+    `discord=${Buffer.from(payload).toString("base64")}.${signature}; Path=/; HttpOnly`
+);
+
+res.redirect("/");
 });
 
 const BASE_DISCORD = "https://discord.com/api";
@@ -143,4 +178,21 @@ app.get("/auth/discord", (req, res) => {
     });
 
     res.redirect(`https://discord.com/oauth2/authorize?${params.toString()}`);
+});
+
+app.get("/me", (req, res) => {
+    const cookies = parseCookies(req);
+    if (!cookies.discord) return res.json(null);
+
+    const [data, sig] = cookies.discord.split(".");
+    const payload = Buffer.from(data, "base64").toString();
+
+    if (sign(payload) !== sig) return res.json(null);
+
+    res.json(JSON.parse(payload));
+});
+
+app.get("/logout-discord", (req, res) => {
+    res.setHeader("Set-Cookie", "discord=; Path=/; Max-Age=0");
+    res.redirect("/");
 });
