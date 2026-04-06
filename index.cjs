@@ -196,7 +196,10 @@ app.get("/me", (req, res) => {
 });
 
 app.get("/logout-discord", (req, res) => {
-    res.setHeader("Set-Cookie", "discord=; Path=/; Max-Age=0");
+    const domain = req.headers.host.split(":")[0]; // keep same domain as login
+    res.setHeader("Set-Cookie",
+        `discord=; Path=/; Max-Age=0; HttpOnly; SameSite=None;${req.secure ? ' Secure;' : ''} Domain=${domain}`
+    );
     res.redirect("/");
 });
 
