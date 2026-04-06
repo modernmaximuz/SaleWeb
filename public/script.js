@@ -71,12 +71,17 @@ loginToggle.onclick = () => {
     }
 };
 
-document.getElementById("profileMain").onclick = (e) => {
+const profileMain = document.getElementById("profileMain");
+
+profileMain.addEventListener("click", (e) => {
     e.stopPropagation();
     profileDropdown.classList.toggle("hidden");
-};
+});
 
-// close when clicking outside
+profileDropdown.addEventListener("click", (e) => {
+    e.stopPropagation(); // allow clicking logout
+});
+
 document.addEventListener("click", () => {
     profileDropdown.classList.add("hidden");
 });
