@@ -128,7 +128,7 @@ app.get("/auth/discord/callback", async (req, res) => {
         }
     });
 
-    res.redirect(`/discord-success?username=${encodeURIComponent(user.username)}`);
+    res.redirect(`/?username=${encodeURIComponent(user.username)}`);
 });
 
 const BASE_DISCORD = "https://discord.com/api";
