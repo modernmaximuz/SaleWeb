@@ -19,15 +19,36 @@ let token = null;
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         token = await user.getIdToken();
+
         loginBox.style.display = "none";
         editor.style.display = "block";
+
+        // Show profile
+        profileBox.classList.remove("hidden");
+        loginToggle.style.display = "none";
+
+        profileName.textContent = "Administrator";
+
         load();
     } else {
         token = null;
+
         editor.style.display = "none";
         loginBox.style.display = "block";
+
+        profileBox.classList.add("hidden");
+        loginToggle.style.display = "block";
     }
 });
+
+loginToggle.onclick = () => {
+    loginBox.style.display =
+        loginBox.style.display === "none" ? "block" : "none";
+};
+
+profileBox.onclick = () => {
+    profileDropdown.classList.toggle("hidden");
+};
 
 let saveTimeout = null;
 
