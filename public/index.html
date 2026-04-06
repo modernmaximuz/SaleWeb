@@ -5,22 +5,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="header">
-    <button onclick="window.location='/auth/discord'">Link Discord</button>
-</div>
-    
-<div id="loginBox">
-    <h2>Login</h2>
-    <input id="email" placeholder="Email"><br>
-    <input id="password" type="password" placeholder="Password"><br>
-    <button id="loginBtn">Login</button>
-    <p id="error" style="color:red;"></p>
-</div>
+<div id="topbar">
+    <div id="logo">Hades</div>
 
-<div id="editor" style="display:none;">
-    <h1>Edit Paste PKzNiJG1</h1>
-    <textarea id="content"></textarea>
-    <button id="logoutBtn">Logout</button>
+    <div id="navRight">
+        <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
+        <button id="loginToggle">Login</button>
+
+        <div id="profileBox" class="hidden">
+            <div id="profileMain">
+                <div class="avatar"></div>
+                <span id="profileName">User</span>
+            </div>
+            <div id="profileDropdown" class="hidden">
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
