@@ -24,6 +24,29 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
+let saveTimeout = null;
+
+content.addEventListener("input", () => {
+    if (!token) return;
+
+    // Reset timer every keystroke
+    clearTimeout(saveTimeout);
+
+    // Wait 800ms after user stops typing
+    saveTimeout = setTimeout(async () => {
+        await fetch("/save", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ content: content.value })
+        });
+
+        console.log("Auto-saved");
+    }, 800);
+});
+
 // Login
 document.getElementById("loginBtn").onclick = async () => {
     try {
@@ -60,5 +83,4 @@ saveBtn.onclick = async () => {
         },
         body: JSON.stringify({ content: content.value })
     });
-    alert("Saved!");
 };
