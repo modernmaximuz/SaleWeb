@@ -1,3 +1,4 @@
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
 const profileBox = document.getElementById("profileBox");
 const profileName = document.getElementById("profileName");
 const profileDropdown = document.getElementById("profileDropdown");
@@ -10,9 +11,13 @@ async function initDiscordUI() {
 
     if (!user) return;
 
-profileBox.classList.remove("hidden");
-loginToggle.style.display = "none";
-discordBtn.style.display = "none";
+    if (firebase.auth().currentUser) {
+        await firebase.auth().signOut();
+    }
+
+    profileBox.classList.remove("hidden");
+    loginToggle.style.display = "none";
+    discordBtn.style.display = "none";
 
     profileName.textContent = user.username;
 
@@ -21,7 +26,6 @@ discordBtn.style.display = "none";
         `url(https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png)`;
     avatar.style.backgroundSize = "cover";
 }
-
 initDiscordUI();
 
 const loginBox = document.getElementById("loginBox");
@@ -38,12 +42,14 @@ let token = null;
 // When auth state changes
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
+
+        await fetch("/logout-discord");
+
         token = await user.getIdToken();
 
         editor.style.display = "block";
         discordBtn.style.display = "none";
 
-        // Show profile only for Firebase users
         profileBox.classList.remove("hidden");
         loginToggle.style.display = "none";
         profileName.textContent = user.email || "User";
@@ -112,16 +118,14 @@ document.getElementById("loginBtn").onclick = async () => {
 
 // Logout
 document.getElementById("logoutBtn").onclick = async () => {
-    try {
-        await fetch("/logout-discord"); // call logout
-        // reset UI immediately
-        profileBox.classList.add("hidden");
-        discordBtn.style.display = "inline-block";
-        profileName.textContent = "User";
-        window.location.reload(); // optional but ensures /me returns null
-    } catch (err) {
-        console.error(err);
-    }
+    await firebase.auth().signOut();
+    await fetch("/logout-discord");
+
+    // reset UI manually
+    profileBox.classList.add("hidden");
+    editor.style.display = "none";
+    loginToggle.style.display = "inline-block";
+    discordBtn.style.display = "inline-block";
 };
 
 // Load paste
