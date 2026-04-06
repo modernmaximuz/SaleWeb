@@ -10,9 +10,10 @@ async function initDiscordUI() {
 
     if (!user) return;
 
-    profileBox.classList.remove("hidden");
-    loginToggle.style.display = "none";
-    discordBtn.style.display = "none";
+profileBox.classList.remove("hidden");
+loginToggle.style.display = "none";
+discordBtn.style.display = "none";
+profileName.textContent = user.email || "User";
 
     profileName.textContent = user.username;
 
@@ -114,10 +115,12 @@ document.getElementById("loginBtn").onclick = async () => {
 // Logout
 document.getElementById("logoutBtn").onclick = async () => {
     try {
-        // logout firebase
-        await firebase.auth().signOut();
+        // If Firebase is logged in, sign out
+        if (firebase.auth().currentUser) {
+            await firebase.auth().signOut();
+        }
 
-        // logout discord (cookie)
+        // If Discord cookie exists, remove it
         window.location.href = "/logout-discord";
     } catch (err) {
         console.error(err);
