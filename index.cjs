@@ -157,13 +157,12 @@ app.get("/auth/discord/callback", async (req, res) => {
             avatar: user.avatar
         });
         const signature = sign(payload);
-
-        const domain = req.headers.host.split(":")[0]; // remove port
-
+        const domain = req.headers.host.split(":")[0];
         const cookie = `discord=${Buffer.from(payload).toString("base64")}.${signature}; Path=/; HttpOnly; SameSite=None; Secure; Domain=${domain}`;
 
         res.setHeader("Set-Cookie", cookie);
         res.redirect("/");
+
     } catch (err) {
         console.error("Discord callback error:", err);
         res.status(500).send("Internal Server Error");
@@ -214,3 +213,4 @@ app.get("/logout-discord", (req, res) => {
     res.setHeader("Set-Cookie", "discord=; Path=/; Max-Age=0");
     res.redirect("/");
 });
+
