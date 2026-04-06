@@ -107,54 +107,67 @@ app.listen(process.env.PORT || 3000, () =>
 
 // Callback from Discord
 app.get("/auth/discord/callback", async (req, res) => {
-    const code = req.query.code;
+    try {
+        const code = req.query.code;
 
-    // Exchange code for access token
-    const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-            client_id: process.env.DISCORD_CLIENT_ID,
-            client_secret: process.env.DISCORD_CLIENT_SECRET,
-            grant_type: "authorization_code",
-            code,
-            redirect_uri: process.env.DISCORD_REDIRECT
-        })
-    });
+        // Exchange code for access token
+        const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                client_id: process.env.DISCORD_CLIENT_ID,
+                client_secret: process.env.DISCORD_CLIENT_SECRET,
+                grant_type: "authorization_code",
+                code,
+                redirect_uri: process.env.DISCORD_REDIRECT
+            })
+        });
 
-    const tokenData = await tokenRes.json();
+        const tokenData = await tokenRes.json();
 
-    // Get user info
-    const userRes = await fetch("https://discord.com/api/users/@me", {
-        headers: { Authorization: `Bearer ${tokenData.access_token}` }
-    });
+        // Get user info
+        const userRes = await fetch("https://discord.com/api/users/@me", {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
 
-    const user = await userRes.json();
+        const user = await userRes.json();
 
-    // Force join to guild
-    await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`, {
-        method: "PUT",
-        headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            access_token: tokenData.access_token
-        })
-    });
+        // Force join guild
+        await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ access_token: tokenData.access_token })
+        });
 
-    // Give role
-    await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}/roles/${process.env.DISCORD_ROLE_ID}`, {
-        method: "PUT",
-        headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
-        }
-    });
+        // Give role
+        await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}/roles/${process.env.DISCORD_ROLE_ID}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
+            }
+        });
 
-    const payload = JSON.stringify({
-    id: user.id,
-    username: user.username,
-    avatar: user.avatar
+        // Prepare cookie
+        const payload = JSON.stringify({
+            id: user.id,
+            username: user.username,
+            avatar: user.avatar
+        });
+        const signature = sign(payload);
+
+        const domain = req.headers.host.split(":")[0]; // remove port
+
+        const cookie = `discord=${Buffer.from(payload).toString("base64")}.${signature}; Path=/; HttpOnly; SameSite=None; Secure; Domain=${domain}`;
+
+        res.setHeader("Set-Cookie", cookie);
+        res.redirect("/");
+    } catch (err) {
+        console.error("Discord callback error:", err);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 const signature = sign(payload);
