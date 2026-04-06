@@ -105,12 +105,11 @@ app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
 
-// Callback from Discord
+// Discord callback
 app.get("/auth/discord/callback", async (req, res) => {
     try {
         const code = req.query.code;
 
-        // Exchange code for access token
         const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -125,14 +124,13 @@ app.get("/auth/discord/callback", async (req, res) => {
 
         const tokenData = await tokenRes.json();
 
-        // Get user info
         const userRes = await fetch("https://discord.com/api/users/@me", {
             headers: { Authorization: `Bearer ${tokenData.access_token}` }
         });
 
         const user = await userRes.json();
 
-        // Force join guild
+        // Force join guild & assign role
         await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`, {
             method: "PUT",
             headers: {
@@ -142,12 +140,9 @@ app.get("/auth/discord/callback", async (req, res) => {
             body: JSON.stringify({ access_token: tokenData.access_token })
         });
 
-        // Give role
         await fetch(`https://discord.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}/roles/${process.env.DISCORD_ROLE_ID}`, {
             method: "PUT",
-            headers: {
-                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
-            }
+            headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` }
         });
 
         // Prepare cookie
@@ -157,8 +152,10 @@ app.get("/auth/discord/callback", async (req, res) => {
             avatar: user.avatar
         });
         const signature = sign(payload);
-        const domain = req.headers.host.split(":")[0];
-        const cookie = `discord=${Buffer.from(payload).toString("base64")}.${signature}; Path=/; HttpOnly; SameSite=None; Secure; Domain=${domain}`;
+        const domain = req.hostname; // just the host
+        const isLocalhost = domain === "localhost" || domain === "127.0.0.1";
+
+        const cookie = `discord=${Buffer.from(payload).toString("base64")}.${signature}; Path=/; HttpOnly; SameSite=${isLocalhost ? 'Lax' : 'None'};${!isLocalhost ? ' Secure;' : ''}${!isLocalhost ? ` Domain=${domain}` : ''}`;
 
         res.setHeader("Set-Cookie", cookie);
         res.redirect("/");
@@ -195,11 +192,14 @@ app.get("/me", (req, res) => {
     res.json(JSON.parse(payload));
 });
 
+// Logout Discord
 app.get("/logout-discord", (req, res) => {
-    const domain = req.headers.host.split(":")[0]; // keep same domain as login
-    res.setHeader("Set-Cookie",
-        `discord=; Path=/; Max-Age=0; HttpOnly; SameSite=None;${req.secure ? ' Secure;' : ''} Domain=${domain}`
-    );
+    const domain = req.hostname;
+    const isLocalhost = domain === "localhost" || domain === "127.0.0.1";
+
+    const cookie = `discord=; Path=/; Max-Age=0; HttpOnly; SameSite=${isLocalhost ? 'Lax' : 'None'};${!isLocalhost ? ' Secure;' : ''}${!isLocalhost ? ` Domain=${domain}` : ''}`;
+
+    res.setHeader("Set-Cookie", cookie);
     res.redirect("/");
 });
 
