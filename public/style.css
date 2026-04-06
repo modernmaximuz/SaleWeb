@@ -22,6 +22,9 @@
     color: #4c8dff;
 }
 
+.logo {
+    height: 55px;   /* increase this freely */
+}
 /* Right side */
 #navRight {
     display: flex;
