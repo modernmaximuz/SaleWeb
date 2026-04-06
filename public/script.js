@@ -10,6 +10,9 @@ if (discordUser) {
     profileBox.classList.remove("hidden");
     loginToggle.style.display = "none";
     profileName.textContent = discordUser;
+
+    const newUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
 }
 
 const loginBox = document.getElementById("loginBox");
