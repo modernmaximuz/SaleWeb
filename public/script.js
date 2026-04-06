@@ -22,7 +22,7 @@ async function initDiscordUI() {
     avatar.style.backgroundSize = "cover";
 }
 
-loadDiscordUser();
+initDiscordUI();
 
 const loginBox = document.getElementById("loginBox");
 const editor = document.getElementById("editor");
