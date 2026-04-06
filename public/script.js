@@ -13,7 +13,6 @@ async function initDiscordUI() {
 profileBox.classList.remove("hidden");
 loginToggle.style.display = "none";
 discordBtn.style.display = "none";
-profileName.textContent = user.email || "User";
 
     profileName.textContent = user.username;
 
@@ -33,7 +32,6 @@ const emailInput = document.getElementById("email");
 const passInput = document.getElementById("password");
 
 const content = document.getElementById("content");
-const saveBtn = document.getElementById("saveBtn");
 
 let token = null;
 
@@ -48,7 +46,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
         // Show profile only for Firebase users
         profileBox.classList.remove("hidden");
         loginToggle.style.display = "none";
-        profileName.textContent = "Administrator";
+        profileName.textContent = user.email || "User";
 
         load();
     }
@@ -135,15 +133,3 @@ async function load() {
     const data = await res.json();
     content.value = data.content || data.paste?.content || "";
 }
-
-// Save paste
-saveBtn.onclick = async () => {
-    await fetch("/save", {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: content.value })
-    });
-};
