@@ -112,3 +112,18 @@
     z-index: 99999;
     display: none;
 }
+
+.loginWarn {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff4d4d;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 5000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    opacity: 0.95;
+    transition: bottom 0.3s ease;
+}
