@@ -79,15 +79,12 @@ const PASTE_ID = "PKzNiJG1";
 const BASE = "https://pastefy.app/api/v2";
 
 // Load paste
-app.get("/load", verifyToken, async (req, res) => {
+app.get("/load", async (req, res) => {
     const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
         headers: { Authorization: `Bearer ${API_KEY}` }
     });
 
     const text = await r.text();
-    console.log("LOAD STATUS:", r.status);
-    console.log(text);
-
     res.status(r.status).send(text);
 });
 
