@@ -1,1 +1,14 @@
+#stockContainer {
+max-width: 700px;
+margin: 40px auto;
+}
 
+.stockRow {
+display: flex;
+justify-content: space-between;
+background: #121216;
+padding: 12px;
+margin-bottom: 10px;
+border-radius: 8px;
+border: 1px solid #2a2a3a;
+}
