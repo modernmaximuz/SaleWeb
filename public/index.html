@@ -1,54 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Paste Editor</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SaleWeb</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/navbar.css">
 </head>
 <body>
-    <div id="navbar-placeholder"></div>
-<div id="topbar">
-    <a href="/">
-        <img src="/images/logo.png" class="logo">
-    </a>
 
-    <!-- CENTER NAVIGATION -->
-    <div id="navCenter">
-        <button class="navBtn">Restocks</button>
+<!-- Placeholder for dynamic navbar -->
+<div id="navbar-placeholder"></div>
 
-        <div class="dropdown">
-    <button class="navBtn" id="shopToggle">Shop ▾</button>
-    <div class="dropdownContent" id="shopMenu">
-                <a href="/shop/adoptme">Adopt Me</a>
-                <a href="/shop/mm2">Murder Mystery</a>
-            </div>
-        </div>
+<a href="/">
+    <img src="/images/logo.png" class="logo">
+</a>
 
-        <button class="navBtn">Proofs</button>
-        <button class="navBtn">Support</button>
-    </div>
-
-    <div id="navRight">
-        <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
-        <button id="loginToggle" onclick="window.location='/login.html'">Login</button>
-
-        <div id="profileBox" class="hidden">
-            <div id="profileMain">
-                <div class="avatar"></div>
-                <span id="profileName">User</span>
-            </div>
-            <div id="profileDropdown" class="hidden">
-                <button id="logoutBtn">Logout</button>
-            </div>
-        </div>
-    </div>
+<div id="editor">
+    <textarea id="content" placeholder="Start typing..."></textarea>
 </div>
 
-<link rel="stylesheet" href="navbar.css">
-<script src="navbar.js"></script>
+<!-- Scripts -->
+<script>
+    // Load navbar dynamically
+    fetch("/navbar.html")
+      .then(r => r.text())
+      .then(html => {
+          document.getElementById("navbar-placeholder").innerHTML = html;
+      });
+</script>
+<script src="/navbar.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="/firebase.js"></script>
+<script src="/script.js"></script>
 
-<script src="firebase.js"></script>
-<script src="script.js"></script>
 </body>
 </html>
