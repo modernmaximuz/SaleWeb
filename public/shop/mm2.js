@@ -35,23 +35,24 @@ loadStock();
 
 async function loadStock() {
 const res = await fetch(`/load/${PASTE_ID}`);
-const text = await res.text();
+const data = await res.json();
 
 ```
-let parsed;
+let json = {};
+
 try {
-    parsed = JSON.parse(text);
+    json = JSON.parse(data.content);
 } catch {
-    parsed = {};
+    console.log("Parse error", data);
 }
 
-const json = JSON.parse(parsed.content || "{}");
 dataCache = json;
 
 render();
 ```
 
 }
+
 
 function render() {
 const container = document.getElementById("stockContainer");
