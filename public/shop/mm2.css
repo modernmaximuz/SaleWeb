@@ -12,6 +12,8 @@
     transition: 0.35s ease;
     border: 1px solid #2a2a3a;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover {
@@ -36,27 +38,55 @@
     transform: scale(1.08);
 }
 
-.price {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
+.price, .stock-label {
     background: #4c8dff;
-    padding: 6px 12px;
+    padding: 4px 10px;
     border-radius: 8px;
     font-weight: bold;
+    margin-top: 8px;
+    display: inline-block;
 }
 
 .info {
     padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .name {
     font-weight: 600;
     font-size: 16px;
+    color: #eaeaea;
 }
 
 .stock {
     font-size: 14px;
     color: #aaa;
-    margin-top: 4px;
+}
+
+input.stock-input, input.price-input {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #2a2a3a;
+    background: #0f0f13;
+    color: white;
+    font-size: 14px;
+}
+
+#searchContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 50%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #2a2a3a;
+    background: #0f0f13;
+    color: white;
+    font-size: 16px;
 }
