@@ -23,15 +23,24 @@ const crypto = require("crypto");
 const app = express();
 app.use(express.json());
 app.use(express.static("public"));
-app.get("/:page", (req, res, next) => {
-    const page = req.params.page;
+app.get("/*", (req, res, next) => {
+    const path = req.params[0];
 
     // skip API routes
-    if (page.startsWith("auth") || page === "me" || page === "load" || page === "save") {
+    if (
+        path.startsWith("auth") ||
+        path === "me" ||
+        path === "load" ||
+        path === "save"
+    ) {
         return next();
     }
 
-    res.sendFile(__dirname + "/public/" + page + ".html");
+    const filePath = __dirname + "/public/" + path + ".html";
+
+    res.sendFile(filePath, (err) => {
+        if (err) next();
+    });
 });
 
 function parseCookies(req) {
