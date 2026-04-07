@@ -7,3 +7,17 @@ document.querySelectorAll(".navBtn").forEach(btn => {
         if (text === "Support") window.location = "/support.html";
     });
 });
+
+const shopToggle = document.getElementById("shopToggle");
+const shopMenu = document.getElementById("shopMenu");
+
+shopToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    shopMenu.style.display =
+        shopMenu.style.display === "block" ? "none" : "block";
+});
+
+// Close if clicked anywhere else
+document.addEventListener("click", () => {
+    shopMenu.style.display = "none";
+});
