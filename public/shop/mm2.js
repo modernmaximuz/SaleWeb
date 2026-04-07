@@ -1,6 +1,5 @@
 (() => {
     const PASTE_ID = "fZ3piaUg";
-    let token = null
 let isAdmin = false;
 let dataCache = {};
 let token = null;
