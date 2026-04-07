@@ -12,6 +12,7 @@
     padding: 12px 25px;
     border-bottom: 1px solid #1f1f2b;
     z-index: 999;
+    flex-wrap: wrap;
 }
 
 #profileDropdown {
