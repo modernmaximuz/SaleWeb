@@ -98,6 +98,9 @@
 }
 
 #loginWarn {
+    btn.classList.add("shake");
+    btn.style.background = "#ff4d4d";
+    btn.style.color = "#fff";
     position: fixed;
     top: 100px;
     left: 50%;
@@ -106,6 +109,6 @@
     padding: 14px 30px;
     border-radius: 12px;
     font-weight: 600;
-    z-index: 5000;
+    z-index: 99999;
     display: none;
 }
