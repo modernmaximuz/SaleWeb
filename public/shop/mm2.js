@@ -26,16 +26,7 @@ async function initDiscord() {
 
     await loadStock();
 }
-initDiscord();
 
-// Detect Discord login
-async function initDiscord() {
-    const res = await fetch("/me");
-    const user = await res.json();
-    if (user) isAdmin = false;
-
-    await loadStock();
-}
 initDiscord();
 
 async function loadStock() {
@@ -44,7 +35,7 @@ async function loadStock() {
     container.innerHTML = ""; // clear old content
 
     try {
-        const res = await fetch("/load/PKzNiJG1", {
+        const res = await fetch("/load/fZ3piaUg", {
             headers: token ? { Authorization: "Bearer " + token } : {}
         });
 
