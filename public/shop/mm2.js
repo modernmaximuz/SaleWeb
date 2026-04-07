@@ -61,76 +61,6 @@ async function loadStock() {
         dataCache = data;
 render();
 
-        const mm2 = data.mm2 || {};
-        if (Object.keys(mm2).length === 0) {
-            container.innerHTML = "<p style='text-align:center;'>No stock available.</p>";
-            return;
-        }
-
-        // Show stock
-        for (const [key, item] of Object.entries(mm2)) {
-            const card = document.createElement("div");
-            card.className = "card";
-
-            const infoHTML = `
-                <div class="name">${key}</div>
-                <div class="price">₱${item.price}</div>
-                <div class="stock-label">Stock: ${item.stock}</div>
-            `;
-
-            if (isAdmin) {
-                // Editable inputs
-                const stockInput = `<input type="number" min="0" value="${item.stock}" class="stock-input" />`;
-                const priceInput = `<input type="number" min="0" step="0.01" value="${item.price}" class="price-input" />`;
-
-                card.innerHTML = `
-                    <div class="imgBox">
-                        <img src="${item.img}" alt="${key}" />
-                    </div>
-                    <div class="info">
-                        ${infoHTML}
-                        ${stockInput}
-                        ${priceInput}
-                    </div>
-                `;
-            } else {
-                card.innerHTML = `
-                    <div class="imgBox">
-                        <img src="${item.img}" alt="${key}" />
-                    </div>
-                    <div class="info">${infoHTML}</div>
-                `;
-            }
-
-            container.appendChild(card);
-        }
-
-        // Add event listeners for admin inputs
-        if (isAdmin) {
-            const cards = container.querySelectorAll(".card");
-            cards.forEach((card, i) => {
-                const key = Object.keys(mm2)[i];
-                const stockInput = card.querySelector(".stock-input");
-                const priceInput = card.querySelector(".price-input");
-
-                stockInput?.addEventListener("change", async () => {
-                    dataCache.mm2[key].stock = parseInt(stockInput.value);
-                    await saveStock();
-                });
-
-                priceInput?.addEventListener("change", async () => {
-                    dataCache.mm2[key].price = parseFloat(priceInput.value);
-                    await saveStock();
-                });
-            });
-        }
-
-    } catch (err) {
-        console.error("Failed to load stock:", err);
-        container.innerHTML = "<p style='text-align:center;'>Failed to load stock.</p>";
-    }
-}
-
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
@@ -235,7 +165,6 @@ const searchInput = document.getElementById("searchInput");
 if (searchInput) {
     searchInput.addEventListener("input", () => render());
 }
-})();
 
 document.getElementById("prevPage")?.addEventListener("click", () => {
     if (currentPage > 1) {
@@ -254,3 +183,7 @@ document.getElementById("nextPage")?.addEventListener("click", () => {
         render();
     }
 });
+    
+})();
+
+
