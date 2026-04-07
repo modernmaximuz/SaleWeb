@@ -1,19 +1,32 @@
 (() => {
     const PASTE_ID = "fZ3piaUg";
-let isAdmin = false;
-let dataCache = {};
-let token = null;
+    let token = null;
+    let isAdmin = false;
+    let dataCache = {};
 
 // Detect Firebase admin
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         token = await user.getIdToken();
         isAdmin = true;
-        await fetch("/logout-discord");
+        await fetch("/logout-discord"); // clear Discord session
+    } else {
+        token = null;
+        isAdmin = false;
     }
 
     await loadStock();
 });
+
+// Detect Discord login
+async function initDiscord() {
+    const res = await fetch("/me");
+    const user = await res.json();
+    if (user) isAdmin = false;
+
+    await loadStock();
+}
+initDiscord();
 
 // Detect Discord login
 async function initDiscord() {
