@@ -1,13 +1,58 @@
-document.querySelectorAll(".navBtn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const text = btn.textContent.trim();
+async function requireLogin(e, goTo) {
+    e.preventDefault();
 
-        if (text === "Restocks") window.location = "/restocks";
-        if (text === "Proofs") window.location = "/proofs";
-        if (text === "Support") window.location = "/support";
-    });
+    const ok = await window.isLoggedIn();
+    if (ok) {
+        window.location = goTo;
+        return;
+    }
+
+    // Shake effect
+    const btn = e.currentTarget;
+    btn.classList.add("shake");
+    btn.style.background = "#ff4d4d";
+
+    setTimeout(() => {
+        btn.classList.remove("shake");
+        btn.style.background = "";
+    }, 600);
+
+    showLoginWarning();
+}
+
+function showLoginWarning() {
+    let warn = document.getElementById("loginWarn");
+    if (!warn) {
+        warn = document.createElement("div");
+        warn.id = "loginWarn";
+        warn.innerText = "Please login first";
+        document.body.appendChild(warn);
+    }
+
+    warn.style.display = "block";
+    setTimeout(() => warn.style.display = "none", 2000);
+}
+
+// Buttons
+document.querySelectorAll(".navBtn").forEach(btn => {
+    const text = btn.textContent.trim();
+
+    if (text === "Restocks")
+        btn.onclick = (e) => requireLogin(e, "/restocks");
+
+    if (text === "Proofs")
+        btn.onclick = (e) => requireLogin(e, "/proofs");
+
+    if (text === "Support")
+        btn.onclick = (e) => requireLogin(e, "/support");
 });
 
+// Shop links
+document.querySelectorAll("#shopMenu a").forEach(a => {
+    a.onclick = (e) => requireLogin(e, a.getAttribute("href"));
+});
+
+// Dropdown toggle
 const shopToggle = document.getElementById("shopToggle");
 const shopMenu = document.getElementById("shopMenu");
 
@@ -17,7 +62,6 @@ shopToggle.addEventListener("click", (e) => {
         shopMenu.style.display === "block" ? "none" : "block";
 });
 
-// Close if clicked anywhere else
 document.addEventListener("click", () => {
     shopMenu.style.display = "none";
 });
