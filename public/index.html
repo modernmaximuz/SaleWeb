@@ -1,37 +1,71 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-    <title>SaleWeb</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/navbar.css">
+    <title>MM2 Stock</title>
+
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/navbar.css">
+<link rel="stylesheet" href="/shop/mm2.css">
+
 </head>
 <body>
 
-<!-- Placeholder for dynamic navbar -->
-<div id="navbar-placeholder"></div>
+<div id="topbar">
+    <a href="/">
+        <img src="/images/logo.png" class="logo">
+    </a>
+    
+<div id="navCenter">
+    <button class="navBtn">Restocks</button>
 
-<a href="/">
-    <img src="/images/logo.png" class="logo">
-</a>
+    <div class="dropdown">
+        <button class="navBtn" id="shopToggle">Shop ▾</button>
+        <div class="dropdownContent" id="shopMenu">
+            <a href="/shop/adoptme">Adopt Me</a>
+            <a href="/shop/mm2">Murder Mystery</a>
+        </div>
+    </div>
 
-<div id="editor">
-    <textarea id="content" placeholder="Start typing..."></textarea>
+    <button class="navBtn">Proofs</button>
+    <button class="navBtn">Support</button>
 </div>
 
-<!-- Scripts -->
-<script>
-    // Load navbar dynamically
-    fetch("/navbar.html")
-      .then(r => r.text())
-      .then(html => {
-          document.getElementById("navbar-placeholder").innerHTML = html;
-      });
-</script>
-<script src="/navbar.js"></script>
+<div id="navRight">
+    <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
+    <button id="loginToggle">Login</button>
+
+    <div id="profileBox" class="hidden">
+        <div id="profileMain">
+            <div class="avatar"></div>
+            <span id="profileName">User</span>
+        </div>
+        <div id="profileDropdown" class="hidden">
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<h1 style="text-align:center;">MM2 Stock</h1> <div id="searchContainer">
+    <input type="text" id="searchInput" placeholder="Search items..." />
+</div>
+
+<div id="stockContainer"></div>
+<div id="pagination" class="pagination">
+    <button id="prevPage">◀ Prev</button>
+    <span id="pageInfo">Page 1</span>
+    <button id="nextPage">Next ▶</button>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="/firebase.js"></script>
+
 <script src="/script.js"></script>
+<script src="/navbar.js"></script>
+<script src="/shop/mm2.js"></script>
 
 </body>
 </html>
