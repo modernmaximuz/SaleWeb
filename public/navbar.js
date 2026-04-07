@@ -1,5 +1,8 @@
 window.addEventListener("load", () => {
 
+    const MAX_WARNINGS = 5;
+    let warningQueue = [];
+
     async function requireLogin(e, goTo, btn) {
         e.preventDefault();
 
@@ -24,21 +27,31 @@ window.addEventListener("load", () => {
                 setTimeout(() => btn.classList.remove("shake"), 400);
             }
 
-            // Show login warning
-            let warn = document.getElementById("loginWarn");
-            if (!warn) {
-                warn = document.createElement("div");
-                warn.id = "loginWarn";
-                warn.innerText = "Please login first";
-                document.body.appendChild(warn);
+            // Show login warning (max 5 at a time)
+            if (warningQueue.length >= MAX_WARNINGS) {
+                const oldest = warningQueue.shift();
+                oldest.remove();
             }
-            warn.style.display = "block";
-            setTimeout(() => warn.style.display = "none", 2000);
+
+            const warn = document.createElement("div");
+            warn.className = "loginWarn";
+            warn.innerText = "🚨 Please login first!";
+            warn.style.bottom = `${warningQueue.length * 60 + 20}px`; // stack vertically
+            document.body.appendChild(warn);
+            warningQueue.push(warn);
+
+            setTimeout(() => {
+                warn.remove();
+                warningQueue = warningQueue.filter(w => w !== warn);
+                // reposition remaining warnings
+                warningQueue.forEach((w, i) => {
+                    w.style.bottom = `${i * 60 + 20}px`;
+                });
+            }, 5000);
 
             return false;
         }
 
-        // If logged in, go to destination
         if (goTo) window.location.href = goTo;
         return true;
     }
@@ -62,29 +75,30 @@ window.addEventListener("load", () => {
         a.addEventListener("click", (e) => requireLogin(e, a.getAttribute("href"), a));
     });
 
-    // Dropdown
+    // Dropdown toggle
     const shopToggle = document.getElementById("shopToggle");
     const shopMenu = document.getElementById("shopMenu");
 
-    shopToggle.addEventListener("click", (e) => {
+    shopToggle.addEventListener("click", async (e) => {
         e.stopPropagation();
-        shopMenu.style.display =
-            shopMenu.style.display === "block" ? "none" : "block";
+        const ok = await requireLogin(e, null, shopToggle);
+        if (ok) {
+            shopMenu.style.display = shopMenu.style.display === "block" ? "none" : "block";
+        }
     });
 
     document.addEventListener("click", () => {
         shopMenu.style.display = "none";
     });
 
-    // Auto redirect to home if user logs out while on a protected page
+    // Auto redirect to home if user logs out while on protected page
     const protectedPages = ["/restocks", "/proofs", "/support", "/shop/mm2"];
-    firebase.auth().onAuthStateChanged(user => {
+    firebase.auth().onAuthStateChanged(async (user) => {
         if (!user) {
-            window.isLoggedIn().then(loggedIn => {
-                if (!loggedIn && protectedPages.includes(window.location.pathname)) {
-                    window.location.href = "/";
-                }
-            });
+            const loggedIn = await window.isLoggedIn();
+            if (!loggedIn && protectedPages.includes(window.location.pathname)) {
+                window.location.href = "/";
+            }
         }
     });
 
