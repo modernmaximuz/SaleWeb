@@ -1,8 +1,6 @@
 const PASTE_ID = "fZ3piaUg";
-
-let token = null;
-let isAdmin = false;
-let dataCache = {};
+isAdmin = false;
+dataCache = {};
 
 // Detect Firebase admin
 firebase.auth().onAuthStateChanged(async (user) => {
