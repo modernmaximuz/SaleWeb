@@ -98,9 +98,6 @@
     display: none !important;
 }
 
-/* Push content down so header doesn't overlap */
-body {
-    padding-top: 70px;
 }
 
 /* Base */
@@ -115,9 +112,7 @@ body {
     background: #0b0b0d;
     color: #eaeaea;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding-top: 70px;
 }
 
 /* Containers */
