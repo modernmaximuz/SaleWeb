@@ -105,3 +105,13 @@ document.addEventListener("click", () => {
     profileDropdown.classList.add("hidden");
 });
 
+// ===== GLOBAL AUTH CHECK (used by navbar & pages) =====
+window.isLoggedIn = async function () {
+    // Check Firebase
+    if (firebase.auth().currentUser) return true;
+
+    // Check Discord cookie
+    const res = await fetch("/me");
+    const user = await res.json();
+    return !!user;
+};
