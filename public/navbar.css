@@ -84,3 +84,28 @@
         margin-top: 8px;
     }
 }
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-6px); }
+    100% { transform: translateX(0); }
+}
+
+.shake {
+    animation: shake 0.4s;
+}
+
+#loginWarn {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff4d4d;
+    padding: 14px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 5000;
+    display: none;
+}
