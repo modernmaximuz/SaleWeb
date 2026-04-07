@@ -31,7 +31,7 @@ isAdmin = true;
 loadStock();
 ```
 
-});
+}
 
 async function loadStock() {
 const res = await fetch(`/load/${PASTE_ID}`);
