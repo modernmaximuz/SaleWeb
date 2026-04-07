@@ -152,14 +152,23 @@ function renderEditor() {
     container.innerHTML = "";
 
     const mm2 = currentData.mm2 || {};
+
     for (let item in mm2) {
+        const data = mm2[item];
+
         const row = document.createElement("div");
+        row.style.marginBottom = "12px";
+
         row.innerHTML = `
-            <span>${item}</span>
+            <strong>${item}</strong><br>
+            Price: ₱<input type="number" value="${data.price}" 
+                onchange="changePrice('${item}', this.value)" style="width:80px">
+            Stock:
             <button onclick="changeStock('${item}', -1)">-</button>
-            <span>${mm2[item]}</span>
+            <span>${data.stock}</span>
             <button onclick="changeStock('${item}', 1)">+</button>
         `;
+
         container.appendChild(row);
     }
 }
@@ -168,11 +177,11 @@ function renderEditor() {
 async function changeStock(item, amount) {
     if (!token) return;
 
-    if (!currentData.mm2) currentData.mm2 = {};
-    if (!currentData.mm2[item]) currentData.mm2[item] = 0;
+    currentData.mm2[item].stock += amount;
 
-    currentData.mm2[item] += amount;
-    if (currentData.mm2[item] < 0) currentData.mm2[item] = 0;
+    if (currentData.mm2[item].stock < 0) {
+        currentData.mm2[item].stock = 0;
+    }
 
     await fetch("/save/fZ3piaUg", {
         method: "PUT",
@@ -186,4 +195,21 @@ async function changeStock(item, amount) {
     });
 
     renderEditor();
+}
+
+async function changePrice(item, value) {
+    if (!token) return;
+
+    currentData.mm2[item].price = Number(value);
+
+    await fetch("/save/fZ3piaUg", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            content: JSON.stringify(currentData, null, 2)
+        })
+    });
 }
