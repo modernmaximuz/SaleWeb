@@ -6,7 +6,7 @@ let isAdmin = false;
 let dataCache = {};
 
 let currentPage = 1;
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 84;
 
 // ---------------- AUTH ----------------
 firebase.auth().onAuthStateChanged(async (user) => {
