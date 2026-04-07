@@ -62,39 +62,49 @@ container.innerHTML = "";
 const mm2 = dataCache.mm2 || {};
 
 for (let item in mm2) {
-    const row = document.createElement("div");
-    row.className = "stockRow";
+    const data = mm2[item];
 
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+        <div class="imgBox">
+            <img src="${data.img}" />
+            <div class="price">$${data.price}</div>
+        </div>
+
+        <div class="info">
+            <span class="name">${item}</span>
+            <span class="stock">Stock: ${data.stock}</span>
+        </div>
+    `;
+
+    // ADMIN CONTROLS
     if (isAdmin) {
-        row.innerHTML = `
-            <span>${item}</span>
+        const controls = document.createElement("div");
+        controls.innerHTML = `
             <button onclick="change('${item}', -1)">-</button>
-            <span>${mm2[item]}</span>
             <button onclick="change('${item}', 1)">+</button>
         `;
-    } else {
-        row.innerHTML = `
-            <span>${item}</span>
-            <span>${mm2[item]}</span>
-        `;
+        card.appendChild(controls);
     }
 
-    container.appendChild(row);
+    container.appendChild(card);
 }
-```
 
 }
+
 
 async function change(item, amount) {
 if (!isAdmin) return;
 
 ```
-if (!dataCache.mm2) dataCache.mm2 = {};
-if (!dataCache.mm2[item]) dataCache.mm2[item] = 0;
+if (!dataCache.mm2[item]) return;
 
-dataCache.mm2[item] += amount;
+dataCache.mm2[item].stock += amount;
 
-if (dataCache.mm2[item] < 0) dataCache.mm2[item] = 0;
+if (dataCache.mm2[item].stock < 0)
+    dataCache.mm2[item].stock = 0;
 
 await fetch(`/save/${PASTE_ID}`, {
     method: "PUT",
@@ -108,7 +118,11 @@ await fetch(`/save/${PASTE_ID}`, {
 });
 
 render();
-```
+
+}
+
+
+render();
 
 }
 
