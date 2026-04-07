@@ -59,6 +59,7 @@ async function loadStock() {
 
         // Cache for render() & admin editing
         dataCache = data;
+render();
 
         const mm2 = data.mm2 || {};
         if (Object.keys(mm2).length === 0) {
@@ -130,6 +131,9 @@ async function loadStock() {
     }
 }
 
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
+
 function render() {
     const container = document.getElementById("stockContainer");
     container.innerHTML = "";
@@ -137,34 +141,34 @@ function render() {
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const mm2 = dataCache.mm2 || {};
 
-    for (let itemName in mm2) {
-        const data = mm2[itemName];
+    // Filter + search + in stock
+    let items = Object.entries(mm2).filter(([name, data]) =>
+        data.stock > 0 &&
+        name.toLowerCase().includes(search)
+    );
 
-        // Skip 0 stock
-        if (data.stock <= 0) continue;
+    const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
 
-        // Search filter
-        if (!itemName.toLowerCase().includes(search)) continue;
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pagedItems = items.slice(start, start + ITEMS_PER_PAGE);
 
+    for (let [itemName, data] of pagedItems) {
         const card = document.createElement("div");
         card.className = "card";
 
         card.innerHTML = `
             <div class="imgBox">
                 <img src="${data.img}" />
-                <div class="price-label">₱</div>
             </div>
-
             <div class="info">
                 <span class="name">${itemName}</span>
-                <span class="stock-label">Stock:</span>
             </div>
         `;
 
         const infoDiv = card.querySelector(".info");
 
         if (isAdmin) {
-            // Editable stock
             const stockInput = document.createElement("input");
             stockInput.type = "number";
             stockInput.min = 0;
@@ -176,7 +180,6 @@ function render() {
             };
             infoDiv.appendChild(stockInput);
 
-            // Editable price
             const priceInput = document.createElement("input");
             priceInput.type = "number";
             priceInput.min = 0;
@@ -202,6 +205,10 @@ function render() {
 
         container.appendChild(card);
     }
+
+    // Update page info
+    document.getElementById("pageInfo").textContent =
+        `Page ${currentPage} of ${totalPages}`;
 }
 
 async function saveStock() {
@@ -229,3 +236,21 @@ if (searchInput) {
     searchInput.addEventListener("input", () => render());
 }
 })();
+
+document.getElementById("prevPage")?.addEventListener("click", () => {
+    if (currentPage > 1) {
+        currentPage--;
+        render();
+    }
+});
+
+document.getElementById("nextPage")?.addEventListener("click", () => {
+    const mm2 = dataCache.mm2 || {};
+    const totalItems = Object.keys(mm2).length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+    if (currentPage < totalPages) {
+        currentPage++;
+        render();
+    }
+});
