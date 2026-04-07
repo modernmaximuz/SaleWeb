@@ -1,91 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>MM2 Shop</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-
-<h1>MM2 Stocks</h1>
-<div id="items"></div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="/firebase.js"></script>
+<h1>MM2 Stock</h1>
+<div id="stock"></div>
 
 <script>
-let token = null;
-let canEdit = false;
-let pasteData = null;
+async function loadStock() {
+    const res = await fetch("/load");
+    const data = await res.json();
 
-// Detect who is logged in
-async function detectUser() {
-    const discord = await fetch("/me").then(r => r.json());
+    const json = JSON.parse(data.content || data.paste?.content || "{}");
 
-    if (discord) {
-        canEdit = false;
-        load();
-        return;
-    }
+    const mm2 = json.mm2 || {};
 
-    firebase.auth().onAuthStateChanged(async (user) => {
-        if (user) {
-            token = await user.getIdToken();
-            canEdit = true;
-        }
-        load();
-    });
-}
-
-async function load() {
-    const res = await fetch("/load", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-
-    pasteData = await res.json();
-    render();
-}
-
-function render() {
-    const container = document.getElementById("items");
+    const container = document.getElementById("stock");
     container.innerHTML = "";
 
-    pasteData.mm2.items.forEach((item, i) => {
+    for (let item in mm2) {
         const div = document.createElement("div");
-        div.style.marginBottom = "12px";
-
-        div.innerHTML = `
-            <b>${item.name}</b> — Stock: ${item.stock}
-            ${canEdit ? `
-                <button onclick="change(${i}, 1)">+</button>
-                <button onclick="change(${i}, -1)">−</button>
-            ` : ""}
-        `;
-
+        div.textContent = `${item}: ${mm2[item]}`;
         container.appendChild(div);
-    });
+    }
 }
 
-async function change(index, amount) {
-    pasteData.mm2.items[index].stock += amount;
-    if (pasteData.mm2.items[index].stock < 0)
-        pasteData.mm2.items[index].stock = 0;
-
-    render();
-
-    await fetch("/save", {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            content: JSON.stringify(pasteData, null, 2)
-        })
-    });
-}
-
-detectUser();
+loadStock();
+setInterval(loadStock, 3000); // auto refresh
 </script>
-</body>
-</html>
