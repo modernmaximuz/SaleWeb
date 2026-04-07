@@ -27,15 +27,14 @@ app.get("/*", (req, res, next) => {
     const path = req.params[0];
 
     // skip API routes
-    if (
-        path.startsWith("auth") ||
-        path === "me" ||
-        path === "load" ||
-        path === "save"
-    ) {
-        return next();
-    }
-
+if (
+    path.startsWith("auth") ||
+    path === "me" ||
+    path.startsWith("load") ||
+    path.startsWith("save")
+) {
+    return next();
+}
     const filePath = __dirname + "/public/" + path + ".html";
 
     res.sendFile(filePath, (err) => {
@@ -88,8 +87,10 @@ const PASTE_ID = "PKzNiJG1";
 const BASE = "https://pastefy.app/api/v2";
 
 // Load paste
-app.get("/load", async (req, res) => {
-    const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
+app.get("/load/:id", async (req, res) => {
+    const pasteId = req.params.id;
+
+    const r = await fetch(`${BASE}/paste/${pasteId}`, {
         headers: { Authorization: `Bearer ${API_KEY}` }
     });
 
@@ -98,8 +99,10 @@ app.get("/load", async (req, res) => {
 });
 
 // Save paste
-app.put("/save", verifyToken, async (req, res) => {
-    const r = await fetch(`${BASE}/paste/${PASTE_ID}`, {
+app.put("/save/:id", verifyToken, async (req, res) => {
+    const pasteId = req.params.id;
+
+    const r = await fetch(`${BASE}/paste/${pasteId}`, {
         method: "PUT",
         headers: {
             Authorization: `Bearer ${API_KEY}`,
@@ -111,9 +114,6 @@ app.put("/save", verifyToken, async (req, res) => {
     });
 
     const text = await r.text();
-    console.log("SAVE STATUS:", r.status);
-    console.log(text);
-
     res.status(r.status).send(text);
 });
 
