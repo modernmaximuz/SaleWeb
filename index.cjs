@@ -95,8 +95,8 @@ app.get("/load/:id", async (req, res) => {
         headers: { Authorization: `Bearer ${API_KEY}` }
     });
 
-    const text = await r.text();
-    res.status(r.status).send(text);
+    const json = await r.json();   // ✅ NOT text
+    res.status(r.status).json(json);  // ✅ send JSON
 });
 
 // Save paste
