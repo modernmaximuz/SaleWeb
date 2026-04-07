@@ -39,17 +39,37 @@ async function initDiscord() {
 initDiscord();
 
 async function loadStock() {
-    const res = await fetch(`/load/${PASTE_ID}`);
-    const data = await res.json();
+    const container = document.getElementById("stockContainer");
+    if (!container) return;
+    container.innerHTML = ""; // clear old content
 
     try {
-        dataCache = JSON.parse(data.content);
-    } catch {
-        console.log("Parse error", data);
-        dataCache = {};
-    }
+        const res = await fetch("/load/PKzNiJG1", {
+            headers: token ? { Authorization: "Bearer " + token } : {}
+        });
+        const data = await res.json();
 
-    render();
+        // data should be an object with items
+        for (const [key, item] of Object.entries(data.mm2)) {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            card.innerHTML = `
+                <div class="imgBox">
+                    <img src="${item.img}" alt="${key}" />
+                </div>
+                <div class="info">
+                    <div class="name">${key}</div>
+                    <div class="price">₱${item.price}</div>
+                    <div class="stock-label">Stock: ${item.stock}</div>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+    } catch (err) {
+        console.error("Failed to load stock:", err);
+        container.innerHTML = "<p style='text-align:center;'>Failed to load stock.</p>";
+    }
 }
 
 function render() {
