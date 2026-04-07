@@ -1,4 +1,4 @@
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
 
 async function requireLogin(e, goTo) {
     e.preventDefault();
