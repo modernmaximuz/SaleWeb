@@ -59,7 +59,7 @@ function render() {
         card.innerHTML = `
             <div class="imgBox">
                 <img src="${data.img}" />
-                <div class="price">$${data.price}</div>
+                <div class="price">₱${data.price}</div>
             </div>
 
             <div class="info">
