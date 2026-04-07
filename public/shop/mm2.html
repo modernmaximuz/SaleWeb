@@ -1,34 +1,72 @@
 <!DOCTYPE html>
+
 <html>
 <head>
     <title>MM2 Stock</title>
+
+```
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/navbar.css">
+<link rel="stylesheet" href="/shop/mm2.css">
+```
+
 </head>
 <body>
 
-<h1>MM2 Stock</h1>
-<div id="stock"></div>
+<!-- TOPBAR (same as index) -->
 
-<script>
-async function loadStock() {
-    const res = await fetch("/load");
-    const data = await res.json();
+<div id="topbar">
+    <a href="/">
+        <img src="/images/logo.png" class="logo">
+    </a>
 
-    const json = JSON.parse(data.content || data.paste?.content || "{}");
-    const mm2 = json.mm2 || {};
+```
+<div id="navCenter">
+    <button class="navBtn">Restocks</button>
 
-    const container = document.getElementById("stock");
-    container.innerHTML = "";
+    <div class="dropdown">
+        <button class="navBtn" id="shopToggle">Shop ▾</button>
+        <div class="dropdownContent" id="shopMenu">
+            <a href="/shop/adoptme">Adopt Me</a>
+            <a href="/shop/mm2">Murder Mystery</a>
+        </div>
+    </div>
 
-    for (let item in mm2) {
-        const div = document.createElement("div");
-        div.textContent = item + ": " + mm2[item];
-        container.appendChild(div);
-    }
-}
+    <button class="navBtn">Proofs</button>
+    <button class="navBtn">Support</button>
+</div>
 
-loadStock();
-setInterval(loadStock, 3000);
-</script>
+<div id="navRight">
+    <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
+    <button id="loginToggle">Login</button>
+
+    <div id="profileBox" class="hidden">
+        <div id="profileMain">
+            <div class="avatar"></div>
+            <span id="profileName">User</span>
+        </div>
+        <div id="profileDropdown" class="hidden">
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </div>
+</div>
+```
+
+</div>
+
+<h1 style="text-align:center;">MM2 Stock</h1>
+
+<div id="stockContainer"></div>
+
+<script src="/navbar.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script src="/firebase.js"></script>
+
+<script src="/shop/mm2.js"></script>
 
 </body>
 </html>
