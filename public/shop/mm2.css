@@ -2,18 +2,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 25px;
-    padding: 40px;
+    padding: 20px 40px;  /* added top padding */
 }
 
+/* Ensure cards wrap correctly */
 .card {
+    display: flex;
+    flex-direction: column;
     background: #14141c;
     border-radius: 16px;
     overflow: hidden;
-    transition: 0.35s ease;
     border: 1px solid #2a2a3a;
-    position: relative;
-    display: flex;
-    flex-direction: column;
 }
 
 .card:hover {
@@ -82,11 +81,14 @@ input.stock-input, input.price-input {
 }
 
 #searchInput {
-    width: 50%;
-    padding: 10px 14px;
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 16px;
     border-radius: 10px;
     border: 1px solid #2a2a3a;
     background: #0f0f13;
     color: white;
     font-size: 16px;
 }
+
+
