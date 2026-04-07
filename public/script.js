@@ -129,10 +129,59 @@ document.getElementById("logoutBtn").onclick = async () => {
 };
 
 // Load paste
+let currentData = {};
+
 async function load() {
     const res = await fetch("/load", {
         headers: { Authorization: `Bearer ${token}` }
     });
+
     const data = await res.json();
-    content.value = data.content || data.paste?.content || "";
+    currentData = JSON.parse(data.content || "{}");
+
+    renderEditor();
+}
+
+function renderEditor() {
+    const container = document.getElementById("editorItems");
+    container.innerHTML = "";
+
+    const mm2 = currentData.mm2 || {};
+
+    for (let item in mm2) {
+        const row = document.createElement("div");
+
+        row.innerHTML = `
+            <span>${item}</span>
+            <button onclick="changeStock('${item}', -1)">-</button>
+            <span>${mm2[item]}</span>
+            <button onclick="changeStock('${item}', 1)">+</button>
+        `;
+
+        container.appendChild(row);
+    }
+}
+
+async function changeStock(item, amount) {
+    if (!token) return;
+
+    if (!currentData.mm2) currentData.mm2 = {};
+    if (!currentData.mm2[item]) currentData.mm2[item] = 0;
+
+    currentData.mm2[item] += amount;
+
+    if (currentData.mm2[item] < 0) currentData.mm2[item] = 0;
+
+    await fetch("/save", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            content: JSON.stringify(currentData, null, 2)
+        })
+    });
+
+    renderEditor();
 }
