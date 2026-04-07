@@ -3,22 +3,19 @@ window.addEventListener("load", () => {
 async function requireLogin(e, goTo) {
     e.preventDefault();
 
-    const ok = await window.isLoggedIn();
-    if (ok) {
-        window.location = goTo;
-        return;
+    let ok = false;
+
+if (window.isLoggedIn) {
+    ok = await window.isLoggedIn();
+} else {
+    // fallback check (Discord cookie)
+    try {
+        const res = await fetch("/me");
+        const user = await res.json();
+        ok = !!user;
+    } catch {
+        ok = false;
     }
-
-    const btn = e.currentTarget;
-    btn.classList.add("shake");
-    btn.style.background = "#ff4d4d";
-
-    setTimeout(() => {
-        btn.classList.remove("shake");
-        btn.style.background = "";
-    }, 600);
-
-    showLoginWarning();
 }
 
 function showLoginWarning() {
@@ -39,7 +36,7 @@ document.querySelectorAll(".navBtn").forEach(btn => {
     const text = btn.textContent.trim();
 
     if (text === "Restocks")
-        btn.onclick = (e) => requireLogin(e, "/restocks");
+        btn.addEventListener("click", (e) => requireLogin(e, "/restocks"));
 
     if (text === "Proofs")
         btn.onclick = (e) => requireLogin(e, "/proofs");
