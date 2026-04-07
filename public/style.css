@@ -220,3 +220,11 @@ button:hover {
     top: 10px;
     left: 10px;
 }
+
+* {
+    transition: background 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+}
+
+.card, .navBtn, button {
+    transition: all 0.3s cubic-bezier(.2,.8,.2,1);
+}
