@@ -4,6 +4,17 @@ let token = null;
 let isAdmin = false;
 let dataCache = {};
 
+// Detect Firebase admin
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+        token = await user.getIdToken();
+        isAdmin = true;
+        await fetch("/logout-discord");
+    }
+
+    await loadStock(); // ALWAYS load after auth known
+});
+
 // Detect Discord login
 async function initDiscord() {
     const res = await fetch("/me");
@@ -14,18 +25,6 @@ async function initDiscord() {
         isAdmin = false;
     }
 }
-
-// Detect Firebase admin
-firebase.auth().onAuthStateChanged(async (user) => {
-    if (user) {
-        token = await user.getIdToken();
-        isAdmin = true;
-
-        await fetch("/logout-discord");
-    }
-
-    loadStock();
-});
 
 async function loadStock() {
     const res = await fetch(`/load/${PASTE_ID}`);
