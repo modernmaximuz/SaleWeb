@@ -1,3 +1,5 @@
+window.addEventListener("DOMContentLoaded", () => {
+
 async function requireLogin(e, goTo) {
     e.preventDefault();
 
@@ -7,7 +9,6 @@ async function requireLogin(e, goTo) {
         return;
     }
 
-    // Shake effect
     const btn = e.currentTarget;
     btn.classList.add("shake");
     btn.style.background = "#ff4d4d";
@@ -52,7 +53,7 @@ document.querySelectorAll("#shopMenu a").forEach(a => {
     a.onclick = (e) => requireLogin(e, a.getAttribute("href"));
 });
 
-// Dropdown toggle
+// Dropdown
 const shopToggle = document.getElementById("shopToggle");
 const shopMenu = document.getElementById("shopMenu");
 
@@ -64,4 +65,6 @@ shopToggle.addEventListener("click", (e) => {
 
 document.addEventListener("click", () => {
     shopMenu.style.display = "none";
+});
+
 });
