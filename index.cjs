@@ -23,6 +23,16 @@ const crypto = require("crypto");
 const app = express();
 app.use(express.json());
 app.use(express.static("public"));
+app.get("/:page", (req, res, next) => {
+    const page = req.params.page;
+
+    // skip API routes
+    if (page.startsWith("auth") || page === "me" || page === "load" || page === "save") {
+        return next();
+    }
+
+    res.sendFile(__dirname + "/public/" + page + ".html");
+});
 
 function parseCookies(req) {
     const list = {};
