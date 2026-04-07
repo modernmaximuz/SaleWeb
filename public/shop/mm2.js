@@ -1,4 +1,6 @@
-const PASTE_ID = "fZ3piaUg";
+(() => {
+    const PASTE_ID = "fZ3piaUg";
+    let token = null
 let isAdmin = false;
 let dataCache = {};
 let token = null;
@@ -136,3 +138,4 @@ const searchInput = document.getElementById("searchInput");
 if (searchInput) {
     searchInput.addEventListener("input", () => render());
 }
+})();
