@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, PermissionsBitField } = require("discord.js");
+const { Client, GatewayIntentBits, PermissionsBitField, ChannelType } = require("discord.js");
 
 const client = new Client({
     intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
@@ -12,7 +12,6 @@ async function createOrderChannel(order) {
 
     const channel = await guild.channels.create({
         name: `${order.user}-customer`,
-        const { ChannelType } = require("discord.js");
 type: ChannelType.GuildText,
         parent: "1491299595018305566",
         permissionOverwrites: [
