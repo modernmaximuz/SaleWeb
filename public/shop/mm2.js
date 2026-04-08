@@ -107,7 +107,7 @@ card.innerHTML = `
     <div class="stock">Stock: ${d.stock}</div>
     <div class="price">₱${d.price}</div>
     <input type="number" min="1" value="1" class="qtyInput">
-<img src="/images/cart.png" class="addCart">
+<button class="addCartBtn">Add to Cart</button>
 `;
 
 const btn = info.querySelector(".addCart");
