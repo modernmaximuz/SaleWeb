@@ -47,3 +47,16 @@ if (countEl) countEl.innerText = count;
 }
 
 window.addEventListener("load", renderCartIcon);
+
+const popup = document.getElementById("cartPopup");
+
+document.getElementById("cartIcon")?.addEventListener("click", () => {
+    popup.classList.remove("hidden");
+    renderCartPopup();
+});
+
+popup?.addEventListener("click", (e) => {
+    if (e.target.id === "cartPopup") {
+        popup.classList.add("hidden");
+    }
+});
