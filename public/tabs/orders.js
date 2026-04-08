@@ -47,7 +47,21 @@ document.getElementById("placeOrder").onclick = async () => {
 };
 
 async function acceptOrder(i){
-    const o = window._orders[i];
+    const res = await fetch(`/load/${ORDER_PASTE}`);
+    const json = await res.json();
+    const data = JSON.parse(json.content || "[]");
+
+    data[i].status = "accepted"; // ✅ CHANGE STATUS
+
+    await fetch(`/save/${ORDER_PASTE}`, {
+        method:"PUT",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+            content: JSON.stringify(data,null,2)
+        })
+    });
+
+    const o = data[i];
 
     await fetch("/accept-order",{
         method:"POST",
