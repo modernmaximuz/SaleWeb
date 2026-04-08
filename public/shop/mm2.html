@@ -35,9 +35,19 @@
 <div id="navRight">
     <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
     <button id="loginToggle">Login</button>
-<div id="cartIcon" onclick="location.href='/tabs/orders'">
+<div id="cartIcon">
     <img src="/images/cart.png" id="cartImg">
     <span id="cartCount">0</span>
+</div>
+<div id="cartPopup" class="hidden">
+    <div id="cartBox">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+
+        <div id="cartTotal">Total: ₱0</div>
+
+        <button id="finalizeOrder">Finalize Order</button>
+    </div>
 </div>
 <script src="/cart.js"></script>
     <div id="profileBox" class="hidden">
