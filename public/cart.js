@@ -42,7 +42,8 @@ function renderCartIcon() {
     const count = getCart().reduce((a,b)=>a+b.qty,0);
     let icon = document.getElementById("cartIcon");
     if (!icon) return;
-    icon.innerText = `🛒 ${count}`;
+    const countEl = document.getElementById("cartCount");
+if (countEl) countEl.innerText = count;
 }
 
 window.addEventListener("load", renderCartIcon);
