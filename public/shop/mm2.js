@@ -55,9 +55,15 @@ function render() {
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const mm2 = dataCache.mm2 || {};
 
-    let items = Object.entries(mm2).filter(([name, d]) =>
-        d.stock > 0 && name.toLowerCase().includes(search)
-    );
+    let items = Object.entries(mm2).filter(([name, d]) => {
+    const match = name.toLowerCase().includes(search);
+
+    // If searching, allow all matches
+    if (search) return match;
+
+    // If not searching, only show in-stock
+    return match && d.stock > 0;
+});
 
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
     if (currentPage > totalPages) currentPage = totalPages || 1;
@@ -68,10 +74,12 @@ function render() {
     for (let [name, d] of paged) {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = `
-            <div class="imgBox"><img src="${d.img}"></div>
-            <div class="info"><span class="name">${name}</span></div>
-        `;
+        const imgSrc = d.stock > 0 ? d.img : "/images/nostock.png";
+
+card.innerHTML = `
+    <div class="imgBox"><img src="${imgSrc}"></div>
+    <div class="info"><span class="name">${name}</span></div>
+`;
 
         const info = card.querySelector(".info");
 
