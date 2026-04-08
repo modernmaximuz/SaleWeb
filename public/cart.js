@@ -14,7 +14,9 @@ function addToCart(item) {
     const found = cart.find(i => i.name === item.name);
 
     if (found) {
-        found.qty += item.qty || 1;
+    alert("You already added this item!");
+    return;
+}
     } else {
         cart.push({ ...item, qty: 1 });
     }
