@@ -110,7 +110,7 @@ card.innerHTML = `
 <button class="addCartBtn">Add to Cart</button>
 `;
 
-const btn = info.querySelector(".addCart");
+const btn = info.querySelector(".addCartBtn");
 const qtyInput = info.querySelector(".qtyInput");
 
 btn.onclick = () => {
