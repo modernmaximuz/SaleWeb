@@ -91,15 +91,15 @@ window.addEventListener("load", () => {
         shopMenu.style.display = "none";
     });
 
-    // Auto redirect if user becomes logged out on protected pages
-const protectedPages = ["/restocks", "/proofs", "/support", "/shop/mm2"];
+     // Auto redirect to home if user logs out while on protected page
+    const protectedPages = ["/restocks", "/proofs", "/support", "/shop/mm2"];
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (!user) {
+            const loggedIn = await window.isLoggedIn();
+            if (!loggedIn && protectedPages.includes(window.location.pathname)) {
+                window.location.href = "/";
+            }
+        }
+    });
 
-async function checkAuthAndRedirect() {
-    const loggedIn = await window.isLoggedIn();
-    if (!loggedIn && protectedPages.includes(window.location.pathname)) {
-        window.location.href = "/";
-    }
-}
-
-// Check every 1 second
-setInterval(checkAuthAndRedirect, 1000);
+});
