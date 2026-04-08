@@ -90,6 +90,9 @@ document.getElementById("logoutBtn").onclick = async () => {
         await fetch("/logout-discord");
 
         resetUI();
+
+        // 🔥 FORCE REDIRECT EVERY TIME
+        window.location.href = "/";
     } catch (err) {
         console.error("Logout error:", err);
     }
