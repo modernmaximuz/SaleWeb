@@ -106,15 +106,19 @@ card.innerHTML = `
             info.innerHTML += `
     <div class="stock">Stock: ${d.stock}</div>
     <div class="price">₱${d.price}</div>
-    <img src="/images/cart.png" class="addCart">
+    <input type="number" min="1" value="1" class="qtyInput">
+<img src="/images/cart.png" class="addCart">
 `;
 
 const btn = info.querySelector(".addCart");
+const qtyInput = info.querySelector(".qtyInput");
+
 btn.onclick = () => {
     addToCart({
         name,
         price: d.price,
-        img: d.img
+        img: d.img,
+        qty: parseInt(qtyInput.value) || 1
     });
 };
         }
