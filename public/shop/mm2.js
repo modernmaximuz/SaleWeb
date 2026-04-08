@@ -1,6 +1,6 @@
 (() => {
 const PASTE_ID = "fZ3piaUg";
-import "/cart.js";
+
 let token = null;
 let isAdmin = false;
 let dataCache = {};
