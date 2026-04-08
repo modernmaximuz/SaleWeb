@@ -301,3 +301,11 @@ button:hover {
     margin-top:10px;
     font-weight:bold;
 }
+
+.addCartBtn {
+    padding:6px 10px;
+    background:#4c8dff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
