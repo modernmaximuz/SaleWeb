@@ -229,3 +229,19 @@ app.get("/logout-discord", (req, res) => {
     res.redirect("/");
 });
 
+const { createOrderChannel } = require("./orderBot");
+
+app.post("/accept-order", async (req,res)=>{
+    const order = req.body;
+    await createOrderChannel(order);
+    res.send("ok");
+});
+
+async function acceptOrder(i){
+    const o = window._orders[i];
+    await fetch("/accept-order",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(o)
+    });
+}
