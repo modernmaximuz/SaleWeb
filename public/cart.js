@@ -60,3 +60,32 @@ popup?.addEventListener("click", (e) => {
         popup.classList.add("hidden");
     }
 });
+
+function renderCartPopup() {
+    const cart = getCart();
+    const box = document.getElementById("cartItems");
+    const totalEl = document.getElementById("cartTotal");
+
+    if (!box) return;
+
+    box.innerHTML = "";
+    let total = 0;
+
+    cart.forEach(i => {
+        const subtotal = i.price * i.qty;
+        total += subtotal;
+
+        box.innerHTML += `
+        <div class="cartRow">
+            <img src="${i.img}">
+            <div>
+                ${i.name} x${i.qty}<br>
+                <span class="stockHint">Stock info shown here</span>
+            </div>
+            <div>₱${subtotal}</div>
+        </div>
+        `;
+    });
+
+    totalEl.innerText = `Total: ₱${total}`;
+}
