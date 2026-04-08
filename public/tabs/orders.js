@@ -1,4 +1,4 @@
-const ORDER_PASTE = "NEW_PASTE_ID_FOR_ORDERS";
+const ORDER_PASTE = "OQooMS9z";
 
 function renderCart() {
     const cart = getCart();
@@ -45,3 +45,28 @@ document.getElementById("placeOrder").onclick = async () => {
     localStorage.removeItem("hades_cart");
     alert("Order placed!");
 };
+
+async function loadOrders() {
+    const res = await fetch(`/load/${ORDER_PASTE}`);
+    const json = await res.json();
+    const orders = JSON.parse(json.content || "[]");
+
+    const me = await (await fetch("/me")).json();
+    const list = document.getElementById("ordersList");
+    list.innerHTML = "";
+
+    orders.forEach((o, i) => {
+        list.innerHTML += `
+        <div class="orderRow">
+            User: ${o.user} | ${o.date}
+            <button onclick="viewOrder(${i})">View Order</button>
+            ${me && me.username === "YOUR_ADMIN_NAME" ? `
+            <button onclick="acceptOrder(${i})">Accept</button>
+            <button onclick="declineOrder(${i})">Decline</button>
+            `:""}
+        </div>`;
+    });
+
+    window._orders = orders;
+}
+loadOrders();
