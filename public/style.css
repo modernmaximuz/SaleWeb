@@ -238,3 +238,19 @@ button:hover {
 #cartCount {
     font-size:14px;
 }
+
+.cartItem {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:10px;
+    background:#14141c;
+    padding:10px;
+    border-radius:10px;
+}
+
+.cartItem img {
+    width:30px;
+    height:30px;
+    object-fit:cover;
+}
