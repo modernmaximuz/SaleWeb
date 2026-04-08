@@ -89,3 +89,41 @@ function renderCartPopup() {
 
     totalEl.innerText = `Total: ₱${total}`;
 }
+
+document.getElementById("finalizeOrder")?.addEventListener("click", async () => {
+    const user = await (await fetch("/me")).json();
+    const cart = getCart();
+
+    if (!cart.length) {
+        alert("Cart is empty!");
+        return;
+    }
+
+    const order = {
+        user: user.username,
+        discordId: user.id,
+        date: new Date().toISOString(),
+        items: cart,
+        status: "pending"
+    };
+
+    await fetch(`/load/OQooMS9z`)
+        .then(res => res.json())
+        .then(async json => {
+            const data = JSON.parse(json.content || "[]");
+            data.push(order);
+
+            await fetch(`/save/OQooMS9z`, {
+                method:"PUT",
+                headers:{ "Content-Type":"application/json" },
+                body: JSON.stringify({
+                    content: JSON.stringify(data,null,2)
+                })
+            });
+        });
+
+    localStorage.removeItem("hades_cart");
+    alert("Order placed!");
+
+    location.href = "/tabs/orders"; // now THIS is correct usage
+});
