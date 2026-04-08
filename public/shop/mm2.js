@@ -58,18 +58,16 @@ function render() {
     let items = Object.entries(mm2).filter(([name, d]) => {
     const match = name.toLowerCase().includes(search);
 
-    // If searching, allow all matches
     if (search) return match;
 
-    // If not searching, only show in-stock
     const cart = getCart();
-const alreadyTaken = cart.find(i => i.name === name);
+    const alreadyTaken = cart.find(i => i.name === name);
 
-if (search) return match;
+    return match && d.stock > 0 && !alreadyTaken;
+});
 
-return match && d.stock > 0 && !alreadyTaken;
-
-        const select = document.getElementById("itemSelect");
+// ✅ MOVE THIS OUTSIDE
+const select = document.getElementById("itemSelect");
 if (select) {
     select.innerHTML = "";
 
