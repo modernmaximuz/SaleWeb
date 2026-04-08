@@ -12,7 +12,8 @@ async function createOrderChannel(order) {
 
     const channel = await guild.channels.create({
         name: `${order.user}-customer`,
-        type: 0,
+        const { ChannelType } = require("discord.js");
+type: ChannelType.GuildText,
         parent: "1491299595018305566",
         permissionOverwrites: [
             {
