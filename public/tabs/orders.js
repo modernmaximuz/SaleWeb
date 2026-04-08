@@ -46,6 +46,18 @@ document.getElementById("placeOrder").onclick = async () => {
     alert("Order placed!");
 };
 
+async function acceptOrder(i){
+    const o = window._orders[i];
+
+    await fetch("/accept-order",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(o)
+    });
+
+    alert("Order accepted!");
+}
+
 async function loadOrders() {
     const res = await fetch(`/load/${ORDER_PASTE}`);
     const json = await res.json();
