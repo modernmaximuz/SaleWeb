@@ -1,6 +1,6 @@
 (() => {
 const PASTE_ID = "fZ3piaUg";
-
+import "/cart.js";
 let token = null;
 let isAdmin = false;
 let dataCache = {};
@@ -103,8 +103,20 @@ card.innerHTML = `
             };
             info.appendChild(p);
         } else {
-            info.innerHTML += `<div class="stock">Stock: ${d.stock}</div>
-                               <div class="price">₱${d.price}</div>`;
+            info.innerHTML += `
+    <div class="stock">Stock: ${d.stock}</div>
+    <div class="price">₱${d.price}</div>
+    <img src="/images/cart.png" class="addCart">
+`;
+
+const btn = info.querySelector(".addCart");
+btn.onclick = () => {
+    addToCart({
+        name,
+        price: d.price,
+        img: d.img
+    });
+};
         }
 
         container.appendChild(card);
