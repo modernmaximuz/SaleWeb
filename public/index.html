@@ -30,7 +30,10 @@
     <div id="navRight">
         <button id="discordBtn" onclick="window.location='/auth/discord'">Discord</button>
         <button id="loginToggle" onclick="window.location='/login.html'">Login</button>
-<button id="cartIcon" onclick="location.href='/tabs/orders'">🛒 0</button>
+<div id="cartIcon" onclick="location.href='/tabs/orders'">
+    <img src="/images/cart.png" id="cartImg">
+    <span id="cartCount">0</span>
+</div>
 <script src="/cart.js"></script>
         <div id="profileBox" class="hidden">
             <div id="profileMain">
