@@ -103,15 +103,24 @@ app.get("/load/:id", async (req, res) => {
 app.put("/save/:id", verifyToken, async (req, res) => {
     const pasteId = req.params.id;
 
+    // STEP 1 — get current paste
+    const current = await fetch(`${BASE}/paste/${pasteId}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` }
+    });
+
+    const paste = await current.json();
+
+    // STEP 2 — replace content only
+    paste.content = req.body.content;
+
+    // STEP 3 — send FULL paste object back
     const r = await fetch(`${BASE}/paste/${pasteId}`, {
         method: "PUT",
         headers: {
             Authorization: `Bearer ${API_KEY}`,
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            content: req.body.content
-        })
+        body: JSON.stringify(paste)
     });
 
     const text = await r.text();
