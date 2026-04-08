@@ -22,7 +22,7 @@ admin.initializeApp({
 
 const crypto = require("crypto");
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
 app.get("/*", (req, res, next) => {
     const path = req.params[0];
