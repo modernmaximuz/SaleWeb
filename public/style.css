@@ -222,3 +222,19 @@ button:hover {
 .card, .navBtn, button {
     transition: all 0.3s cubic-bezier(.2,.8,.2,1);
 }
+
+#cartIcon {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+}
+
+#cartImg {
+    width:22px;
+    height:22px;
+}
+
+#cartCount {
+    font-size:14px;
+}
