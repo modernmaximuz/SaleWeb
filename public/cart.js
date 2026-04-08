@@ -16,10 +16,9 @@ function addToCart(item) {
     if (found) {
     alert("You already added this item!");
     return;
+} else {
+    cart.push({ ...item, qty: 1 });
 }
-    } else {
-        cart.push({ ...item, qty: 1 });
-    }
 
     saveCart(cart);
 }
