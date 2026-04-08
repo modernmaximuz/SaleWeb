@@ -123,23 +123,28 @@ card.innerHTML = `
             info.appendChild(p);
         } else {
             info.innerHTML += `
-    <div class="stock">
-    ${d.stock > 0 ? `Stock: ${d.stock}` : `Stocks Unavailable`}
+<div class="stock">
+${d.stock > 0 ? `Stock: ${d.stock}` : `Stocks Unavailable`}
 </div>
-    <div class="price">₱${d.price}</div>
+<div class="price">₱${d.price}</div>
+
+<input type="number" class="qtyInput" value="1" min="1" style="width:60px;">
+<button class="addCartBtn">Add</button>
 `;
 
 const btn = info.querySelector(".addCartBtn");
 const qtyInput = info.querySelector(".qtyInput");
 
-btn.onclick = () => {
-    addToCart({
-        name,
-        price: d.price,
-        img: d.img,
-        qty: parseInt(qtyInput.value) || 1
-    });
-};
+if (btn && qtyInput) {
+    btn.onclick = () => {
+        addToCart({
+            name,
+            price: d.price,
+            img: d.img,
+            qty: parseInt(qtyInput.value) || 1
+        });
+    };
+}
         }
 
         container.appendChild(card);
