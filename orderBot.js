@@ -30,7 +30,20 @@ type: ChannelType.GuildText,
         ]
     });
 
-    channel.send("Order:\n" + JSON.stringify(order.items, null, 2));
+    let total = 0;
+
+let msg = `🧾 **Order Summary**\n\n`;
+
+order.items.forEach(i=>{
+    const subtotal = i.price * i.qty;
+    total += subtotal;
+
+    msg += `• ${i.name} x${i.qty} = ₱${subtotal}\n`;
+});
+
+msg += `\n💰 **Total: ₱${total}**`;
+
+channel.send(msg);
 }
 
 client.login(process.env.ORDER_BOT_TOKEN);
