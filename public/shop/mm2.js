@@ -63,6 +63,20 @@ function render() {
 
     // If not searching, only show in-stock
     return match && d.stock > 0;
+
+        const select = document.getElementById("itemSelect");
+if (select) {
+    select.innerHTML = "";
+
+    items.forEach(([name, d]) => {
+        if (d.stock > 0) {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = `${name} (₱${d.price})`;
+            select.appendChild(opt);
+        }
+    });
+}
 });
 
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
@@ -169,4 +183,32 @@ setInterval(() => {
     if (!isAdmin) loadStock();
 }, 5000);
 
+    document.getElementById("addSelected")?.addEventListener("click", () => {
+    const name = document.getElementById("itemSelect").value;
+    const item = dataCache.mm2[name];
+
+    if (!item || item.stock <= 0) {
+        alert("Stocks Unavailable");
+        return;
+    }
+
+    // 🚫 Prevent duplicate
+    const cart = getCart();
+    if (cart.find(i => i.name === name)) {
+        alert("Item already in cart!");
+        return;
+    }
+
+    addToCart({
+        name,
+        price: item.price,
+        img: item.img,
+        qty: 1
+    });
+
+    // 🔒 Reduce stock locally (USER ONLY)
+    item.stock -= 1;
+
+    render();
+});
 })();
