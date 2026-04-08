@@ -36,7 +36,7 @@ if (
 ) {
     return next();
 }
-    const filePath = __dirname + "/public/" + path + ".html";
+    const filePath = __dirname + "/public/" + path + (path.includes(".") ? "" : ".html");
 
     res.sendFile(filePath, (err) => {
         if (err) next();
