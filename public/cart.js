@@ -101,28 +101,44 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
         return;
     }
 
-    const order = {
-        user: user.username,
-        discordId: user.id,
-        date: new Date().toISOString(),
-        items: cart,
-        status: "pending"
-    };
+    // 🔥 CHECK EXISTING ORDERS
+const existingOrders = await fetch(`/load/OQooMS9z`)
+    .then(res => res.json())
+    .then(json => JSON.parse(json.content || "[]"));
 
-    await fetch(`/load/OQooMS9z`)
-        .then(res => res.json())
-        .then(async json => {
-            const data = JSON.parse(json.content || "[]");
-            data.push(order);
+const hasPending = existingOrders.find(o =>
+    o.discordId === user.id && o.status === "pending"
+);
 
-            await fetch(`/save/OQooMS9z`, {
-                method:"PUT",
-                headers:{ "Content-Type":"application/json" },
-                body: JSON.stringify({
-                    content: JSON.stringify(data,null,2)
-                })
-            });
+if (hasPending) {
+    alert("You already have a pending order!");
+    return;
+}
+
+// ✅ CREATE ORDER
+const order = {
+    user: user.username,
+    discordId: user.id,
+    date: new Date().toISOString(),
+    items: cart,
+    status: "pending"
+};
+
+// ✅ SAVE ORDER
+await fetch(`/load/OQooMS9z`)
+    .then(res => res.json())
+    .then(async json => {
+        const data = JSON.parse(json.content || "[]");
+        data.push(order);
+
+        await fetch(`/save/OQooMS9z`, {
+            method:"PUT",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({
+                content: JSON.stringify(data,null,2)
+            })
         });
+    });
 
     localStorage.removeItem("hades_cart");
     alert("Order placed!");
