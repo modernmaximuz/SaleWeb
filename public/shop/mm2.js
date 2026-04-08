@@ -100,26 +100,29 @@ card.innerHTML = `
 
         const info = card.querySelector(".info");
 
-        if (isAdmin) {
-            const s = document.createElement("input");
-            s.type = "number";
-            s.value = d.stock;
-            s.onchange = async () => {
-                dataCache.mm2[name].stock = +s.value;
-                await saveStock();
-            };
-            info.appendChild(s);
+       if (isAdmin) {
+    const s = document.createElement("input");
+    s.type = "number";
+    s.value = d.stock;
 
-            const p = document.createElement("input");
-            p.type = "number";
-            p.step = "0.01";
-            p.value = d.price;
-            p.onchange = async () => {
-                dataCache.mm2[name].price = +p.value;
-                await saveStock();
-            };
-            info.appendChild(p);
-        } else {
+    s.onchange = async () => {
+        dataCache.mm2[name].stock = +s.value;
+        await saveStock();
+    };
+
+    const p = document.createElement("input");
+    p.type = "number";
+    p.step = "0.01";
+    p.value = d.price;
+
+    p.onchange = async () => {
+        dataCache.mm2[name].price = +p.value;
+        await saveStock();
+    };
+
+    info.appendChild(s);
+    info.appendChild(p);
+} else {
             info.innerHTML += `
 <div class="stock">
 ${d.stock > 0 ? `Stock: ${d.stock}` : `Stocks Unavailable`}
