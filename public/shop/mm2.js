@@ -62,7 +62,12 @@ function render() {
     if (search) return match;
 
     // If not searching, only show in-stock
-    return match && d.stock > 0;
+    const cart = getCart();
+const alreadyTaken = cart.find(i => i.name === name);
+
+if (search) return match;
+
+return match && d.stock > 0 && !alreadyTaken;
 
         const select = document.getElementById("itemSelect");
 if (select) {
@@ -118,10 +123,10 @@ card.innerHTML = `
             info.appendChild(p);
         } else {
             info.innerHTML += `
-    <div class="stock">Stock: ${d.stock}</div>
+    <div class="stock">
+    ${d.stock > 0 ? `Stock: ${d.stock}` : `Stocks Unavailable`}
+</div>
     <div class="price">₱${d.price}</div>
-    <input type="number" min="1" value="1" class="qtyInput">
-<button class="addCartBtn">Add to Cart</button>
 `;
 
 const btn = info.querySelector(".addCartBtn");
