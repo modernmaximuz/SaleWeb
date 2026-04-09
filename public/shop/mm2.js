@@ -3,6 +3,7 @@ const PASTE_ID = "fZ3piaUg";
 
 let token = null;
 let isAdmin = false;
+let firebaseAdmin = false;
 let dataCache = {};
 
 let currentPage = 1;
@@ -12,19 +13,21 @@ const ITEMS_PER_PAGE = 84;
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         token = await user.getIdToken();
-        isAdmin = true;
+        firebaseAdmin = true;
         await fetch("/logout-discord");
     } else {
         token = null;
-        isAdmin = false;
+        firebaseAdmin = false;
     }
+    isAdmin = firebaseAdmin;
     await loadStock();
 });
 
 async function initDiscord() {
     const res = await fetch("/me");
-    const user = await res.json();
-    if (user) isAdmin = false;
+    await res.json();
+    // Discord login should not downgrade Firebase admin access.
+    isAdmin = firebaseAdmin;
     await loadStock();
 }
 initDiscord();
