@@ -39,7 +39,11 @@ function showProfile(user, type) {
 
 function resetUI() {
     profileBox.classList.add("hidden");
-    if (loginToggle) loginToggle.style.display = "inline-block";
+    if (loginToggle) {
+        loginToggle.style.display = "inline-block";
+        loginToggle.textContent = "Admin";
+        loginToggle.title = "Admin email login only";
+    }
     if (discordBtn) discordBtn.style.display = "inline-block";
     if (editor) editor.style.display = "none";
 }
@@ -62,6 +66,7 @@ async function initDiscordUI() {
     }
 }
 initDiscordUI();
+resetUI();
 
 // ------------------ FIREBASE LOGIN ------------------
 firebase.auth().onAuthStateChanged(async (user) => {
