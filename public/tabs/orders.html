@@ -60,7 +60,53 @@
 </div>
 
 <h1 style="text-align:center">Public Orders</h1>
-<div id="ordersList"></div>
+
+<section class="ordersSection">
+    <h2>Waiting Orders</h2>
+    <p class="sectionHint">Result: Waiting for someone to accept...</p>
+    <div id="waitingOrdersList" class="ordersList"></div>
+</section>
+
+<section class="ordersSection">
+    <h2>Accepted Orders</h2>
+    <p class="sectionHint">Result: Pending</p>
+    <div id="acceptedOrdersList" class="ordersList"></div>
+</section>
+
+<section class="ordersSection">
+    <div class="finalHeader">
+        <h2>Order Final Results</h2>
+        <button id="toggleFinalSort">Sort & Filter</button>
+    </div>
+    <div id="finalSortPanel" class="hidden">
+        <div class="countsRow">
+            <span id="countSuccess">Success: 0</span>
+            <span id="countUnsuccessful">Unsuccessful: 0</span>
+            <span id="countScam">Scammer Alert: 0</span>
+            <span id="countDeclined">Declined: 0</span>
+        </div>
+        <div class="controlsRow">
+            <label>Order:
+                <select id="finalSortOrder">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="result">Result priority</option>
+                </select>
+            </label>
+            <label>Show:
+                <select id="finalFilterType">
+                    <option value="all">All final results</option>
+                    <option value="success">Success Orders</option>
+                    <option value="wrong_order">Unsuccessful Orders</option>
+                    <option value="scammer_alert">Scammer Alert</option>
+                    <option value="declined">Declined Orders</option>
+                    <option value="cancelled">Cancelled Orders</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div id="finalOrdersList" class="ordersList"></div>
+</section>
 
 <div id="orderModal" class="hidden">
     <div id="orderModalBox">
