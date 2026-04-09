@@ -54,10 +54,6 @@
     function render() {
         const container = document.getElementById("stockContainer");
         container.innerHTML = "";
-        const quickAdd = document.getElementById("quickAdd");
-        if (quickAdd) {
-            quickAdd.style.display = isAdmin ? "none" : "";
-        }
     
         const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
         const mm2 = dataCache.mm2 || {};
@@ -72,21 +68,6 @@
     
         return match && d.stock > 0 && !alreadyTaken;
     });
-    
-    // ✅ MOVE THIS OUTSIDE
-    const select = document.getElementById("itemSelect");
-    if (select) {
-        select.innerHTML = "";
-    
-        items.forEach(([name, d]) => {
-            if (d.stock > 0) {
-                const opt = document.createElement("option");
-                opt.value = name;
-                opt.textContent = `${name} (₱${d.price})`;
-                select.appendChild(opt);
-            }
-        });
-    }
     
         const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
         if (currentPage > totalPages) currentPage = totalPages || 1;
@@ -136,7 +117,7 @@
     <div class="price">₱${d.price}</div>
     
     <input type="number" class="qtyInput" value="1" min="1" style="width:60px;">
-    <button class="addCartBtn">Add</button>
+    <button class="addCartBtn">Add to Cart</button>
     `;
     
     const btn = info.querySelector(".addCartBtn");
@@ -200,38 +181,5 @@
         if (!isAdmin) loadStock();
     }, 5000);
     
-        document.getElementById("addSelected")?.addEventListener("click", () => {
-        if (isAdmin) {
-            alert("Cart is disabled for email login.");
-            return;
-        }
-
-        const name = document.getElementById("itemSelect").value;
-        const item = dataCache.mm2[name];
-    
-        if (!item || item.stock <= 0) {
-            alert("Stocks Unavailable");
-            return;
-        }
-    
-        // 🚫 Prevent duplicate
-        const cart = getCart();
-        if (cart.find(i => i.name === name)) {
-            alert("Item already in cart!");
-            return;
-        }
-    
-        addToCart({
-            name,
-            price: item.price,
-            img: item.img,
-            qty: 1
-        });
-    
-        // 🔒 Reduce stock locally (USER ONLY)
-        item.stock -= 1;
-    
-        render();
-    });
     })();
     
