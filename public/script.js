@@ -107,6 +107,7 @@ function openLoginModal() {
     ensureLoginModal();
     document.getElementById("loginModal")?.classList.remove("hidden");
 }
+window.openLoginModal = openLoginModal;
 
 // ------------------ DISCORD LOGIN ------------------
 async function initDiscordUI() {
