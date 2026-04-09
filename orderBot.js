@@ -3,6 +3,7 @@ const fetch = (...args) =>
     import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 const ORDER_PASTE_ID = "OQooMS9z";
+const MM2_PASTE_ID = "fZ3piaUg";
 const CUSTOMER_CATEGORY_ID = "1491299595018305566";
 const SUPPORT_ROLE_ID = "1491763556209786950";
 const SCAMMER_ROLE_ID = "1491771111426363562";
@@ -47,13 +48,58 @@ async function saveOrders(orders) {
     });
 }
 
+async function readMm2Stock() {
+    const r = await fetch(`${BASE}/paste/${MM2_PASTE_ID}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` }
+    });
+    const json = await r.json();
+    if (!r.ok) return null;
+    try {
+        return JSON.parse(json.content || "{}");
+    } catch {
+        return null;
+    }
+}
+
+async function saveMm2Stock(stockData) {
+    const current = await fetch(`${BASE}/paste/${MM2_PASTE_ID}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` }
+    });
+    const paste = await current.json();
+    paste.content = JSON.stringify(stockData, null, 2);
+    await fetch(`${BASE}/paste/${MM2_PASTE_ID}`, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(paste)
+    });
+}
+
+async function deductRealStockFromOrder(order) {
+    const stockData = await readMm2Stock();
+    if (!stockData || !stockData.mm2) return;
+
+    for (const item of order.items || []) {
+        const name = item.name;
+        const qty = Math.max(0, Number(item.qty || 0));
+        if (!stockData.mm2[name]) continue;
+        const current = Number(stockData.mm2[name].stock || 0);
+        stockData.mm2[name].stock = Math.max(0, current - qty);
+    }
+
+    await saveMm2Stock(stockData);
+}
+
 async function updateOrderResultByChannel(channelId, result) {
     const orders = await readOrders();
     const index = orders.findIndex(o => o.channelId === channelId);
-    if (index < 0) return false;
+    if (index < 0) return null;
+    const before = orders[index].status;
     orders[index].status = result;
     await saveOrders(orders);
-    return true;
+    return { order: orders[index], previousStatus: before };
 }
 
 async function registerCommands() {
@@ -155,7 +201,10 @@ client.on("interactionCreate", async (interaction) => {
 
     try {
         if (commandName === "success") {
-            await updateOrderResultByChannel(channel.id, "success");
+            const update = await updateOrderResultByChannel(channel.id, "success");
+            if (update?.order && update.previousStatus !== "success") {
+                await deductRealStockFromOrder(update.order);
+            }
             await interaction.reply("Transaction Success (deleting channel in one hour).");
             await closeChannelInOneHour(channel, "This order is marked **Success**. Channel will be deleted in 1 hour.");
             return;
