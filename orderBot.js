@@ -9,6 +9,8 @@ client.on("ready", ()=>console.log("Order bot ready"));
 async function createOrderChannel(order) {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
     const member = await guild.members.fetch(order.discordId);
+    const supportRoleId = "1491763556209786950";
+    const formatPeso = (value) => Number((Number(value || 0) + Number.EPSILON).toFixed(2)).toString();
 
     const channel = await guild.channels.create({
         name: `${order.user}-customer`,
@@ -26,6 +28,13 @@ type: ChannelType.GuildText,
                     PermissionsBitField.Flags.SendMessages,
                     PermissionsBitField.Flags.AttachFiles
                 ]
+            },
+            {
+                id: supportRoleId,
+                allow: [
+                    PermissionsBitField.Flags.ViewChannel,
+                    PermissionsBitField.Flags.SendMessages
+                ]
             }
         ]
     });
@@ -38,10 +47,10 @@ order.items.forEach(i=>{
     const subtotal = i.price * i.qty;
     total += subtotal;
 
-    msg += `• ${i.name} x${i.qty} = ₱${subtotal}\n`;
+    msg += `• ${i.name} x${i.qty} = ₱${formatPeso(subtotal)}\n`;
 });
 
-msg += `\n💰 **Total: ₱${total}**`;
+msg += `\n💰 **Total: ₱${formatPeso(total)}**`;
 
 channel.send(msg);
 }
