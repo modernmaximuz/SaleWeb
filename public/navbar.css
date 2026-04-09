@@ -10,21 +10,45 @@
 
 /* NAV BUTTON STYLE */
 .navBtn {
+    position: relative;
+    overflow: hidden;
     padding: 12px 32px;
     border-radius: 16px;
     border: 1px solid #2a2a3a;
-    background: #14141c;
+    background: linear-gradient(180deg, #181824 0%, #12121b 100%);
     color: white;
     cursor: pointer;
-    transition: 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
     font-weight: 600;
     font-size: 16px;
     white-space: nowrap;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+.navBtn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.2) 50%, transparent 80%);
+    transform: translateX(-130%);
+    transition: transform 0.55s ease;
+    pointer-events: none;
 }
 
 .navBtn:hover {
-    background: #4c8dff;
+    background: linear-gradient(135deg, #4c8dff 0%, #6fa5ff 100%);
+    border-color: #7eb0ff;
     transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(76, 141, 255, 0.35);
+}
+
+.navBtn:hover::after {
+    transform: translateX(130%);
+}
+
+.navBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.34);
 }
 
 /* DROPDOWN */
