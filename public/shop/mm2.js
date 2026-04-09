@@ -80,7 +80,6 @@ if (select) {
         }
     });
 }
-});
 
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
     if (currentPage > totalPages) currentPage = totalPages || 1;
