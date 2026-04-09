@@ -2,25 +2,66 @@ const ORDER_PASTE = "OQooMS9z";
 let ordersCache = [];
 
 const formatPeso = (value) => Number((Number(value || 0) + Number.EPSILON).toFixed(2)).toString();
+const RESULT_LABELS = {
+    pending: "Pending",
+    accepted: "Accepted",
+    success: "Success",
+    scammer_alert: "Scammer Alert",
+    wrong_order: "Wrong Order",
+    cancelled: "Cancelled",
+    declined: "Declined"
+};
+
+const RESULT_PRIORITY = {
+    success: 0,
+    scammer_alert: 1,
+    wrong_order: 2,
+    cancelled: 3,
+    accepted: 4,
+    pending: 5,
+    declined: 6
+};
 
 async function isAdminUser() {
     return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
 }
 
+function openOrderModal(order) {
+    const modal = document.getElementById("orderModal");
+    const title = document.getElementById("orderModalTitle");
+    const meta = document.getElementById("orderModalMeta");
+    const itemsEl = document.getElementById("orderModalItems");
+    const totalEl = document.getElementById("orderModalTotal");
+
+    title.textContent = `${order.user}'s Order`;
+    meta.textContent = `Date: ${new Date(order.date).toLocaleString()} | Result: ${RESULT_LABELS[order.status] || "Pending"}`;
+
+    const items = Array.isArray(order.items) ? order.items : [];
+    let total = 0;
+    itemsEl.innerHTML = "";
+
+    items.forEach(item => {
+        const subtotal = Number(item.price || 0) * Number(item.qty || 0);
+        total += subtotal;
+        itemsEl.innerHTML += `
+        <div class="modalItemRow">
+            <span>${item.name} x${item.qty}</span>
+            <span>₱${formatPeso(subtotal)}</span>
+        </div>`;
+    });
+
+    totalEl.textContent = `Total: ₱${formatPeso(total)}`;
+    modal.classList.remove("hidden");
+}
+
+function closeOrderModal() {
+    document.getElementById("orderModal")?.classList.add("hidden");
+}
+
 window.viewOrder = function viewOrder(i) {
     const order = ordersCache[i];
     if (!order) return;
-
-    const lines = (order.items || []).map(item => {
-        const subtotal = Number(item.price || 0) * Number(item.qty || 0);
-        return `- ${item.name} x${item.qty} = ₱${formatPeso(subtotal)}`;
-    });
-    const total = (order.items || []).reduce(
-        (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
-        0
-    );
-
-    alert(`${order.user} | ${new Date(order.date).toLocaleString()}\n\n${lines.join("\n")}\n\nTotal: ₱${formatPeso(total)}`);
+    openOrderModal(order);
 };
 
 window.updateOrderStatus = async function updateOrderStatus(i, status) {
@@ -66,14 +107,29 @@ async function loadOrders() {
     const list = document.getElementById("ordersList");
     list.innerHTML = "";
 
-    orders.forEach((o, i) => {
+    const indexedOrders = orders.map((o, i) => ({ o, i }));
+    indexedOrders.sort((a, b) => {
+        const pa = RESULT_PRIORITY[a.o.status] ?? 9;
+        const pb = RESULT_PRIORITY[b.o.status] ?? 9;
+        if (pa !== pb) return pa - pb;
+        return new Date(b.o.date).getTime() - new Date(a.o.date).getTime();
+    });
+
+    indexedOrders.forEach(({ o, i }) => {
+        const result = o.status || "pending";
+        const resultLabel = RESULT_LABELS[result] || "Pending";
         list.innerHTML += `
         <div class="orderRow">
-            User: ${o.user} | Date: ${new Date(o.date).toLocaleString()} | Status: ${o.status}
+            <span>User: ${o.user}</span>
+            <span>|</span>
+            <span>Date: ${new Date(o.date).toLocaleString()}</span>
+            <span>|</span>
+            <span>Result:</span>
+            <span class="resultBadge result-${result}">${resultLabel}</span>
             <button onclick="viewOrder(${i})">View Order</button>
             ${admin ? `
             <button onclick="updateOrderStatus(${i}, 'accepted')">Accept</button>
-            <button onclick="updateOrderStatus(${i}, 'declined')">Decline</button>
+            <button onclick="updateOrderStatus(${i}, 'cancelled')">Decline</button>
             ` : ""}
         </div>`;
     });
@@ -82,4 +138,8 @@ async function loadOrders() {
 if (window.firebase && firebase.auth) {
     firebase.auth().onAuthStateChanged(loadOrders);
 }
+document.getElementById("closeOrderModal")?.addEventListener("click", closeOrderModal);
+document.getElementById("orderModal")?.addEventListener("click", (e) => {
+    if (e.target.id === "orderModal") closeOrderModal();
+});
 loadOrders();
