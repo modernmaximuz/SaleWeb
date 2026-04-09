@@ -2,7 +2,7 @@ const CART_KEY = "hades_cart";
 let cartDisabledForEmailLogin = false;
 
 function isEmailLoginActive() {
-    return !!firebase.auth().currentUser;
+    return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
 }
 
 function applyCartAccessByLoginType() {
@@ -28,6 +28,7 @@ function getCart() {
 function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
     renderCartIcon();
+    document.dispatchEvent(new CustomEvent("cartUpdated"));
 }
 
 function addToCart(item) {
@@ -105,20 +106,27 @@ if (countEl) countEl.innerText = count;
 window.addEventListener("load", renderCartIcon);
 window.addEventListener("load", applyCartAccessByLoginType);
 
-firebase.auth().onAuthStateChanged(() => {
-    applyCartAccessByLoginType();
-    renderCartIcon();
-});
+if (window.firebase && firebase.auth) {
+    firebase.auth().onAuthStateChanged(() => {
+        applyCartAccessByLoginType();
+        renderCartIcon();
+    });
+}
 
 const popup = document.getElementById("cartPopup");
+const cartIcon = document.getElementById("cartIcon");
 
-document.getElementById("cartIcon")?.addEventListener("click", () => {
-    popup.classList.remove("hidden");
+cartIcon?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    popup.classList.toggle("hidden");
     renderCartPopup();
 });
 
-popup?.addEventListener("click", (e) => {
-    if (e.target.id === "cartPopup") {
+document.addEventListener("click", (e) => {
+    if (!popup || popup.classList.contains("hidden")) return;
+    const clickedInsidePopup = popup.contains(e.target);
+    const clickedCartIcon = cartIcon && cartIcon.contains(e.target);
+    if (!clickedInsidePopup && !clickedCartIcon) {
         popup.classList.add("hidden");
     }
 });
@@ -207,6 +215,7 @@ await fetch(`/load/OQooMS9z`)
     });
 
     localStorage.removeItem("hades_cart");
+    document.dispatchEvent(new CustomEvent("cartUpdated"));
     alert("Order placed!");
 
     location.href = "/tabs/orders"; // now THIS is correct usage
