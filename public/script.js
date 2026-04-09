@@ -7,7 +7,6 @@ const profileName = document.getElementById("profileName");
 const profileDropdown = document.getElementById("profileDropdown");
 const profileMain = document.getElementById("profileMain");
 const loginToggle = document.getElementById("loginToggle");
-const discordBtn = document.getElementById("discordBtn");
 const editor = document.getElementById("editor");
 const content = document.getElementById("content");
 
@@ -19,7 +18,6 @@ let currentData = {};
 function showProfile(user, type) {
     profileBox.classList.remove("hidden");
     if (loginToggle) loginToggle.style.display = "none";
-    if (discordBtn) discordBtn.style.display = "none";
 
     const avatar = document.querySelector(".avatar");
 
@@ -40,14 +38,13 @@ function showProfile(user, type) {
 function resetUI() {
     profileBox.classList.add("hidden");
     if (loginToggle) {
-        loginToggle.style.display = "inline-block";
+        loginToggle.style.display = "inline-flex";
         loginToggle.innerHTML = `
             <img class="loginBtnIcon" src="https://static.vecteezy.com/system/resources/thumbnails/018/930/718/small_2x/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
             <span>Login</span>
         `;
         loginToggle.title = "Login with Discord (Admin login is optional)";
     }
-    if (discordBtn) discordBtn.style.display = "inline-block";
     if (editor) editor.style.display = "none";
 }
 
