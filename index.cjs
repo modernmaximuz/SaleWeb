@@ -21,6 +21,8 @@ admin.initializeApp({
 });
 
 const crypto = require("crypto");
+const fs = require("fs/promises");
+const path = require("path");
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
@@ -145,6 +147,22 @@ function parseOrdersContent(rawContent) {
     }
 }
 
+const CART_DB_PATH = path.join(__dirname, "cart-db.json");
+
+async function readCartDb() {
+    try {
+        const raw = await fs.readFile(CART_DB_PATH, "utf8");
+        const parsed = JSON.parse(raw || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+async function writeCartDb(db) {
+    await fs.writeFile(CART_DB_PATH, JSON.stringify(db, null, 2), "utf8");
+}
+
 // Load paste
 app.get("/load/:id", async (req, res) => {
     const pasteId = req.params.id;
@@ -227,6 +245,61 @@ app.post("/orders/finalize", async (req, res) => {
         return res.json({ ok: true });
     } catch (err) {
         console.error("Finalize order failed:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get("/cart", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+
+        const db = await readCartDb();
+        const items = Array.isArray(db[user.id]) ? db[user.id] : [];
+        return res.json({ items });
+    } catch (err) {
+        console.error("Get cart failed:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.put("/cart", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+
+        const incoming = Array.isArray(req.body?.items) ? req.body.items : [];
+        const cleanItems = incoming
+            .map(i => ({
+                name: String(i.name || ""),
+                price: Number(i.price || 0),
+                img: String(i.img || ""),
+                qty: Math.max(1, Number(i.qty || 1)),
+                maxQty: Number.isFinite(+i.maxQty) ? Math.max(1, Number(i.maxQty)) : null
+            }))
+            .filter(i => i.name);
+
+        const db = await readCartDb();
+        db[user.id] = cleanItems;
+        await writeCartDb(db);
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error("Save cart failed:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.delete("/cart", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+
+        const db = await readCartDb();
+        delete db[user.id];
+        await writeCartDb(db);
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error("Clear cart failed:", err);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 });
