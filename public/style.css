@@ -54,6 +54,15 @@
     border-radius: 6px;
 }
 
+#discordBtn {
+    background: #4c8dff;
+    border-color: #4c8dff;
+}
+
+#loginToggle {
+    opacity: 0.75;
+}
+
 #navRight button:hover {
     background: #4c8dff;
 }
@@ -320,4 +329,44 @@ button:hover {
     background: #2a2a3a;
     border: 1px solid #3a3a50;
     border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+    body {
+        padding-top: 120px;
+    }
+
+    #navRight {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    #cartPopup {
+        right: 50%;
+        transform: translateX(50%);
+    }
+}
+
+@media (max-width: 520px) {
+    body {
+        padding-top: 140px;
+    }
+
+    #cartBox {
+        width: 92vw;
+        max-height: 62vh;
+    }
+
+    #navRight button {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    #cartIcon {
+        padding: 4px 6px;
+        border: 1px solid #2a2a3a;
+        border-radius: 8px;
+    }
 }
