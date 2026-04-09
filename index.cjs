@@ -65,6 +65,23 @@ function sign(data) {
         .digest("hex");
 }
 
+function getDiscordUser(req) {
+    const cookies = parseCookies(req);
+    if (!cookies.discord) return null;
+
+    const [data, sig] = cookies.discord.split(".");
+    if (!data || !sig) return null;
+
+    const payload = Buffer.from(data, "base64").toString();
+    if (sign(payload) !== sig) return null;
+
+    try {
+        return JSON.parse(payload);
+    } catch {
+        return null;
+    }
+}
+
 async function verifyToken(req, res, next) {
     const header = req.headers.authorization;
 
@@ -85,7 +102,39 @@ async function verifyToken(req, res, next) {
 
 const API_KEY = process.env.API_KEY;
 const PASTE_ID = "PKzNiJG1";
+const ORDER_PASTE_ID = "OQooMS9z";
 const BASE = "https://pastefy.app/api/v2";
+
+async function readPasteContent(pasteId) {
+    const r = await fetch(`${BASE}/paste/${pasteId}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` }
+    });
+    const json = await r.json();
+    return {
+        ok: r.ok,
+        status: r.status,
+        paste: json,
+        content: json.content
+    };
+}
+
+async function writePasteContent(pasteId, content) {
+    const current = await fetch(`${BASE}/paste/${pasteId}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` }
+    });
+    const paste = await current.json();
+    paste.content = content;
+
+    const r = await fetch(`${BASE}/paste/${pasteId}`, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(paste)
+    });
+    return r;
+}
 
 // Load paste
 app.get("/load/:id", async (req, res) => {
@@ -125,6 +174,85 @@ app.put("/save/:id", verifyToken, async (req, res) => {
 
     const text = await r.text();
     res.status(r.status).send(text);
+});
+
+app.post("/orders/finalize", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+
+        const items = Array.isArray(req.body?.items) ? req.body.items : [];
+        if (!items.length) return res.status(400).json({ error: "Cart is empty" });
+
+        const parsed = await readPasteContent(ORDER_PASTE_ID);
+        if (!parsed.ok) return res.status(parsed.status).json({ error: "Failed to load orders" });
+
+        const orders = JSON.parse(parsed.content || "[]");
+        const hasPending = orders.some(o => o.discordId === user.id && o.status === "pending");
+        if (hasPending) {
+            return res.status(409).json({ error: "You already have a pending order" });
+        }
+
+        const cleanItems = items.map(i => ({
+            name: String(i.name || ""),
+            price: Number(i.price || 0),
+            img: String(i.img || ""),
+            qty: Math.max(1, Number(i.qty || 1))
+        })).filter(i => i.name);
+
+        if (!cleanItems.length) return res.status(400).json({ error: "No valid items" });
+
+        const order = {
+            user: user.username,
+            discordId: user.id,
+            date: new Date().toISOString(),
+            items: cleanItems,
+            status: "pending"
+        };
+
+        orders.push(order);
+
+        const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
+        if (!writeRes.ok) return res.status(writeRes.status).json({ error: "Failed to save order" });
+
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error("Finalize order failed:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.put("/orders/:index/status", verifyToken, async (req, res) => {
+    try {
+        const index = Number(req.params.index);
+        const status = req.body?.status;
+        if (!Number.isInteger(index) || index < 0) {
+            return res.status(400).json({ error: "Invalid order index" });
+        }
+        if (!["accepted", "declined"].includes(status)) {
+            return res.status(400).json({ error: "Invalid status" });
+        }
+
+        const parsed = await readPasteContent(ORDER_PASTE_ID);
+        if (!parsed.ok) return res.status(parsed.status).json({ error: "Failed to load orders" });
+        const orders = JSON.parse(parsed.content || "[]");
+        if (!orders[index]) return res.status(404).json({ error: "Order not found" });
+
+        const wasAccepted = orders[index].status === "accepted";
+        orders[index].status = status;
+
+        const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
+        if (!writeRes.ok) return res.status(writeRes.status).json({ error: "Failed to save order status" });
+
+        if (status === "accepted" && !wasAccepted) {
+            await createOrderChannel(orders[index]);
+        }
+
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error("Update order status failed:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
 });
 
 app.listen(process.env.PORT || 3000, () =>
