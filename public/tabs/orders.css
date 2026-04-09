@@ -36,14 +36,74 @@
 }
 
 .orderRow {
-    background: #14141c;
+    background: linear-gradient(180deg, #171722 0%, #13131b 100%);
     border: 1px solid #2a2a3a;
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+}
+
+.orderMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 260px;
+}
+
+.orderPrimary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.metaDivider {
+    opacity: 0.45;
+}
+
+.metaText {
+    opacity: 0.95;
+}
+
+.orderResultLine {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.orderReason {
+    color: #ffcccc;
+    background: rgba(255, 76, 76, 0.12);
+    border: 1px solid rgba(255, 76, 76, 0.3);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 13px;
+}
+
+.orderActions {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.orderActionBtn {
+    width: 135px;
+    text-align: center;
+    margin-right: 0;
+}
+
+.viewBtn {
+    background: #4c8dff;
+}
+
+.declineBtn {
+    background: #8b2f3a;
 }
 
 .resultBadge {
@@ -155,4 +215,58 @@
 
 #orderModalTotal {
     font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .ordersSection {
+        padding: 0 12px;
+    }
+
+    .finalHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .orderRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .orderActions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .orderActionBtn {
+        width: auto;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 520px) {
+    .countsRow span {
+        font-size: 12px;
+    }
+
+    .controlsRow {
+        gap: 10px;
+    }
+
+    .controlsRow label {
+        width: 100%;
+    }
+
+    .controlsRow select {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 6px;
+    }
+
+    #orderModalBox {
+        width: 95vw;
+        padding: 12px;
+    }
 }
