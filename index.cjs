@@ -250,12 +250,13 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         const wasAccepted = orders[index].status === "accepted";
         orders[index].status = status;
 
+        if (status === "accepted" && !wasAccepted) {
+            const channelId = await createOrderChannel(orders[index]);
+            if (channelId) orders[index].channelId = channelId;
+        }
+
         const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
         if (!writeRes.ok) return res.status(writeRes.status).json({ error: "Failed to save order status" });
-
-        if (status === "accepted" && !wasAccepted) {
-            await createOrderChannel(orders[index]);
-        }
 
         return res.json({ ok: true });
     } catch (err) {
