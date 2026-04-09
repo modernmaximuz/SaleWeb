@@ -2,22 +2,25 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 25px;
-    padding: 20px 40px;  /* added top padding */
+    padding: 24px 40px 36px;
 }
 
 /* Ensure cards wrap correctly */
 .card {
     display: flex;
     flex-direction: column;
-    background: #14141c;
+    background: linear-gradient(180deg, #181824 0%, #12121a 100%);
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid #2a2a3a;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
 .card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    border-color: #3c5ea8;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.55);
 }
 
 .imgBox {
@@ -94,11 +97,12 @@ input.stock-input, input.price-input {
     width: 100%;
     max-width: 400px;
     padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid #2a2a3a;
-    background: #0f0f13;
+    border-radius: 12px;
+    border: 1px solid #384764;
+    background: linear-gradient(180deg, #121722 0%, #0f0f13 100%);
     color: white;
     font-size: 16px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
 .pagination {
@@ -119,6 +123,18 @@ input.stock-input, input.price-input {
 
 .pagination button:hover {
     background: #4c8dff;
+}
+
+@media (max-width: 900px) {
+    #stockContainer {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
+        padding: 16px 12px 26px;
+    }
+
+    #searchContainer {
+        padding: 0 12px;
+    }
 }
 
 .qtyInput {
