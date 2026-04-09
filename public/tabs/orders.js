@@ -53,7 +53,13 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
 async function loadOrders() {
     const res = await fetch(`/load/${ORDER_PASTE}`);
     const json = await res.json();
-    const orders = JSON.parse(json.content || "[]");
+    let orders = [];
+    try {
+        const parsed = JSON.parse(json.content || "[]");
+        orders = Array.isArray(parsed) ? parsed : [];
+    } catch {
+        orders = [];
+    }
     ordersCache = orders;
 
     const admin = await isAdminUser();
