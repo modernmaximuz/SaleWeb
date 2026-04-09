@@ -62,6 +62,18 @@
 <h1 style="text-align:center">Public Orders</h1>
 <div id="ordersList"></div>
 
+<div id="orderModal" class="hidden">
+    <div id="orderModalBox">
+        <div id="orderModalHead">
+            <h2 id="orderModalTitle">Order Details</h2>
+            <button id="closeOrderModal">Close</button>
+        </div>
+        <div id="orderModalMeta"></div>
+        <div id="orderModalItems"></div>
+        <div id="orderModalTotal"></div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="/firebase.js"></script>
