@@ -51,6 +51,13 @@
     }
     
     // ---------------- RENDER ----------------
+    function getCartQty(name) {
+        if (typeof getCart !== "function") return 0;
+        const cart = getCart();
+        const item = cart.find(i => i.name === name);
+        return item ? item.qty : 0;
+    }
+
     function render() {
         const container = document.getElementById("stockContainer");
         container.innerHTML = "";
@@ -76,6 +83,8 @@
             const card = document.createElement("div");
             card.className = "card";
             const imgSrc = d.stock > 0 ? d.img : "/images/nostock.png";
+            const inCartQty = getCartQty(name);
+            const availableStock = Math.max(0, d.stock - inCartQty);
     
     card.innerHTML = `
         <div class="imgBox"><img src="${imgSrc}"></div>
@@ -109,12 +118,13 @@
     } else {
                 info.innerHTML += `
     <div class="stock">
-    ${d.stock > 0 ? `Stock: ${d.stock}` : `Stocks Unavailable`}
+    ${availableStock > 0 ? `Stock: ${availableStock}` : `Stocks Unavailable`}
     </div>
+    ${inCartQty > 0 ? `<div class="atc">ATC: ${inCartQty}</div>` : ""}
     <div class="price">₱${d.price}</div>
     
-    <input type="number" class="qtyInput" value="1" min="1" style="width:60px;">
-    <button class="addCartBtn">Add to Cart</button>
+    <input type="number" class="qtyInput" value="1" min="1" max="${Math.max(1, availableStock)}" style="width:60px;" ${availableStock <= 0 ? "disabled" : ""}>
+    <button class="addCartBtn" ${availableStock <= 0 ? "disabled" : ""}>Add to Cart</button>
     `;
     
     const btn = info.querySelector(".addCartBtn");
@@ -122,6 +132,10 @@
     
     if (btn && qtyInput) {
         btn.onclick = () => {
+            if (availableStock <= 0) {
+                alert("No available stock left for this item.");
+                return;
+            }
             const qty = Math.max(1, parseInt(qtyInput.value) || 1);
             addToCart({
                 name,
@@ -130,6 +144,7 @@
                 qty,
                 maxQty: d.stock
             });
+            render();
         };
     }
             }
@@ -179,6 +194,10 @@
     setInterval(() => {
         if (!isAdmin) loadStock();
     }, 5000);
+
+    document.addEventListener("cartUpdated", () => {
+        if (!isAdmin) render();
+    });
     
     })();
     
