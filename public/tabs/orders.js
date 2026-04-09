@@ -12,14 +12,6 @@ const RESULT_LABELS = {
     declined: "Declined"
 };
 
-const FINAL_RESULT_PRIORITY = {
-    success: 0,
-    scammer_alert: 1,
-    wrong_order: 2,
-    declined: 3,
-    cancelled: 4
-};
-
 async function isAdminUser() {
     return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
 }
@@ -102,21 +94,28 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
 function renderOrderRow(order, index, admin, customResultText) {
     const result = order.status || "pending";
     const resultLabel = customResultText || RESULT_LABELS[result] || "Pending";
-    const reasonPart = order.declineReason ? `<span>Reason: ${order.declineReason}</span>` : "";
+    const reasonPart = order.declineReason ? `<div class="orderReason">Reason: ${order.declineReason}</div>` : "";
     return `
     <div class="orderRow">
-        <span>User: ${order.user}</span>
-        <span>|</span>
-        <span>Date: ${new Date(order.date).toLocaleString()}</span>
-        <span>|</span>
-        <span>Result:</span>
-        <span class="resultBadge result-${result}">${resultLabel}</span>
-        ${reasonPart}
-        <button onclick="viewOrder(${index})">View Order</button>
-        ${admin && result === "pending" ? `
-        <button onclick="updateOrderStatus(${index}, 'accepted')">Accept</button>
-        <button onclick="updateOrderStatus(${index}, 'declined')">Decline</button>
-        ` : ""}
+        <div class="orderMeta">
+            <div class="orderPrimary">
+                <span class="metaText"><strong>User:</strong> ${order.user}</span>
+                <span class="metaDivider">|</span>
+                <span class="metaText"><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</span>
+            </div>
+            <div class="orderResultLine">
+                <span>Result:</span>
+                <span class="resultBadge result-${result}">${resultLabel}</span>
+            </div>
+            ${reasonPart}
+        </div>
+        <div class="orderActions">
+            <button class="orderActionBtn viewBtn" onclick="viewOrder(${index})">View Order</button>
+            ${admin && result === "pending" ? `
+            <button class="orderActionBtn" onclick="updateOrderStatus(${index}, 'accepted')">Accept</button>
+            <button class="orderActionBtn declineBtn" onclick="updateOrderStatus(${index}, 'declined')">Decline</button>
+            ` : ""}
+        </div>
     </div>`;
 }
 
@@ -132,15 +131,8 @@ function applyFinalSortAndFilter(entries) {
     const sorted = [...filtered];
     if (sortMode === "newest") {
         sorted.sort((a, b) => new Date(b.o.date).getTime() - new Date(a.o.date).getTime());
-    } else if (sortMode === "oldest") {
-        sorted.sort((a, b) => new Date(a.o.date).getTime() - new Date(b.o.date).getTime());
     } else {
-        sorted.sort((a, b) => {
-            const pa = FINAL_RESULT_PRIORITY[a.o.status] ?? 9;
-            const pb = FINAL_RESULT_PRIORITY[b.o.status] ?? 9;
-            if (pa !== pb) return pa - pb;
-            return new Date(b.o.date).getTime() - new Date(a.o.date).getTime();
-        });
+        sorted.sort((a, b) => new Date(a.o.date).getTime() - new Date(b.o.date).getTime());
     }
     return sorted;
 }
