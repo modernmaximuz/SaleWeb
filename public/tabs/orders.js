@@ -1,97 +1,79 @@
 const ORDER_PASTE = "OQooMS9z";
+let ordersCache = [];
 
-function renderCart() {
-    const cart = getCart();
-    const box = document.getElementById("cartView");
-    box.innerHTML = "";
+const formatPeso = (value) => Number((Number(value || 0) + Number.EPSILON).toFixed(2)).toString();
 
-    cart.forEach(i => {
-        box.innerHTML += `
-        <div class="cartItem">
-            <img src="${i.img}">
-            ${i.name} x${i.qty}
-            <button onclick="changeQty('${i.name}',-1)">-</button>
-            <button onclick="removeFromCart('${i.name}')">Remove</button>
-        </div>`;
-    });
+async function isAdminUser() {
+    return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
 }
-renderCart();
 
-document.getElementById("placeOrder").onclick = async () => {
-    const user = await (await fetch("/me")).json();
-    const cart = getCart();
+window.viewOrder = function viewOrder(i) {
+    const order = ordersCache[i];
+    if (!order) return;
 
-    const order = {
-        user: user.username,
-        discordId: user.id,
-        date: new Date().toISOString(),
-        items: cart,
-        status: "pending"
-    };
-
-    const res = await fetch(`/load/${ORDER_PASTE}`);
-    const json = await res.json();
-    const data = JSON.parse(json.content || "[]");
-
-    data.push(order);
-
-    await fetch(`/save/${ORDER_PASTE}`, {
-        method:"PUT",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ content: JSON.stringify(data,null,2) })
+    const lines = (order.items || []).map(item => {
+        const subtotal = Number(item.price || 0) * Number(item.qty || 0);
+        return `- ${item.name} x${item.qty} = ₱${formatPeso(subtotal)}`;
     });
+    const total = (order.items || []).reduce(
+        (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
+        0
+    );
 
-    localStorage.removeItem("hades_cart");
-    alert("Order placed!");
+    alert(`${order.user} | ${new Date(order.date).toLocaleString()}\n\n${lines.join("\n")}\n\nTotal: ₱${formatPeso(total)}`);
 };
 
-async function acceptOrder(i){
-    const res = await fetch(`/load/${ORDER_PASTE}`);
-    const json = await res.json();
-    const data = JSON.parse(json.content || "[]");
+window.updateOrderStatus = async function updateOrderStatus(i, status) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert("Admin login required.");
+        return;
+    }
 
-    data[i].status = "accepted"; // ✅ CHANGE STATUS
-
-    await fetch(`/save/${ORDER_PASTE}`, {
-        method:"PUT",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-            content: JSON.stringify(data,null,2)
-        })
+    const token = await user.getIdToken();
+    const res = await fetch(`/orders/${i}/status`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
     });
 
-    const o = data[i];
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Failed to update order.");
+        return;
+    }
 
-    await fetch("/accept-order",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(o)
-    });
-
-    alert("Order accepted!");
-}
+    alert(`Order ${status}.`);
+    await loadOrders();
+};
 
 async function loadOrders() {
     const res = await fetch(`/load/${ORDER_PASTE}`);
     const json = await res.json();
     const orders = JSON.parse(json.content || "[]");
+    ordersCache = orders;
 
-    const me = await (await fetch("/me")).json();
+    const admin = await isAdminUser();
     const list = document.getElementById("ordersList");
     list.innerHTML = "";
 
     orders.forEach((o, i) => {
         list.innerHTML += `
         <div class="orderRow">
-            User: ${o.user} | ${o.date}
+            User: ${o.user} | Date: ${new Date(o.date).toLocaleString()} | Status: ${o.status}
             <button onclick="viewOrder(${i})">View Order</button>
-            ${me && me.username === "YOUR_ADMIN_NAME" ? `
-            <button onclick="acceptOrder(${i})">Accept</button>
-            <button onclick="declineOrder(${i})">Decline</button>
-            `:""}
+            ${admin ? `
+            <button onclick="updateOrderStatus(${i}, 'accepted')">Accept</button>
+            <button onclick="updateOrderStatus(${i}, 'declined')">Decline</button>
+            ` : ""}
         </div>`;
     });
+}
 
-    window._orders = orders;
+if (window.firebase && firebase.auth) {
+    firebase.auth().onAuthStateChanged(loadOrders);
 }
 loadOrders();
