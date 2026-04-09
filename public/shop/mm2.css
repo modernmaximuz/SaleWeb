@@ -64,6 +64,16 @@
     color: #aaa;
 }
 
+.atc {
+    font-size: 13px;
+    color: #86b2ff;
+    background: rgba(76,141,255,0.12);
+    border: 1px solid rgba(76,141,255,0.35);
+    border-radius: 8px;
+    padding: 4px 8px;
+    display: inline-block;
+}
+
 input.stock-input, input.price-input {
     width: 100%;
     padding: 6px 10px;
@@ -109,5 +119,17 @@ input.stock-input, input.price-input {
 
 .pagination button:hover {
     background: #4c8dff;
+}
+
+.qtyInput {
+    width: 70px !important;
+    margin-bottom: 0;
+}
+
+.addCartBtn:disabled,
+.qtyInput:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
 }
 
