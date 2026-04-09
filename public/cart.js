@@ -1,4 +1,25 @@
 const CART_KEY = "hades_cart";
+let cartDisabledForEmailLogin = false;
+
+function isEmailLoginActive() {
+    return !!firebase.auth().currentUser;
+}
+
+function applyCartAccessByLoginType() {
+    const icon = document.getElementById("cartIcon");
+    const popupEl = document.getElementById("cartPopup");
+
+    cartDisabledForEmailLogin = isEmailLoginActive();
+
+    if (cartDisabledForEmailLogin) {
+        localStorage.removeItem(CART_KEY);
+        if (icon) icon.style.display = "none";
+        if (popupEl) popupEl.classList.add("hidden");
+        return;
+    }
+
+    if (icon) icon.style.display = "";
+}
 
 function getCart() {
     return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
@@ -10,6 +31,11 @@ function saveCart(cart) {
 }
 
 function addToCart(item) {
+    if (cartDisabledForEmailLogin) {
+        alert("Cart is disabled for email login.");
+        return;
+    }
+
     const cart = getCart();
     const found = cart.find(i => i.name === item.name);
 
@@ -24,11 +50,13 @@ function addToCart(item) {
 }
 
 function removeFromCart(name) {
+    if (cartDisabledForEmailLogin) return;
     let cart = getCart().filter(i => i.name !== name);
     saveCart(cart);
 }
 
 function changeQty(name, delta) {
+    if (cartDisabledForEmailLogin) return;
     const cart = getCart();
     const item = cart.find(i => i.name === name);
     if (!item) return;
@@ -40,6 +68,7 @@ function changeQty(name, delta) {
 }
 
 function renderCartIcon() {
+    if (cartDisabledForEmailLogin) return;
     const count = getCart().reduce((a,b)=>a+b.qty,0);
     let icon = document.getElementById("cartIcon");
     if (!icon) return;
@@ -48,6 +77,12 @@ if (countEl) countEl.innerText = count;
 }
 
 window.addEventListener("load", renderCartIcon);
+window.addEventListener("load", applyCartAccessByLoginType);
+
+firebase.auth().onAuthStateChanged(() => {
+    applyCartAccessByLoginType();
+    renderCartIcon();
+});
 
 const popup = document.getElementById("cartPopup");
 
@@ -63,6 +98,7 @@ popup?.addEventListener("click", (e) => {
 });
 
 function renderCartPopup() {
+    if (cartDisabledForEmailLogin) return;
     const cart = getCart();
     const box = document.getElementById("cartItems");
     const totalEl = document.getElementById("cartTotal");
@@ -92,6 +128,11 @@ function renderCartPopup() {
 }
 
 document.getElementById("finalizeOrder")?.addEventListener("click", async () => {
+    if (cartDisabledForEmailLogin) {
+        alert("Order placement is disabled for email login.");
+        return;
+    }
+
     const user = await (await fetch("/me")).json();
     const cart = getCart();
 
