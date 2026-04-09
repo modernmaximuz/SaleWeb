@@ -313,3 +313,11 @@ button:hover {
     border-radius:6px;
     cursor:pointer;
 }
+
+.removeCartBtn {
+    margin-left: auto;
+    padding: 6px 10px;
+    background: #2a2a3a;
+    border: 1px solid #3a3a50;
+    border-radius: 8px;
+}
