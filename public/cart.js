@@ -1,5 +1,6 @@
-const CART_KEY = "hades_cart";
 let cartDisabledForEmailLogin = false;
+let cartCache = [];
+let cartReady = false;
 
 function isEmailLoginActive() {
     return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
@@ -12,7 +13,8 @@ function applyCartAccessByLoginType() {
     cartDisabledForEmailLogin = isEmailLoginActive();
 
     if (cartDisabledForEmailLogin) {
-        localStorage.removeItem(CART_KEY);
+        cartCache = [];
+        cartReady = true;
         if (icon) icon.style.display = "none";
         if (popupEl) popupEl.classList.add("hidden");
         return;
@@ -22,22 +24,56 @@ function applyCartAccessByLoginType() {
 }
 
 function getCart() {
-    return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    return [...cartCache];
 }
 
-function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+async function saveCart(cart) {
+    cartCache = [...cart];
+    if (!cartDisabledForEmailLogin) {
+        await fetch("/cart", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: cartCache })
+        }).catch(() => {});
+    }
     renderCartIcon();
     document.dispatchEvent(new CustomEvent("cartUpdated"));
 }
 
-function addToCart(item) {
+async function syncCartFromAccount() {
+    if (cartDisabledForEmailLogin) {
+        cartCache = [];
+        cartReady = true;
+        renderCartIcon();
+        return;
+    }
+
+    try {
+        const me = await fetch("/me").then(r => r.json());
+        if (!me) {
+            cartCache = [];
+            cartReady = true;
+            renderCartIcon();
+            return;
+        }
+        const data = await fetch("/cart").then(r => r.json());
+        cartCache = Array.isArray(data.items) ? data.items : [];
+    } catch {
+        cartCache = [];
+    } finally {
+        cartReady = true;
+        renderCartIcon();
+        document.dispatchEvent(new CustomEvent("cartUpdated"));
+    }
+}
+
+async function addToCart(item) {
     if (cartDisabledForEmailLogin) {
         alert("Cart is disabled for email login.");
         return;
     }
 
-    const cart = getCart();
+    const cart = [...cartCache];
     const found = cart.find(i => i.name === item.name);
     const requestedQty = Math.max(1, parseInt(item.qty, 10) || 1);
     const maxQty = Number.isFinite(+item.maxQty) ? Math.max(1, +item.maxQty) : Infinity;
@@ -64,12 +100,12 @@ function addToCart(item) {
         }
     }
 
-    saveCart(cart);
+    await saveCart(cart);
 }
 
 function removeFromCart(name) {
     if (cartDisabledForEmailLogin) return;
-    let cart = getCart().filter(i => i.name !== name);
+    const cart = cartCache.filter(i => i.name !== name);
     saveCart(cart);
 }
 
@@ -79,7 +115,7 @@ function changeQty(name, delta) {
         alert("Add more items from the shop page.");
         return;
     }
-    const cart = getCart();
+    const cart = [...cartCache];
     const item = cart.find(i => i.name === name);
     if (!item) return;
 
@@ -96,20 +132,22 @@ function changeQty(name, delta) {
 
 function renderCartIcon() {
     if (cartDisabledForEmailLogin) return;
-    const count = getCart().reduce((a,b)=>a+b.qty,0);
+    const count = cartCache.reduce((a,b)=>a+b.qty,0);
     let icon = document.getElementById("cartIcon");
     if (!icon) return;
     const countEl = document.getElementById("cartCount");
 if (countEl) countEl.innerText = count;
 }
 
-window.addEventListener("load", renderCartIcon);
-window.addEventListener("load", applyCartAccessByLoginType);
+window.addEventListener("load", async () => {
+    applyCartAccessByLoginType();
+    await syncCartFromAccount();
+});
 
 if (window.firebase && firebase.auth) {
-    firebase.auth().onAuthStateChanged(() => {
+    firebase.auth().onAuthStateChanged(async () => {
         applyCartAccessByLoginType();
-        renderCartIcon();
+        await syncCartFromAccount();
     });
 }
 
@@ -133,7 +171,7 @@ document.addEventListener("click", (e) => {
 
 function renderCartPopup() {
     if (cartDisabledForEmailLogin) return;
-    const cart = getCart();
+    const cart = [...cartCache];
     const box = document.getElementById("cartItems");
     const totalEl = document.getElementById("cartTotal");
 
@@ -176,7 +214,7 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
     }
 
     const user = await (await fetch("/me")).json();
-    const cart = getCart();
+    const cart = [...cartCache];
 
     if (!cart.length) {
         alert("Cart is empty!");
@@ -195,9 +233,14 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
         return;
     }
 
-    localStorage.removeItem("hades_cart");
+    cartCache = [];
+    await fetch("/cart", { method: "DELETE" }).catch(() => {});
     document.dispatchEvent(new CustomEvent("cartUpdated"));
+    renderCartIcon();
     alert("Order placed!");
 
     location.href = "/tabs/orders"; // now THIS is correct usage
 });
+
+window.addToCart = addToCart;
+window.getCart = getCart;
