@@ -82,8 +82,9 @@ window.addEventListener("load", () => {
     // Dropdown toggle
     const shopToggle = document.getElementById("shopToggle");
     const shopMenu = document.getElementById("shopMenu");
+    const topbar = document.getElementById("topbar");
 
-    shopToggle.addEventListener("click", async (e) => {
+    shopToggle?.addEventListener("click", async (e) => {
         e.stopPropagation();
         const ok = await requireLogin(e, null, shopToggle);
         if (ok) {
@@ -92,8 +93,52 @@ window.addEventListener("load", () => {
     });
 
     document.addEventListener("click", () => {
-        shopMenu.style.display = "none";
+        if (shopMenu) shopMenu.style.display = "none";
     });
+
+    function closeMobileNav() {
+        topbar?.classList.remove("mobile-open");
+    }
+
+    function setupMobileNav() {
+        if (!topbar) return;
+        if (document.getElementById("mobileMenuToggle")) return;
+
+        const toggle = document.createElement("button");
+        toggle.id = "mobileMenuToggle";
+        toggle.type = "button";
+        toggle.textContent = "Menu";
+        topbar.appendChild(toggle);
+
+        toggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            topbar.classList.toggle("mobile-open");
+            if (!topbar.classList.contains("mobile-open") && shopMenu) {
+                shopMenu.style.display = "none";
+            }
+        });
+
+        document.querySelectorAll("#navCenter .navBtn, #shopMenu a, #navRight button").forEach((el) => {
+            el.addEventListener("click", () => {
+                if (window.innerWidth <= 900) closeMobileNav();
+            });
+        });
+
+        document.addEventListener("click", (e) => {
+            if (window.innerWidth > 900) return;
+            if (!topbar.contains(e.target)) closeMobileNav();
+        });
+    }
+
+    function syncTopbarOffset() {
+        if (!topbar) return;
+        const extra = window.innerWidth <= 900 ? 12 : 18;
+        document.body.style.paddingTop = `${topbar.offsetHeight + extra}px`;
+    }
+
+    setupMobileNav();
+    syncTopbarOffset();
+    window.addEventListener("resize", syncTopbarOffset);
 
      // Auto redirect to home if user logs out while on protected page
     const protectedPages = ["/restocks", "/proofs", "/support", "/shop/mm2"];
