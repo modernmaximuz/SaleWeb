@@ -38,13 +38,30 @@ function addToCart(item) {
 
     const cart = getCart();
     const found = cart.find(i => i.name === item.name);
+    const requestedQty = Math.max(1, parseInt(item.qty, 10) || 1);
+    const maxQty = Number.isFinite(+item.maxQty) ? Math.max(1, +item.maxQty) : Infinity;
 
     if (found) {
-    alert("You already added this item!");
-    return;
-} else {
-    cart.push({ ...item, qty: 1 });
-}
+        const existingMax = Number.isFinite(+found.maxQty) ? Math.max(1, +found.maxQty) : Infinity;
+        const appliedMax = Math.min(existingMax, maxQty);
+        const nextQty = found.qty + requestedQty;
+        found.maxQty = appliedMax;
+        found.qty = Math.min(nextQty, appliedMax);
+
+        if (nextQty > appliedMax) {
+            alert(`Only ${appliedMax} stock available for this item.`);
+        }
+    } else {
+        cart.push({
+            ...item,
+            qty: Math.min(requestedQty, maxQty),
+            maxQty
+        });
+
+        if (requestedQty > maxQty) {
+            alert(`Only ${maxQty} stock available for this item.`);
+        }
+    }
 
     saveCart(cart);
 }
@@ -57,11 +74,20 @@ function removeFromCart(name) {
 
 function changeQty(name, delta) {
     if (cartDisabledForEmailLogin) return;
+    if (window.location.pathname === "/tabs/orders" && delta > 0) {
+        alert("Add more items from the shop page.");
+        return;
+    }
     const cart = getCart();
     const item = cart.find(i => i.name === name);
     if (!item) return;
 
+    const maxQty = Number.isFinite(+item.maxQty) ? Math.max(1, +item.maxQty) : Infinity;
     item.qty += delta;
+    if (item.qty > maxQty) {
+        item.qty = maxQty;
+        alert(`Only ${maxQty} stock available for this item.`);
+    }
     if (item.qty <= 0) removeFromCart(name);
 
     saveCart(cart);
