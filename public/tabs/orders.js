@@ -10,7 +10,6 @@ function renderCart() {
         <div class="cartItem">
             <img src="${i.img}">
             ${i.name} x${i.qty}
-            <button onclick="changeQty('${i.name}',1)">+</button>
             <button onclick="changeQty('${i.name}',-1)">-</button>
             <button onclick="removeFromCart('${i.name}')">Remove</button>
         </div>`;
