@@ -92,12 +92,18 @@ async function deductRealStockFromOrder(order) {
     await saveMm2Stock(stockData);
 }
 
-async function updateOrderResultByChannel(channelId, result) {
+async function updateOrderResultByChannel(channelId, result, commandName) {
     const orders = await readOrders();
     const index = orders.findIndex(o => o.channelId === channelId);
     if (index < 0) return null;
+    if (orders[index].commandLocked) {
+        return { blocked: true, order: orders[index] };
+    }
     const before = orders[index].status;
     orders[index].status = result;
+    orders[index].commandLocked = true;
+    orders[index].lastCommand = commandName;
+    orders[index].commandAt = new Date().toISOString();
     await saveOrders(orders);
     return { order: orders[index], previousStatus: before };
 }
@@ -201,7 +207,11 @@ client.on("interactionCreate", async (interaction) => {
 
     try {
         if (commandName === "success") {
-            const update = await updateOrderResultByChannel(channel.id, "success");
+            const update = await updateOrderResultByChannel(channel.id, "success", commandName);
+            if (update?.blocked) {
+                await interaction.reply({ content: "A command was already used for this ticket.", ephemeral: true });
+                return;
+            }
             if (update?.order && update.previousStatus !== "success") {
                 await deductRealStockFromOrder(update.order);
             }
@@ -211,14 +221,22 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         if (commandName === "wrongorder") {
-            await updateOrderResultByChannel(channel.id, "wrong_order");
+            const update = await updateOrderResultByChannel(channel.id, "wrong_order", commandName);
+            if (update?.blocked) {
+                await interaction.reply({ content: "A command was already used for this ticket.", ephemeral: true });
+                return;
+            }
             await interaction.reply("Wrong Order. Please create a new one (deleting channel in one hour).");
             await closeChannelInOneHour(channel, "This order is marked **Wrong Order**. Channel will be deleted in 1 hour.");
             return;
         }
 
         if (commandName === "cancel") {
-            await updateOrderResultByChannel(channel.id, "cancelled");
+            const update = await updateOrderResultByChannel(channel.id, "cancelled", commandName);
+            if (update?.blocked) {
+                await interaction.reply({ content: "A command was already used for this ticket.", ephemeral: true });
+                return;
+            }
             await interaction.reply("Transaction is Cancelled (deleting channel in one hour).");
             await closeChannelInOneHour(channel, "This order is marked **Cancelled**. Channel will be deleted in 1 hour.");
             return;
@@ -227,13 +245,17 @@ client.on("interactionCreate", async (interaction) => {
         if (commandName === "scam") {
             const orders = await readOrders();
             const order = orders.find(o => o.channelId === channel.id);
+            if (order?.commandLocked) {
+                await interaction.reply({ content: "A command was already used for this ticket.", ephemeral: true });
+                return;
+            }
             if (order?.discordId && guild) {
                 const member = await guild.members.fetch(order.discordId);
                 await member.roles.add(SCAMMER_ROLE_ID);
             }
 
             await channel.setName(`${(order?.user || "user").toLowerCase()}-scammer`);
-            await updateOrderResultByChannel(channel.id, "scammer_alert");
+            await updateOrderResultByChannel(channel.id, "scammer_alert", commandName);
             await interaction.reply("Scammer Detected (deleting channel in one hour).");
             await closeChannelInOneHour(channel, "This order is marked **Scammer Alert**. Channel will be deleted in 1 hour.");
         }
