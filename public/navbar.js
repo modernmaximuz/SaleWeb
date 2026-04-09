@@ -35,10 +35,14 @@ window.addEventListener("load", () => {
 
             const warn = document.createElement("div");
             warn.className = "loginWarn";
-            warn.innerText = "🚨 Please login first!";
+            warn.innerText = "Login required. Use Discord to continue.";
             warn.style.bottom = `${warningQueue.length * 60 + 20}px`; // stack vertically
             document.body.appendChild(warn);
             warningQueue.push(warn);
+
+            if (typeof window.openLoginModal === "function") {
+                setTimeout(() => window.openLoginModal(), 150);
+            }
 
             setTimeout(() => {
                 warn.remove();
