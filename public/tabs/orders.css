@@ -33,3 +33,69 @@
     gap: 10px;
     flex-wrap: wrap;
 }
+
+.resultBadge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid #2a2a3a;
+}
+
+.result-pending { background: rgba(255, 176, 76, 0.15); color: #ffcc86; }
+.result-accepted { background: rgba(76, 141, 255, 0.15); color: #9bc2ff; }
+.result-success { background: rgba(107, 255, 149, 0.15); color: #9dffbe; }
+.result-scammer_alert { background: rgba(255, 76, 76, 0.18); color: #ff9a9a; }
+.result-wrong_order { background: rgba(255, 205, 76, 0.15); color: #ffe39a; }
+.result-cancelled { background: rgba(200, 200, 200, 0.15); color: #d4d4d4; }
+
+#orderModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+}
+
+#orderModalBox {
+    width: min(560px, 92vw);
+    max-height: 82vh;
+    overflow: auto;
+    background: #121216;
+    border: 1px solid #2a2a3a;
+    border-radius: 14px;
+    padding: 16px;
+}
+
+#orderModalHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#orderModalMeta {
+    opacity: 0.85;
+    margin-bottom: 10px;
+}
+
+#orderModalItems {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.modalItemRow {
+    display: flex;
+    justify-content: space-between;
+    background: #181822;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #2a2a3a;
+}
+
+#orderModalTotal {
+    font-weight: 700;
+}
