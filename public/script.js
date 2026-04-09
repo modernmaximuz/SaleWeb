@@ -41,11 +41,71 @@ function resetUI() {
     profileBox.classList.add("hidden");
     if (loginToggle) {
         loginToggle.style.display = "inline-block";
-        loginToggle.textContent = "Admin";
-        loginToggle.title = "Admin email login only";
+        loginToggle.innerHTML = `
+            <img class="loginBtnIcon" src="https://static.vecteezy.com/system/resources/thumbnails/018/930/718/small_2x/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
+            <span>Login</span>
+        `;
+        loginToggle.title = "Login with Discord (Admin login is optional)";
     }
     if (discordBtn) discordBtn.style.display = "inline-block";
     if (editor) editor.style.display = "none";
+}
+
+function ensureLoginModal() {
+    if (document.getElementById("loginModal")) return;
+
+    const modal = document.createElement("div");
+    modal.id = "loginModal";
+    modal.className = "hidden";
+    modal.innerHTML = `
+        <div id="loginModalBox">
+            <button id="closeLoginModal" aria-label="Close">×</button>
+            <h2>Login using Discord</h2>
+            <p>Fast and recommended for all customers.</p>
+            <button id="modalDiscordLogin">
+                <img src="https://static.vecteezy.com/system/resources/thumbnails/018/930/718/small_2x/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
+                Continue with Discord
+            </button>
+            <div class="adminDivider">Admin login (email only)</div>
+            <input type="email" id="adminEmailInput" placeholder="Admin Email">
+            <input type="password" id="adminPasswordInput" placeholder="Admin Password">
+            <button id="modalAdminLogin">Login as Admin</button>
+            <p id="loginModalError"></p>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("modalDiscordLogin")?.addEventListener("click", () => {
+        window.location.href = "/auth/discord";
+    });
+
+    document.getElementById("modalAdminLogin")?.addEventListener("click", async () => {
+        const email = document.getElementById("adminEmailInput")?.value || "";
+        const password = document.getElementById("adminPasswordInput")?.value || "";
+        const errorEl = document.getElementById("loginModalError");
+        if (errorEl) errorEl.textContent = "";
+        try {
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+            modal.classList.add("hidden");
+            window.location.href = "/";
+        } catch (err) {
+            if (errorEl) errorEl.textContent = err.message || "Admin login failed.";
+        }
+    });
+
+    document.getElementById("closeLoginModal")?.addEventListener("click", () => {
+        modal.classList.add("hidden");
+    });
+
+    modal.addEventListener("click", (e) => {
+        if (e.target.id === "loginModal") modal.classList.add("hidden");
+    });
+}
+
+function openLoginModal() {
+    ensureLoginModal();
+    document.getElementById("loginModal")?.classList.remove("hidden");
 }
 
 // ------------------ DISCORD LOGIN ------------------
@@ -67,6 +127,13 @@ async function initDiscordUI() {
 }
 initDiscordUI();
 resetUI();
+ensureLoginModal();
+
+loginToggle?.removeAttribute("onclick");
+loginToggle?.addEventListener("click", (e) => {
+    e.preventDefault();
+    openLoginModal();
+});
 
 // ------------------ FIREBASE LOGIN ------------------
 firebase.auth().onAuthStateChanged(async (user) => {
