@@ -62,11 +62,8 @@
         const match = name.toLowerCase().includes(search);
     
         if (search) return match;
-    
-        const cart = getCart();
-        const alreadyTaken = cart.find(i => i.name === name);
-    
-        return match && d.stock > 0 && !alreadyTaken;
+
+        return match && d.stock > 0;
     });
     
         const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
@@ -125,11 +122,13 @@
     
     if (btn && qtyInput) {
         btn.onclick = () => {
+            const qty = Math.max(1, parseInt(qtyInput.value) || 1);
             addToCart({
                 name,
                 price: d.price,
                 img: d.img,
-                qty: parseInt(qtyInput.value) || 1
+                qty,
+                maxQty: d.stock
             });
         };
     }
