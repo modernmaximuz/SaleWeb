@@ -61,51 +61,103 @@
     position: absolute;
     top: 120%;
     left: 0;
-    background: #121216;
-    border: 1px solid #2a2a3a;
+    background: linear-gradient(180deg, #1c1c29 0%, #14141d 100%);
+    border: 1px solid #31314a;
     border-radius: 14px;
     overflow: hidden;
-    min-width: 200px;
+    min-width: 230px;
     z-index: 3000;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+    padding: 6px;
 }
 
 .dropdownContent a {
     display: block;
-    padding: 14px 18px;
+    padding: 12px 14px;
     font-size: 15px;
-    color: white;
+    color: #eff4ff;
     text-decoration: none;
+    border-radius: 10px;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .dropdownContent a:hover {
-    background: #4c8dff;
+    background: linear-gradient(135deg, #4c8dff 0%, #679fff 100%);
+    transform: translateX(2px);
+}
+
+#mobileMenuToggle {
+    display: none;
 }
 
 /* ========== MOBILE SUPPORT ========== */
 @media (max-width: 900px) {
-    #navCenter {
-        position: static;
-        transform: none;
-        margin: 12px auto 0;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 14px;
-    }
-
-    .navBtn {
-        padding: 10px 22px;
-        font-size: 14px;
-    }
-
     #topbar {
-        flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         padding: 12px;
     }
 
+    #mobileMenuToggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 240px;
+        margin: 0 auto;
+        font-weight: 700;
+    }
+
+    #navCenter {
+        position: static;
+        transform: none;
+        margin: 0;
+        width: 100%;
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .navBtn {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 15px;
+        border-radius: 12px;
+    }
+
     #navRight {
+        width: 100%;
+        display: none;
+        margin-top: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    #topbar.mobile-open #navCenter,
+    #topbar.mobile-open #navRight {
+        display: flex;
+    }
+
+    #topbar.mobile-open #navCenter {
+        flex-direction: column;
+    }
+
+    .dropdown {
+        width: 100%;
+    }
+
+    .dropdownContent {
+        position: static;
         margin-top: 8px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    #navRight button,
+    #cartIcon,
+    #profileMain {
+        width: 100%;
     }
 }
 
