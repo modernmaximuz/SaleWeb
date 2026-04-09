@@ -235,11 +235,15 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
     try {
         const index = Number(req.params.index);
         const status = req.body?.status;
+        const declineReason = String(req.body?.declineReason || "").trim();
         if (!Number.isInteger(index) || index < 0) {
             return res.status(400).json({ error: "Invalid order index" });
         }
-        if (!["accepted", "declined"].includes(status)) {
+        if (!["accepted", "declined", "cancelled"].includes(status)) {
             return res.status(400).json({ error: "Invalid status" });
+        }
+        if (status === "declined" && !declineReason) {
+            return res.status(400).json({ error: "Decline reason is required" });
         }
 
         const parsed = await readPasteContent(ORDER_PASTE_ID);
@@ -249,6 +253,9 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
 
         const wasAccepted = orders[index].status === "accepted";
         orders[index].status = status;
+        if (status === "declined") {
+            orders[index].declineReason = declineReason;
+        }
 
         if (status === "accepted" && !wasAccepted) {
             const channelId = await createOrderChannel(orders[index]);
