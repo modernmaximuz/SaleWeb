@@ -136,6 +136,15 @@ async function writePasteContent(pasteId, content) {
     return r;
 }
 
+function parseOrdersContent(rawContent) {
+    try {
+        const parsed = JSON.parse(rawContent || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
 // Load paste
 app.get("/load/:id", async (req, res) => {
     const pasteId = req.params.id;
@@ -187,7 +196,7 @@ app.post("/orders/finalize", async (req, res) => {
         const parsed = await readPasteContent(ORDER_PASTE_ID);
         if (!parsed.ok) return res.status(parsed.status).json({ error: "Failed to load orders" });
 
-        const orders = JSON.parse(parsed.content || "[]");
+        const orders = parseOrdersContent(parsed.content);
         const hasPending = orders.some(o => o.discordId === user.id && o.status === "pending");
         if (hasPending) {
             return res.status(409).json({ error: "You already have a pending order" });
@@ -235,7 +244,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
 
         const parsed = await readPasteContent(ORDER_PASTE_ID);
         if (!parsed.ok) return res.status(parsed.status).json({ error: "Failed to load orders" });
-        const orders = JSON.parse(parsed.content || "[]");
+        const orders = parseOrdersContent(parsed.content);
         if (!orders[index]) return res.status(404).json({ error: "Order not found" });
 
         const wasAccepted = orders[index].status === "accepted";
