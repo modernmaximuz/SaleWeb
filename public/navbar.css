@@ -97,33 +97,19 @@
     animation: shake 0.4s;
 }
 
-#loginWarn {
-    btn.classList.add("shake");
-    btn.style.background = "#ff4d4d";
-    btn.style.color = "#fff";
-    position: fixed;
-    top: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ff4d4d;
-    padding: 14px 30px;
-    border-radius: 12px;
-    font-weight: 600;
-    z-index: 99999;
-    display: none;
-}
-
 .loginWarn {
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
-    background: #ff4d4d;
+    background: linear-gradient(180deg, #2a2030 0%, #1a1625 100%);
+    border: 1px solid rgba(255, 113, 113, 0.45);
     color: white;
-    padding: 14px 28px;
-    border-radius: 12px;
+    padding: 12px 18px;
+    border-radius: 14px;
     font-weight: 600;
     z-index: 5000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    opacity: 0.95;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    opacity: 0.98;
     transition: bottom 0.3s ease;
+    backdrop-filter: blur(6px);
 }
