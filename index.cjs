@@ -820,13 +820,43 @@ function broadcastRestockUpdate(data) {
 // Get restocks
 app.get('/restock', async (req, res) => {
     try {
-        const parsed = await readPasteContent(RESTOCK_PASTE_ID);
-        if (!parsed.ok) {
-            return res.status(500).json({ error: 'Failed to load restocks' });
+        // Load restocks from restocks paste
+        const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
+        const restocks = restocksParsed.ok ? parseOrdersContent(restocksParsed.content) : [];
+
+        // Load MM2 stocks from MM2 paste
+        const mm2Parsed = await readPasteContent("fZ3piaUg");
+        let mm2Stocks = [];
+        
+        if (mm2Parsed.ok) {
+            try {
+                const mm2Data = JSON.parse(mm2Parsed.content || '{}');
+                const mm2 = mm2Data.mm2 || {};
+                
+                // Convert MM2 stocks to restock format
+                mm2Stocks = Object.entries(mm2)
+                    .filter(([name, data]) => data.stock > 0) // Only show items with stock
+                    .map(([name, data]) => ({
+                        id: Date.now() + Math.random(), // Generate unique ID
+                        title: "MM2 Stock Update",
+                        date: new Date().toISOString(),
+                        admin: "System",
+                        items: [{
+                            name: name,
+                            price: data.price,
+                            image: data.img,
+                            stock: data.stock
+                        }]
+                    }));
+            } catch (error) {
+                console.error('Failed to parse MM2 data:', error);
+            }
         }
 
-        const restocks = parseOrdersContent(parsed.content);
-        res.json({ restocks });
+        // Combine both sources
+        const allRestocks = [...mm2Stocks, ...restocks];
+        
+        res.json({ restocks: allRestocks });
     } catch (error) {
         console.error('Failed to load restocks:', error);
         res.status(500).json({ error: 'Internal server error' });
