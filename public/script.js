@@ -284,13 +284,93 @@ async function saveProfile() {
     }
 }
 
-// Add event listener for avatar URL input
+// Add event listeners for avatar inputs
 document.addEventListener("DOMContentLoaded", () => {
     const avatarUrlInput = document.getElementById("avatarUrl");
+    const avatarUploadInput = document.getElementById("avatarUpload");
+    const uploadBtn = document.getElementById("uploadBtn");
+    
     if (avatarUrlInput) {
         avatarUrlInput.addEventListener("input", updateAvatarPreview);
     }
+    
+    if (uploadBtn && avatarUploadInput) {
+        uploadBtn.addEventListener("click", () => {
+            avatarUploadInput.click();
+        });
+        
+        avatarUploadInput.addEventListener("change", handleImageUpload);
+    }
 });
+
+// Handle image upload to imgbb.com
+async function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB.');
+        return;
+    }
+    
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = uploadProgress?.querySelector('.progress-fill');
+    const progressText = uploadProgress?.querySelector('.progress-text');
+    
+    if (uploadProgress) {
+        uploadProgress.classList.remove('hidden');
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=bdcb671a7075bed44f862ba62f369966&expiration=600`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.url) {
+            // Update the avatar URL input with the uploaded image URL
+            const avatarUrlInput = document.getElementById('avatarUrl');
+            if (avatarUrlInput) {
+                avatarUrlInput.value = result.data.url;
+                updateAvatarPreview();
+            }
+            
+            // Show success feedback
+            if (progressText) {
+                progressText.textContent = 'Upload complete!';
+                progressText.style.color = '#4caf50';
+            }
+            
+            // Hide progress after a delay
+            setTimeout(() => {
+                if (uploadProgress) {
+                    uploadProgress.classList.add('hidden');
+                }
+            }, 2000);
+        } else {
+            throw new Error(result.error?.message || 'Upload failed');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Failed to upload image: ' + error.message);
+        
+        if (uploadProgress) {
+            uploadProgress.classList.add('hidden');
+        }
+    }
+}
 
 // ===== GLOBAL AUTH CHECK (used by navbar & pages) =====
 window.isLoggedIn = async function () {
