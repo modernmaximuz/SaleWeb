@@ -777,6 +777,7 @@ app.post('/chat/typing', (req, res) => {
 
 // Restock System
 const RESTOCK_PASTE_ID = "1J0ghD9n";
+const RESTOCK_TRACKING_PASTE_ID = "2K4lmN8p"; // New paste for accurate time tracking
 const ADMIN_PROFILE_PASTE_ID = "Rb1bV3T6";
 const restockClients = new Set();
 
