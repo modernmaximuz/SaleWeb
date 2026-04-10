@@ -265,7 +265,7 @@ async function saveProfile() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ displayName, avatar })
+            body: JSON.stringify({ displayName, avatar: avatarUrl })
         });
         
         if (res.ok) {
