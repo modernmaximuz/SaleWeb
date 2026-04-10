@@ -356,6 +356,50 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
     }
 });
 
+// Delete order (admin only)
+app.delete("/orders/:index", verifyToken, async (req, res) => {
+    try {
+        const index = Number(req.params.index);
+        
+        if (!Number.isInteger(index) || index < 0) {
+            return res.status(400).json({ error: "Invalid order index" });
+        }
+
+        const parsed = await readPasteContent(ORDER_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: "Failed to load orders" });
+        }
+
+        const orders = parseOrdersContent(parsed.content);
+        
+        if (!orders[index]) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        const order = orders[index];
+        
+        // Only allow deletion of accepted orders or final results
+        const deletableStatuses = ['accepted', 'success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'];
+        if (!deletableStatuses.includes(order.status)) {
+            return res.status(400).json({ error: "Can only remove accepted or completed orders" });
+        }
+
+        // Remove the order
+        orders.splice(index, 1);
+        
+        // Save the updated orders
+        const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: "Failed to save orders" });
+        }
+
+        return res.json({ message: "Order removed successfully" });
+    } catch (error) {
+        console.error("Error removing order:", error);
+        return res.status(500).json({ error: "Failed to remove order" });
+    }
+});
+
 // Chat System
 const CHAT_PASTE_ID = "lBybg0MJ";
 const chatClients = new Set();
