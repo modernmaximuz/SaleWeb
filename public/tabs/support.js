@@ -28,7 +28,13 @@ async function initChat() {
     try {
         console.log('Initializing chat...');
         
-        // Wait for Firebase to be ready and check auth state
+        // Always load messages first to show chat history
+        await loadMessages();
+        setupEventListeners();
+        connectRealTime();
+        updateUI();
+        
+        // Then check Firebase auth state for admin features
         if (window.firebase && firebase.auth) {
             firebase.auth().onAuthStateChanged(async (firebaseUser) => {
                 console.log('Firebase auth state changed:', firebaseUser ? firebaseUser.email : 'No user');
@@ -71,17 +77,11 @@ async function initChat() {
                     console.log('No Firebase user found');
                 }
                 
-                await loadMessages();
-                setupEventListeners();
-                connectRealTime();
+                // Update UI after auth state changes
                 updateUI();
             });
         } else {
             console.error('Firebase not available');
-            await loadMessages();
-            setupEventListeners();
-            connectRealTime();
-            updateUI();
         }
         
     } catch (error) {
@@ -566,13 +566,16 @@ function handleTyping() {
     
     clearTimeout(typingTimer);
     
+    // Get proper display name
+    const displayName = currentUser.isAdmin ? 'Admin' : (currentUser.username || currentUser.email || 'User');
+    
     // Send typing event
     fetch('/chat/typing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             userId: currentUser.id,
-            username: currentUser.username,
+            username: displayName,
             isTyping: true
         })
     });
@@ -584,7 +587,7 @@ function handleTyping() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 userId: currentUser.id,
-                username: currentUser.username,
+                username: displayName,
                 isTyping: false
             })
         });
