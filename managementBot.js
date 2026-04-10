@@ -478,10 +478,43 @@ async function registerCommands() {
 // Bot events
 client.once('ready', async () => {
     console.log('Management Bot is ready!');
-    await registerCommands();
+    console.log(`Logged in as: ${client.user.tag}`);
+    console.log(`Bot ID: ${client.user.id}`);
+    console.log(`Guild ID: ${GUILD_ID}`);
     
-    // Check expired mutes every minute
-    setInterval(checkExpiredMutes, 60000);
+    try {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) {
+            console.error(`ERROR: Bot is not in guild ${GUILD_ID}`);
+            return;
+        }
+        console.log(`Found guild: ${guild.name}`);
+        
+        await registerCommands();
+        console.log('Commands registered successfully!');
+        
+        // Check expired mutes every minute
+        setInterval(checkExpiredMutes, 60000);
+    } catch (error) {
+        console.error('Error in ready event:', error);
+    }
+});
+
+client.on('error', (error) => {
+    console.error('Discord client error:', error);
+});
+
+client.on('shardError', (error) => {
+    console.error('Shard error:', error);
+});
+
+process.on('unhandledRejection', (error) => {
+    console.error('Unhandled promise rejection:', error);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught exception:', error);
+    process.exit(1);
 });
 
 client.on('interactionCreate', async (interaction) => {
@@ -506,7 +539,15 @@ client.on('interactionCreate', async (interaction) => {
     }
 });
 
-// Start bot
-client.login(BOT_TOKEN);
+// Start bot with better error handling
+console.log('Attempting to login to Discord...');
+client.login(BOT_TOKEN).catch(error => {
+    console.error('Failed to login to Discord:', error);
+    if (error.code === 'TOKEN_INVALID') {
+        console.error('ERROR: Invalid Discord token!');
+    } else if (error.code === 'DISALLOWED_INTENTS') {
+        console.error('ERROR: Missing required gateway intents!');
+    }
+});
 
 module.exports = { addMute, removeMute, isMuted, muteLogs };
