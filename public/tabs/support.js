@@ -26,16 +26,20 @@ function filterBadWords(text) {
 // Initialize chat
 async function initChat() {
     try {
+        console.log('Initializing chat...');
+        
         // Check if user is logged in
         const headers = {};
         
         // Add Firebase token for admin users
         if (window.firebase && firebase.auth && firebase.auth().currentUser) {
-            const token = await firebase.auth().currentUser.getIdToken();
+            const firebaseUser = firebase.auth().currentUser;
+            console.log('Firebase user found:', firebaseUser.email);
+            
+            const token = await firebaseUser.getIdToken();
             headers.Authorization = `Bearer ${token}`;
             
             // Set currentUser from Firebase immediately for admin users
-            const firebaseUser = firebase.auth().currentUser;
             currentUser = {
                 id: firebaseUser.uid,
                 username: firebaseUser.email,
@@ -44,16 +48,19 @@ async function initChat() {
                 isAdmin: true
             };
             isAdmin = true;
+            console.log('Firebase admin user set:', currentUser);
         }
         
         // Try to get user info from server
         try {
             const res = await fetch('/me', { headers });
             const user = await res.json();
+            console.log('Server response:', user);
             
             if (user) {
                 currentUser = user;
                 isAdmin = !!user.isAdmin;
+                console.log('User set from server:', currentUser, 'Is admin:', isAdmin);
             }
         } catch (serverError) {
             console.error('Server auth check failed:', serverError);
@@ -590,7 +597,7 @@ function updateUI() {
         updateSendButton();
     } else {
         messageInput.disabled = true;
-        messageInput.placeholder = 'Please login to chat...';
+        messageInput.placeholder = 'Chat unavailable';
         sendButton.disabled = true;
     }
 }
