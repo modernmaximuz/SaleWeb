@@ -1,1 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restocks</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/navbar.css">
+    <link rel="stylesheet" href="/tabs/restock.css">
+</head>
+<body>
 
+<div id="topbar">
+    <a href="/">
+        <img src="/images/logo.png" class="logo">
+    </a>
+    
+<div id="navCenter">
+    <button class="navBtn" class="active">Restocks</button>
+
+    <div class="dropdown">
+        <button class="navBtn" id="shopToggle">Shop &#9662;</button>
+        <div class="dropdownContent" id="shopMenu">
+            <a href="/shop/adoptme">Adopt Me</a>
+            <a href="/shop/mm2">Murder Mystery</a>
+        </div>
+    </div>
+
+    <button class="navBtn">Proofs</button>
+    <button class="navBtn" onclick="location.href='/tabs/support'">Support</button>
+    <button class="navBtn" onclick="location.href='/tabs/orders'">Orders</button>
+</div>
+
+<div id="navRight">
+    <button id="loginToggle">Login</button>
+<div id="cartIcon">
+    <img src="/images/cart.png" id="cartImg">
+    <span id="cartCount">0</span>
+</div>
+<div id="cartPopup" class="hidden">
+    <div id="cartBox">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+
+        <div id="cartTotal">Total: &#8369;0</div>
+
+        <button id="finalizeOrder">Finalize Order</button>
+    </div>
+</div>
+    <div id="profileBox" class="hidden">
+        <div id="profileMain">
+            <div class="avatar"></div>
+            <span id="profileName">User</span>
+        </div>
+        <div id="profileDropdown" class="hidden">
+            <button id="logoutBtn">Logout</button>
+            <button id="profileConfigBtn">Configure Profile</button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div id="restockContainer">
+    <div id="restockHeader">
+        <h1>Restocks</h1>
+        <div id="adminControls" class="hidden">
+            <button id="addRestockBtn">Add Restock</button>
+            <button id="profileConfigBtn">Configure Profile</button>
+        </div>
+    </div>
+    
+    <div id="restockList">
+        <div id="restockItems"></div>
+        <div id="noRestocks" class="hidden">
+            <p>No restocks available at the moment.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add Restock Modal -->
+<div id="addRestockModal" class="hidden">
+    <div id="addRestockModalBox">
+        <div class="modalHeader">
+            <h3>Add Restock</h3>
+            <button class="closeModal" onclick="closeAddRestockModal()">×</button>
+        </div>
+        <div class="modalContent">
+            <div id="restockItemsContainer">
+                <div class="restock-item">
+                    <input type="text" placeholder="Item name" class="item-name">
+                    <input type="number" placeholder="Price" class="item-price" min="0" step="0.01">
+                    <input type="text" placeholder="Image URL" class="item-img">
+                    <button class="remove-item-btn" onclick="removeRestockItem(this)">×</button>
+                </div>
+            </div>
+            <button id="addItemBtn" onclick="addRestockItem()">+ Add Item</button>
+            <div class="modalButtons">
+                <button class="cancelBtn" onclick="closeAddRestockModal()">Cancel</button>
+                <button class="submitBtn" onclick="submitRestock()">Submit Restock</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Configuration Modal -->
+<div id="profileConfigModal" class="hidden">
+    <div id="profileConfigModalBox">
+        <div class="modalHeader">
+            <h3>Configure Profile</h3>
+            <button class="closeModal" onclick="closeProfileConfigModal()">×</button>
+        </div>
+        <div class="modalContent">
+            <div class="form-group">
+                <label for="displayName">Display Name:</label>
+                <input type="text" id="displayName" placeholder="Enter your display name">
+            </div>
+            <div class="form-group">
+                <label for="avatarUrl">Profile Picture URL:</label>
+                <input type="text" id="avatarUrl" placeholder="Enter image URL (optional)">
+                <div id="avatarPreview">
+                    <img id="avatarPreviewImg" src="/images/default-avatar.png" alt="Avatar Preview">
+                </div>
+            </div>
+            <div class="modalButtons">
+                <button class="cancelBtn" onclick="closeProfileConfigModal()">Cancel</button>
+                <button class="submitBtn" onclick="saveProfile()">Save Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="/firebase.js"></script>
+<script src="/script.js"></script>
+<script src="/navbar.js"></script>
+<script src="/cart.js"></script>
+<script src="/tabs/restock.js"></script>
+</body>
+</html>
