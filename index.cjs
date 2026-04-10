@@ -409,6 +409,79 @@ const CHAT_PASTE_ID = "lBybg0MJ";
 const chatClients = new Set();
 const typingUsers = new Map();
 
+// Rate limiting for chat spam prevention
+const messageRateLimit = new Map(); // userId -> { count: number, resetTime: number }
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX_MESSAGES = 5; // max 5 messages per minute
+
+// Weekly reset functionality (Philippines time - UTC+8)
+function getNextResetTime() {
+    const now = new Date();
+    // Convert to Philippines time (UTC+8)
+    const phTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+    
+    // Get next Sunday at midnight (00:00)
+    const daysUntilSunday = (7 - phTime.getDay()) % 7 || 7;
+    const nextSunday = new Date(phTime);
+    nextSunday.setDate(phTime.getDate() + daysUntilSunday);
+    nextSunday.setHours(0, 0, 0, 0, 0);
+    
+    // Convert back to UTC for storage
+    return new Date(nextSunday.getTime() - (8 * 60 * 60 * 1000));
+}
+
+function isRateLimited(userId) {
+    const now = Date.now();
+    const userLimit = messageRateLimit.get(userId);
+    
+    if (!userLimit || now > userLimit.resetTime) {
+        // Reset or create new limit
+        messageRateLimit.set(userId, {
+            count: 1,
+            resetTime: now + RATE_LIMIT_WINDOW
+        });
+        return false;
+    }
+    
+    if (userLimit.count >= RATE_LIMIT_MAX_MESSAGES) {
+        return true;
+    }
+    
+    userLimit.count++;
+    return false;
+}
+
+// Weekly reset check and execution
+async function checkAndResetChat() {
+    try {
+        const parsed = await readPasteContent(CHAT_PASTE_ID);
+        if (!parsed.ok) return;
+        
+        const chatData = JSON.parse(parsed.content || '{}');
+        const now = Date.now();
+        
+        // Check if reset is needed
+        if (!chatData.lastReset || now >= chatData.lastReset) {
+            // Reset chat messages
+            await writePasteContent(CHAT_PASTE_ID, JSON.stringify({
+                messages: [],
+                lastReset: getNextResetTime().getTime()
+            }, null, 2));
+            
+            // Broadcast reset to all clients
+            broadcastToClients({
+                type: 'chat_reset',
+                nextReset: getNextResetTime().getTime()
+            });
+        }
+    } catch (error) {
+        console.error('Failed to check/reset chat:', error);
+    }
+}
+
+// Schedule weekly reset check
+setInterval(checkAndResetChat, 60000); // Check every minute
+
 // Server-Sent Events for real-time updates
 app.get('/chat/events', (req, res) => {
     res.writeHead(200, {
@@ -480,13 +553,19 @@ app.post('/chat/message', async (req, res) => {
             return res.status(400).json({ error: 'Message text is required' });
         }
 
+        // Apply rate limiting (except for admins)
+        if (!isAdmin && isRateLimited(user.id)) {
+            return res.status(429).json({ error: 'Please wait before sending another message' });
+        }
+
         // Load existing messages
         const parsed = await readPasteContent(CHAT_PASTE_ID);
         if (!parsed.ok) {
             return res.status(500).json({ error: 'Failed to load chat messages' });
         }
 
-        const messages = parseOrdersContent(parsed.content);
+        const chatData = JSON.parse(parsed.content || '{}');
+        const messages = chatData.messages || [];
         
         // Check if user is muted
         const mutedUsers = new Set();
