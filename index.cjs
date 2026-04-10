@@ -174,6 +174,10 @@ app.get("/support", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
 });
 
+app.get("/restocks", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
+});
+
 // Load paste
 app.get("/load/:id", async (req, res) => {
     const pasteId = req.params.id;
