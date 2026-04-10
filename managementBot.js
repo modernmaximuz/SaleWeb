@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, PermissionsBitField, EmbedBuilder } = require("discord.js");
 const fs = require('fs');
 const path = require('path');
+const fetch = (...args) => import("node-fetch").then(({default: fetch}) => fetch(...args));
 
 // Load environment variables from .env file
 function loadEnv() {
@@ -23,14 +24,56 @@ loadEnv();
 
 // Bot configuration
 const BOT_TOKEN = process.env.MANAGE_BOT_TOKEN;
-const GUILD_ID = "1490558125303009280";
+const GUILD_ID = "1492190841987666011";
 const ADMIN_ROLE_ID = "1491763556209786950"; // Support Team role or higher
 const MOD_ROLE_ID = "1492197702807851049"; // Mod role
 const MUTED_ROLE_ID = "1492197287487606844"; // Muted role (you'll need to create this)
+const BASE = "https://pastefy.app/api/v2";
+const API_KEY = process.env.API_KEY;
 
 // Mute storage (in production, use a database)
 const mutes = new Map();
 const muteLogs = [];
+
+// Cross-bot communication
+const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL"; // New paste for bot communication
+
+async function triggerBotMessage(botType, message, channelId) {
+    try {
+        // Store the message in the communication paste
+        const current = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+            headers: { Authorization: `Bearer ${API_KEY}` }
+        });
+        
+        let messages = [];
+        if (current.ok) {
+            const data = await current.json();
+            messages = JSON.parse(data.content || "[]");
+        }
+        
+        messages.push({
+            id: Date.now().toString(),
+            bot: botType,
+            message: message,
+            channelId: channelId,
+            timestamp: Date.now()
+        });
+        
+        // Save to paste
+        await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                content: JSON.stringify(messages, null, 2)
+            })
+        });
+    } catch (error) {
+        console.error('Failed to trigger bot message:', error);
+    }
+}
 
 const client = new Client({
     intents: [
@@ -76,12 +119,12 @@ function hasAdminRole(member) {
     return member.roles.cache.has(ADMIN_ROLE_ID) || member.roles.cache.has(MOD_ROLE_ID);
 }
 
-// Creative mute messages
+// Creative mute messages - different bots will send these
 const muteMessages = [
-    "discord login bot: -user, your noise claws at my ears…",
-    "the channel bot: -user, your words echo like chains in the underworld…", 
-    "the new manager bot: -user, enough of this relentless barking from you…",
-    "the new manager bot: I command you to be silent for -time(be complete this time like if 1d it will say 1 day or 1h it will say 1 hour) — mute!"
+    { bot: "login", message: "-user, your noise claws at my ears…" },
+    { bot: "order", message: "-user, your words echo like chains in the underworld…" }, 
+    { bot: "manager", message: "-user, enough of this relentless barking from you…" },
+    { bot: "manager", message: "I command you to be silent for -time — mute!" }
 ];
 
 // Mute management functions
@@ -179,23 +222,20 @@ async function handleMute(interaction) {
     // Store mute
     const expiresAt = await addMute(user.id, duration, interaction.user.id, reason);
     
-    // Send creative mute messages
+    // Send creative mute messages through different bots
     const channel = interaction.channel;
+    const formattedTime = formatDuration(duration);
     
     for (let i = 0; i < muteMessages.length; i++) {
         setTimeout(async () => {
-            await channel.send({
-                content: `${muteMessages[i]} **${user.username}** (${formatDuration(duration)})`
-            });
+            let message = muteMessages[i].message
+                .replace(/-user/g, user.username)
+                .replace(/-time/g, formattedTime);
+            
+            // Trigger the appropriate bot to send the message
+            await triggerBotMessage(muteMessages[i].bot, message, channel.id);
         }, i * 2000); // 2 second delay between messages
     }
-    
-    // Final mute message
-    setTimeout(async () => {
-        await channel.send({
-            content: `🔇 **${user.username} has been muted for ${formatDuration(duration)}**\n**Reason:** ${reason}`
-        });
-    }, muteMessages.length * 2000 + 1000);
     
     // Schedule unmute
     setTimeout(async () => {
@@ -204,7 +244,6 @@ async function handleMute(interaction) {
         if (guildMember && guildMember.roles.cache.has(MUTED_ROLE_ID)) {
             await guildMember.roles.remove(MUTED_ROLE_ID);
         }
-        await channel.send(`✅ **${user.username} has been unmuted**`);
     }, duration);
     
     return interaction.reply({
@@ -559,6 +598,57 @@ client.on('interactionCreate', async (interaction) => {
             break;
     }
 });
+
+// Check for cross-bot messages
+setInterval(async () => {
+    try {
+        const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+            headers: { Authorization: `Bearer ${API_KEY}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const messages = JSON.parse(data.content || "[]");
+            const now = Date.now();
+            
+            // Process messages meant for this bot and are recent (within 30 seconds)
+            const managerMessages = messages.filter(msg => 
+                msg.bot === "manager" && 
+                (now - msg.timestamp) < 30000
+            );
+            
+            if (managerMessages.length > 0) {
+                const guild = client.guilds.cache.get(GUILD_ID);
+                if (guild) {
+                    for (const msg of managerMessages) {
+                        const channel = guild.channels.cache.get(msg.channelId);
+                        if (channel) {
+                            await channel.send(msg.message);
+                        }
+                    }
+                    
+                    // Mark messages as processed by removing them
+                    const processedMessages = messages.filter(msg => 
+                        !(msg.bot === "manager" && (now - msg.timestamp) < 30000)
+                    );
+                    
+                    await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+                        method: "PUT",
+                        headers: {
+                            Authorization: `Bearer ${API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            content: JSON.stringify(processedMessages, null, 2)
+                        })
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking bot messages:', error);
+    }
+}, 5000); // Check every 5 seconds
 
 // Start bot with better error handling
 console.log('Attempting to login to Discord...');
