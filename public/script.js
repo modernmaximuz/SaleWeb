@@ -40,7 +40,7 @@ function resetUI() {
     if (loginToggle) {
         loginToggle.style.display = "inline-flex";
         loginToggle.innerHTML = `
-            <img class="loginBtnIcon" src="https://static.vecteezy.com/system/resources/thumbnails/018/930/718/small_2x/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
+            <img class="loginBtnIcon" src="/images/discordlogo.png" alt="Discord">
             <span>Login</span>
         `;
         loginToggle.title = "Login with Discord (Admin login is optional)";
@@ -60,7 +60,7 @@ function ensureLoginModal() {
             <h2>Login using Discord</h2>
             <p>Fast and recommended for all customers.</p>
             <button id="modalDiscordLogin">
-                <img src="https://static.vecteezy.com/system/resources/thumbnails/018/930/718/small_2x/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
+                <img src="/images/discordlogo.png" alt="Discord">
                 Continue with Discord
             </button>
             <div class="adminDivider">Admin login (email only)</div>
