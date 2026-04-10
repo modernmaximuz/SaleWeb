@@ -2,6 +2,12 @@ let currentUser = null;
 let isAdmin = false;
 let restocks = [];
 let eventSource = null;
+let groupedRestocks = {};
+let statistics = {
+    totalRestocks: 0,
+    totalItems: 0,
+    lastUpdate: null
+};
 
 // Initialize restock page
 async function initRestock() {
@@ -41,11 +47,68 @@ async function loadRestocks() {
         
         if (data.restocks) {
             restocks = data.restocks;
+            processRestocks();
             renderRestocks();
+            updateStatistics();
         }
     } catch (error) {
         console.error('Failed to load restocks:', error);
         restocks = [];
+    }
+}
+
+// Process restocks to group by hour and calculate statistics
+function processRestocks() {
+    groupedRestocks = {};
+    statistics = {
+        totalRestocks: 0,
+        totalItems: 0,
+        lastUpdate: null
+    };
+    
+    restocks.forEach(restock => {
+        const date = new Date(restock.date);
+        const hour = date.getHours();
+        const dateKey = date.toLocaleDateString();
+        
+        // Group by hour
+        if (!groupedRestocks[dateKey]) {
+            groupedRestocks[dateKey] = {};
+        }
+        if (!groupedRestocks[dateKey][hour]) {
+            groupedRestocks[dateKey][hour] = [];
+        }
+        
+        groupedRestocks[dateKey][hour].push(restock);
+        
+        // Calculate statistics
+        statistics.totalRestocks++;
+        statistics.totalItems += restock.items ? restock.items.length : 0;
+        
+        // Update last update time
+        if (!statistics.lastUpdate || date > new Date(statistics.lastUpdate)) {
+            statistics.lastUpdate = date;
+        }
+    });
+}
+
+// Update statistics display
+function updateStatistics() {
+    const totalRestocksEl = document.getElementById('totalRestocks');
+    const itemsAddedEl = document.getElementById('itemsAdded');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    
+    if (totalRestocksEl) {
+        totalRestocksEl.textContent = statistics.totalRestocks;
+    }
+    
+    if (itemsAddedEl) {
+        itemsAddedEl.textContent = statistics.totalItems;
+    }
+    
+    if (lastUpdateEl && statistics.lastUpdate) {
+        const date = statistics.lastUpdate;
+        lastUpdateEl.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 }
 
