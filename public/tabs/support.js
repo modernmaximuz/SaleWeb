@@ -28,6 +28,21 @@ async function initChat() {
     try {
         console.log('Initializing chat...');
         
+        // Check for Discord user first
+        try {
+            const res = await fetch('/me');
+            const user = await res.json();
+            console.log('Discord user response:', user);
+            
+            if (user) {
+                currentUser = user;
+                isAdmin = !!user.isAdmin;
+                console.log('Discord user set:', currentUser, 'Is admin:', isAdmin);
+            }
+        } catch (discordError) {
+            console.error('Discord auth check failed:', discordError);
+        }
+        
         // Always load messages first to show chat history
         await loadMessages();
         setupEventListeners();
@@ -71,10 +86,14 @@ async function initChat() {
                         // Keep Firebase user if server fails
                     }
                 } else {
-                    // No Firebase user
-                    currentUser = null;
-                    isAdmin = false;
-                    console.log('No Firebase user found');
+                    // No Firebase user, but don't clear Discord user
+                    if (currentUser && currentUser.type === 'discord') {
+                        console.log('Keeping Discord user, Firebase logged out');
+                    } else {
+                        currentUser = null;
+                        isAdmin = false;
+                        console.log('No user found');
+                    }
                 }
                 
                 // Update UI after auth state changes
@@ -93,12 +112,19 @@ async function initChat() {
 // Load existing messages
 async function loadMessages() {
     try {
+        console.log('Loading messages...');
         const res = await fetch('/chat/messages');
         const data = await res.json();
         
+        console.log('Messages loaded:', data);
+        
         if (data.messages) {
             messages = data.messages;
+            console.log('Messages array set:', messages.length, 'messages');
             renderMessages();
+        } else {
+            console.log('No messages in response');
+            messages = [];
         }
         
         // Update reset timer if available
@@ -275,7 +301,7 @@ function createMessageElement(message) {
     
     div.innerHTML = `
         <div class="message-avatar" onclick="showUserActions('${message.userId}', '${message.username}', '${message.avatar}', ${message.isAdmin})">
-            <img src="${avatar}" alt="${message.username}" onerror="this.src='/images/default-avatar.png'">
+            <img src="${avatar}" alt="${message.username}" onerror="this.src='/hades.gif'">
         </div>
         <div class="message-content">
             <div class="message-header">
@@ -560,38 +586,10 @@ function setupEventListeners() {
     });
 }
 
-// Handle typing indicator
+// Handle typing indicator (disabled)
 function handleTyping() {
-    if (!currentUser) return;
-    
-    clearTimeout(typingTimer);
-    
-    // Get proper display name
-    const displayName = currentUser.isAdmin ? 'Admin' : (currentUser.username || currentUser.email || 'User');
-    
-    // Send typing event
-    fetch('/chat/typing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            userId: currentUser.id,
-            username: displayName,
-            isTyping: true
-        })
-    });
-    
-    // Stop typing after 3 seconds
-    typingTimer = setTimeout(() => {
-        fetch('/chat/typing', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: currentUser.id,
-                username: displayName,
-                isTyping: false
-            })
-        });
-    }, 3000);
+    // Typing indicator disabled - not working properly
+    return;
 }
 
 // Update send button state
