@@ -445,9 +445,30 @@ function broadcastToClients(data) {
 // Send new message
 app.post('/chat/message', async (req, res) => {
     try {
-        const user = getDiscordUser(req);
+        // Check for both Discord and Firebase admin users
+        let user = getDiscordUser(req);
+        let isAdmin = false;
+
         if (!user) {
-            return res.status(401).json({ error: 'Discord login required' });
+            // Check for Firebase admin user
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith("Bearer ")) {
+                const token = authHeader.split("Bearer ")[1];
+                try {
+                    const decoded = await admin.auth().verifyIdToken(token);
+                    user = {
+                        id: decoded.uid,
+                        username: "Admin",
+                        email: decoded.email,
+                        avatar: "admin"
+                    };
+                    isAdmin = true;
+                } catch {
+                    return res.status(401).json({ error: 'Authentication required' });
+                }
+            } else {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
         }
 
         const { text, replyTo } = req.body;
@@ -479,7 +500,7 @@ app.post('/chat/message', async (req, res) => {
             avatar: user.avatar,
             text: text.trim(),
             timestamp: Date.now(),
-            isAdmin: false, // Discord users are not admins
+            isAdmin: isAdmin,
             replyTo: replyTo || null
         };
 
@@ -729,16 +750,51 @@ app.get("/auth/discord", (req, res) => {
     res.redirect(`https://discord.com/oauth2/authorize?${params.toString()}`);
 });
 
-app.get("/me", (req, res) => {
+app.get("/me", async (req, res) => {
     const cookies = parseCookies(req);
-    if (!cookies.discord) return res.json(null);
+    let user = null;
+    let isAdmin = false;
 
-    const [data, sig] = cookies.discord.split(".");
-    const payload = Buffer.from(data, "base64").toString();
+    // Check Discord user first
+    if (cookies.discord) {
+        const [data, sig] = cookies.discord.split(".");
+        const payload = Buffer.from(data, "base64").toString();
 
-    if (sign(payload) !== sig) return res.json(null);
+        if (sign(payload) === sig) {
+            try {
+                user = JSON.parse(payload);
+                user.type = "discord";
+            } catch {
+                // Invalid Discord token
+            }
+        }
+    }
 
-    res.json(JSON.parse(payload));
+    // Check Firebase admin user
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split("Bearer ")[1];
+        try {
+            const decoded = await admin.auth().verifyIdToken(token);
+            if (!user) {
+                user = {
+                    id: decoded.uid,
+                    username: decoded.email,
+                    email: decoded.email,
+                    type: "admin"
+                };
+            }
+            isAdmin = true;
+        } catch {
+            // Invalid Firebase token
+        }
+    }
+
+    if (user) {
+        res.json({ ...user, isAdmin });
+    } else {
+        res.json(null);
+    }
 });
 
 // Logout Discord
