@@ -32,8 +32,8 @@ async function initChat() {
         
         if (user) {
             currentUser = user;
-            // Check if user is admin (Firebase admin)
-            isAdmin = !!(window.firebase && firebase.auth && firebase.auth().currentUser);
+            // Check if user is admin (from server response)
+            isAdmin = !!user.isAdmin;
         }
         
         await loadMessages();
@@ -164,7 +164,7 @@ function createMessageElement(message) {
     }
     
     const avatar = message.isAdmin ? '/hades.gif' : 
-                   `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`;
+                   (message.avatar === 'admin' ? '/hades.gif' : `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`);
     
     div.innerHTML = `
         <div class="message-avatar" onclick="showUserActions('${message.userId}', '${message.username}', '${message.avatar}', ${message.isAdmin})">
@@ -217,9 +217,17 @@ async function sendMessage() {
     };
     
     try {
+        const headers = { 'Content-Type': 'application/json' };
+        
+        // Add Firebase token for admin users
+        if (isAdmin && window.firebase && firebase.auth && firebase.auth().currentUser) {
+            const token = await firebase.auth().currentUser.getIdToken();
+            headers.Authorization = `Bearer ${token}`;
+        }
+        
         const res = await fetch('/chat/message', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(message)
         });
         
