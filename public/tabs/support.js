@@ -76,27 +76,35 @@ async function loadMessages() {
     }
 }
 
-// Save messages to paste
-async function saveMessages() {
+// Send message via chat endpoint
+async function sendMessage(text, replyTo = null) {
     try {
-        const token = isAdmin ? await firebase.auth().currentUser.getIdToken() : null;
+        const headers = {
+            'Content-Type': 'application/json'
+        };
         
-        const res = await fetch(`/save/${CHAT_PASTE_ID}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { Authorization: `Bearer ${token}` })
-            },
-            body: JSON.stringify({
-                content: JSON.stringify(messages, null, 2)
-            })
+        // Add Firebase token for admin users
+        if (isAdmin && firebase.auth().currentUser) {
+            const token = await firebase.auth().currentUser.getIdToken();
+            headers.Authorization = `Bearer ${token}`;
+        }
+        
+        const res = await fetch('/chat/message', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ text, replyTo })
         });
         
+        const data = await res.json();
+        
         if (!res.ok) {
-            throw new Error('Failed to save messages');
+            throw new Error(data.error || 'Failed to send message');
         }
+        
+        return data;
     } catch (error) {
-        console.error('Failed to save messages:', error);
+        console.error('Failed to send message:', error);
+        throw error;
     }
 }
 
@@ -268,18 +276,6 @@ async function sendMessage() {
     
     if (!text || !currentUser) return;
     
-    const filteredText = filterBadWords(text);
-    const message = {
-        id: generateId(),
-        userId: currentUser.id,
-        username: currentUser.username,
-        avatar: currentUser.avatar,
-        text: filteredText,
-        timestamp: Date.now(),
-        isAdmin: isAdmin,
-        replyTo: replyToMessage
-    };
-    
     try {
         const headers = { 'Content-Type': 'application/json' };
         
@@ -292,22 +288,24 @@ async function sendMessage() {
         const res = await fetch('/chat/message', {
             method: 'POST',
             headers,
-            body: JSON.stringify(message)
+            body: JSON.stringify({ 
+                text: filterBadWords(text),
+                replyTo: replyToMessage?.id || null
+            })
         });
+        
+        const data = await res.json();
         
         if (res.ok) {
             input.value = '';
             cancelReply();
             updateSendButton();
         } else {
-            throw new Error('Failed to send message');
+            throw new Error(data.error || 'Failed to send message');
         }
     } catch (error) {
         console.error('Failed to send message:', error);
-        // Fallback: add message locally
-        messages.push(message);
-        saveMessages();
-        renderMessages();
+        alert('Failed to send message: ' + error.message);
     }
 }
 
