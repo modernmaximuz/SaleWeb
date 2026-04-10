@@ -671,6 +671,182 @@ app.post('/chat/typing', (req, res) => {
     }
 });
 
+// Restock System
+const RESTOCK_PASTE_ID = "1J0ghD9n";
+const ADMIN_PROFILE_PASTE_ID = "Rb1bV3T6";
+const restockClients = new Set();
+
+// Server-Sent Events for restock updates
+app.get('/restock/events', (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+    });
+
+    const clientId = Date.now().toString();
+    restockClients.add({ id: clientId, res });
+
+    // Send initial connection event
+    res.write(`data: ${JSON.stringify({ type: 'connected', clientId })}\n\n`);
+
+    // Remove client on disconnect
+    req.on('close', () => {
+        restockClients.forEach(client => {
+            if (client.id === clientId) {
+                restockClients.delete(client);
+            }
+        });
+    });
+});
+
+// Broadcast restock updates to all connected clients
+function broadcastRestockUpdate(data) {
+    restockClients.forEach(client => {
+        try {
+            client.res.write(`data: ${JSON.stringify(data)}\n\n`);
+        } catch (error) {
+            // Remove dead clients
+            restockClients.delete(client);
+        }
+    });
+}
+
+// Get restocks
+app.get('/restock', async (req, res) => {
+    try {
+        const parsed = await readPasteContent(RESTOCK_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: 'Failed to load restocks' });
+        }
+
+        const restocks = parseOrdersContent(parsed.content);
+        res.json({ restocks });
+    } catch (error) {
+        console.error('Failed to load restocks:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Add restock (admin only)
+app.post('/restock', verifyToken, async (req, res) => {
+    try {
+        const { items } = req.body;
+        
+        if (!Array.isArray(items) || !items.length) {
+            return res.status(400).json({ error: 'Items are required' });
+        }
+
+        // Get admin info
+        const decoded = req.user;
+        const adminName = decoded.email || 'Admin';
+
+        // Load existing restocks
+        const parsed = await readPasteContent(RESTOCK_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: 'Failed to load restocks' });
+        }
+
+        const restocks = parseOrdersContent(parsed.content);
+
+        // Create new restock entry
+        const restock = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            items: items,
+            date: new Date().toISOString(),
+            adminName: adminName
+        };
+
+        restocks.unshift(restock); // Add to beginning for newest first
+
+        // Save restocks
+        const writeRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify(restocks, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save restock' });
+        }
+
+        // Broadcast new restock
+        broadcastRestockUpdate({
+            type: 'new_restock',
+            restock
+        });
+
+        res.json({ success: true, restock });
+    } catch (error) {
+        console.error('Failed to add restock:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get admin profile
+app.get('/admin/profile', verifyToken, async (req, res) => {
+    try {
+        const decoded = req.user;
+        const adminId = decoded.uid;
+
+        const parsed = await readPasteContent(ADMIN_PROFILE_PASTE_ID);
+        if (!parsed.ok) {
+            return res.json({ displayName: decoded.email || 'Admin', avatar: null });
+        }
+
+        const profiles = parseOrdersContent(parsed.content);
+        const profile = profiles.find(p => p.adminId === adminId);
+
+        if (profile) {
+            res.json(profile);
+        } else {
+            res.json({ displayName: decoded.email || 'Admin', avatar: null });
+        }
+    } catch (error) {
+        console.error('Failed to load admin profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Update admin profile
+app.put('/admin/profile', verifyToken, async (req, res) => {
+    try {
+        const decoded = req.user;
+        const adminId = decoded.uid;
+        const { displayName, avatar } = req.body;
+
+        if (!displayName || !displayName.trim()) {
+            return res.status(400).json({ error: 'Display name is required' });
+        }
+
+        // Load existing profiles
+        const parsed = await readPasteContent(ADMIN_PROFILE_PASTE_ID);
+        const profiles = parsed.ok ? parseOrdersContent(parsed.content) : [];
+
+        // Find or create profile
+        let profileIndex = profiles.findIndex(p => p.adminId === adminId);
+        const profile = {
+            adminId,
+            displayName: displayName.trim(),
+            avatar: avatar || null,
+            updatedAt: new Date().toISOString()
+        };
+
+        if (profileIndex >= 0) {
+            profiles[profileIndex] = profile;
+        } else {
+            profiles.push(profile);
+        }
+
+        // Save profiles
+        const writeRes = await writePasteContent(ADMIN_PROFILE_PASTE_ID, JSON.stringify(profiles, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save profile' });
+        }
+
+        res.json({ success: true, profile });
+    } catch (error) {
+        console.error('Failed to update admin profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
