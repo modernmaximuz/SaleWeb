@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Restocks</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restocks - Latest Updates</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/navbar.css">
-    <link rel="stylesheet" href="/tabs/restock.css">
+    <link rel="stylesheet" href="/tabs/restocks.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 
@@ -52,81 +55,193 @@
         </div>
         <div id="profileDropdown" class="hidden">
             <button id="logoutBtn">Logout</button>
-            <button id="profileConfigBtn">Configure Profile</button>
         </div>
     </div>
 </div>
+</div>
 
 </div>
 
-<div id="restockContainer">
-    <div id="restockHeader">
-        <h1>Restocks</h1>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                <i class="fas fa-fire"></i>
+                Latest Restocks
+            </h1>
+            <p class="hero-subtitle">Stay updated with the newest items and exclusive drops</p>
+        </div>
         <div id="adminControls" class="hidden">
-            <button id="addRestockBtn">Add Restock</button>
-            <button id="profileConfigBtn">Configure Profile</button>
+            <button id="addRestockBtn" class="hero-btn primary">
+                <i class="fas fa-plus"></i>
+                Add Restock
+            </button>
+            <button id="profileConfigBtn" class="hero-btn secondary">
+                <i class="fas fa-user-cog"></i>
+                Configure Profile
+            </button>
         </div>
     </div>
-    
-    <div id="restockList">
-        <div id="restockItems"></div>
-        <div id="noRestocks" class="hidden">
-            <p>No restocks available at the moment.</p>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <span class="stat-number" id="totalRestocks">0</span>
+            <span class="stat-label">Total Restocks</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="totalItems">0</span>
+            <span class="stat-label">Items Added</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="lastUpdate">Never</span>
+            <span class="stat-label">Last Update</span>
         </div>
     </div>
+</section>
+
+<!-- Filter Section -->
+<section class="filter-section">
+    <div class="filter-container">
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">
+                <i class="fas fa-th"></i>
+                All Restocks
+            </button>
+            <button class="filter-tab" data-filter="recent">
+                <i class="fas fa-clock"></i>
+                Recent
+            </button>
+            <button class="filter-tab" data-filter="popular">
+                <i class="fas fa-fire"></i>
+                Popular
+            </button>
+        </div>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search restocks...">
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div id="restockContainer">
+        <div id="restockList">
+            <div id="restockItems" class="restock-grid">
+                <!-- Restock items will be dynamically added here -->
+            </div>
+            <div id="noRestocks" class="empty-state hidden">
+                <div class="empty-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <h3>No Restocks Available</h3>
+                <p>Check back later for the latest item drops and updates!</p>
+                <div class="empty-actions">
+                    <button class="btn-outline" onclick="location.href='/shop/adoptme'">
+                        <i class="fas fa-shopping-cart"></i>
+                        Browse Shop
+                    </button>
+                    <button class="btn-outline" onclick="location.href='/tabs/support'">
+                        <i class="fas fa-comments"></i>
+                        Ask in Support
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="loading-spinner hidden">
+    <div class="spinner"></div>
+    <p>Loading restocks...</p>
 </div>
 
 <!-- Add Restock Modal -->
-<div id="addRestockModal" class="hidden">
-    <div id="addRestockModalBox">
-        <div class="modalHeader">
-            <h3>Add Restock</h3>
-            <button class="closeModal" onclick="closeAddRestockModal()">×</button>
+<div id="addRestockModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle"></i> Add New Restock</h3>
+            <button class="modal-close" onclick="closeAddRestockModal()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="modalContent">
-            <div id="restockItemsContainer">
-                <div class="restock-item">
-                    <input type="text" placeholder="Item name" class="item-name">
-                    <input type="number" placeholder="Price" class="item-price" min="0" step="0.01">
-                    <input type="text" placeholder="Image URL" class="item-img">
-                    <button class="remove-item-btn" onclick="removeRestockItem(this)">×</button>
+        <div class="modal-body">
+            <div class="restock-form">
+                <div class="form-section">
+                    <h4>Restock Items</h4>
+                    <div id="restockItemsContainer" class="items-container">
+                        <!-- Items will be added dynamically -->
+                    </div>
+                    <button type="button" id="addItemBtn" class="btn-add-item">
+                        <i class="fas fa-plus"></i>
+                        Add Item
+                    </button>
                 </div>
             </div>
-            <button id="addItemBtn" onclick="addRestockItem()">+ Add Item</button>
-            <div class="modalButtons">
-                <button class="cancelBtn" onclick="closeAddRestockModal()">Cancel</button>
-                <button class="submitBtn" onclick="submitRestock()">Submit Restock</button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeAddRestockModal()">Cancel</button>
+            <button class="btn-primary" onclick="submitRestock()">
+                <i class="fas fa-paper-plane"></i>
+                Post Restock
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Profile Configuration Modal -->
-<div id="profileConfigModal" class="hidden">
-    <div id="profileConfigModalBox">
-        <div class="modalHeader">
-            <h3>Configure Profile</h3>
-            <button class="closeModal" onclick="closeProfileConfigModal()">×</button>
+<div id="profileConfigModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-cog"></i> Configure Profile</h3>
+            <button class="modal-close" onclick="closeProfileConfigModal()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="modalContent">
-            <div class="form-group">
-                <label for="displayName">Display Name:</label>
-                <input type="text" id="displayName" placeholder="Enter your display name">
-            </div>
-            <div class="form-group">
-                <label for="avatarUrl">Profile Picture URL:</label>
-                <input type="text" id="avatarUrl" placeholder="Enter image URL (optional)">
-                <div id="avatarPreview">
-                    <img id="avatarPreviewImg" src="/images/default-avatar.png" alt="Avatar Preview">
+        <div class="modal-body">
+            <div class="profile-form">
+                <div class="form-group">
+                    <label for="displayName">Display Name</label>
+                    <input type="text" id="displayName" placeholder="Enter your display name">
+                </div>
+                <div class="form-group">
+                    <label for="avatarUpload">Profile Picture</label>
+                    <div class="upload-container">
+                        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                        <button type="button" id="uploadBtn" class="btn-upload">
+                            <i class="fas fa-camera"></i>
+                            Choose Image
+                        </button>
+                        <div class="upload-options">
+                            <span>or</span>
+                            <input type="text" id="avatarUrl" placeholder="Enter image URL">
+                        </div>
+                    </div>
+                    <div id="avatarPreview" class="avatar-preview">
+                        <img id="avatarPreviewImg" src="/images/default-avatar.png" alt="Avatar Preview">
+                        <div id="uploadProgress" class="upload-progress hidden">
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <span class="progress-text">Uploading...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modalButtons">
-                <button class="cancelBtn" onclick="closeProfileConfigModal()">Cancel</button>
-                <button class="submitBtn" onclick="saveProfile()">Save Profile</button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeProfileConfigModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveProfile()">
+                <i class="fas fa-save"></i>
+                Save Profile
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Toast Notifications Container -->
+<div id="toastContainer" class="toast-container"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -134,6 +249,6 @@
 <script src="/script.js"></script>
 <script src="/navbar.js"></script>
 <script src="/cart.js"></script>
-<script src="/tabs/restock.js"></script>
+<script src="/tabs/restocks.js"></script>
 </body>
 </html>
