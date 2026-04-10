@@ -55,21 +55,105 @@ window.viewOrder = function viewOrder(i) {
     openOrderModal(order);
 };
 
+// Custom notification modal functions
+function showNotificationModal(title, message, icon, buttons = []) {
+    const modal = document.getElementById("notificationModal");
+    const iconEl = document.getElementById("notificationModalIcon");
+    const titleEl = document.getElementById("notificationModalTitle");
+    const messageEl = document.getElementById("notificationModalMessage");
+    const buttonsEl = document.getElementById("notificationModalButtons");
+
+    iconEl.textContent = icon;
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    buttonsEl.innerHTML = "";
+    buttons.forEach(btn => {
+        const button = document.createElement("button");
+        button.className = `notificationBtn ${btn.type || 'secondary'}`;
+        button.textContent = btn.text;
+        button.onclick = btn.action;
+        buttonsEl.appendChild(button);
+    });
+
+    modal.classList.remove("hidden");
+}
+
+function closeNotificationModal() {
+    document.getElementById("notificationModal").classList.add("hidden");
+}
+
 window.updateOrderStatus = async function updateOrderStatus(i, status) {
     const user = firebase.auth().currentUser;
     if (!user) {
-        alert("Admin login required.");
+        showNotificationModal(
+            "Authentication Required",
+            "Admin login required to perform this action.",
+            "🔒",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
         return;
     }
 
-    let declineReason = "";
     if (status === "declined") {
-        declineReason = prompt("State your reason for declining this order:") || "";
-        if (!declineReason.trim()) {
-            alert("Decline reason is required.");
-            return;
-        }
+        showNotificationModal(
+            "Decline Order",
+            "Please state your reason for declining this order:",
+            "📝",
+            []
+        );
+        
+        // Add input field and buttons
+        const messageEl = document.getElementById("notificationModalMessage");
+        const buttonsEl = document.getElementById("notificationModalButtons");
+        
+        const input = document.createElement("textarea");
+        input.id = "declineReasonInput";
+        input.placeholder = "Enter decline reason...";
+        messageEl.style.display = "none";
+        messageEl.parentNode.insertBefore(input, buttonsEl);
+        
+        buttonsEl.innerHTML = `
+            <button class="notificationBtn secondary" onclick="closeNotificationModal()">Cancel</button>
+            <button class="notificationBtn danger" onclick="confirmDecline(${i})">Decline Order</button>
+        `;
+        
+        input.focus();
+        return;
     }
+
+    // For accept action
+    showNotificationModal(
+        "Accept Order",
+        "Are you sure you want to accept this order? This action cannot be undone.",
+        "✅",
+        [
+            { text: "Cancel", type: "secondary", action: closeNotificationModal },
+            { text: "Accept Order", type: "success", action: () => confirmUpdateOrderStatus(i, status) }
+        ]
+    );
+};
+
+window.confirmDecline = async function confirmDecline(i) {
+    const input = document.getElementById("declineReasonInput");
+    const declineReason = input ? input.value.trim() : "";
+    
+    if (!declineReason) {
+        showNotificationModal(
+            "Reason Required",
+            "A decline reason is required.",
+            "⚠️",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
+        return;
+    }
+    
+    await confirmUpdateOrderStatus(i, "declined", declineReason);
+};
+
+window.confirmUpdateOrderStatus = async function confirmUpdateOrderStatus(i, status, declineReason = "") {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
 
     const token = await user.getIdToken();
     const res = await fetch(`/orders/${i}/status`, {
@@ -83,18 +167,90 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || "Failed to update order.");
+        showNotificationModal(
+            "Error",
+            err.error || "Failed to update order.",
+            "❌",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
         return;
     }
 
-    alert(`Order ${status}.`);
-    await loadOrders();
+    const statusText = status === "accepted" ? "accepted" : status === "declined" ? "declined" : status;
+    showNotificationModal(
+        "Success",
+        `Order ${statusText} successfully!`,
+        "✅",
+        [{ text: "OK", type: "primary", action: () => { closeNotificationModal(); loadOrders(); } }]
+    );
+};
+
+window.removeOrder = async function removeOrder(i) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        showNotificationModal(
+            "Authentication Required",
+            "Admin login required to perform this action.",
+            "🔒",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
+        return;
+    }
+
+    const order = ordersCache[i];
+    if (!order) return;
+
+    showNotificationModal(
+        "Remove Order",
+        `Are you sure you want to remove this order from ${order.user}? This action cannot be undone.`,
+        "🗑️",
+        [
+            { text: "Cancel", type: "secondary", action: closeNotificationModal },
+            { text: "Remove Order", type: "danger", action: () => confirmRemoveOrder(i) }
+        ]
+    );
+};
+
+window.confirmRemoveOrder = async function confirmRemoveOrder(i) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const token = await user.getIdToken();
+    const res = await fetch(`/orders/${i}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showNotificationModal(
+            "Error",
+            err.error || "Failed to remove order.",
+            "❌",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
+        return;
+    }
+
+    showNotificationModal(
+        "Success",
+        "Order removed successfully!",
+        "✅",
+        [{ text: "OK", type: "primary", action: () => { closeNotificationModal(); loadOrders(); } }]
+    );
 };
 
 function renderOrderRow(order, index, admin, customResultText) {
     const result = order.status || "pending";
     const resultLabel = customResultText || RESULT_LABELS[result] || "Pending";
     const reasonPart = order.declineReason ? `<div class="orderReason">Reason: ${order.declineReason}</div>` : "";
+    
+    // Determine if admin can remove this order
+    const canRemove = admin && ['accepted', 'success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'].includes(result);
+    
     return `
     <div class="orderRow">
         <div class="orderMeta">
@@ -114,6 +270,9 @@ function renderOrderRow(order, index, admin, customResultText) {
             ${admin && result === "pending" ? `
             <button class="orderActionBtn" onclick="updateOrderStatus(${index}, 'accepted')">Accept</button>
             <button class="orderActionBtn declineBtn" onclick="updateOrderStatus(${index}, 'declined')">Decline</button>
+            ` : ""}
+            ${canRemove ? `
+            <button class="orderActionBtn danger" onclick="removeOrder(${index})">Remove</button>
             ` : ""}
         </div>
     </div>`;
@@ -182,13 +341,13 @@ async function loadOrders() {
     waitingEntries
         .sort((a, b) => new Date(b.o.date).getTime() - new Date(a.o.date).getTime())
         .forEach(({ o, i }) => {
-            waitingList.innerHTML += renderOrderRow(o, i, admin, "Waiting for someone to accept...");
+            waitingList.innerHTML += renderOrderRow(o, i, admin);
         });
 
     acceptedEntries
         .sort((a, b) => new Date(b.o.date).getTime() - new Date(a.o.date).getTime())
         .forEach(({ o, i }) => {
-            acceptedList.innerHTML += renderOrderRow(o, i, admin, "Pending");
+            acceptedList.innerHTML += renderOrderRow(o, i, admin);
         });
 
     const finalRendered = applyFinalSortAndFilter(finalEntries);
@@ -205,6 +364,11 @@ if (window.firebase && firebase.auth) {
 document.getElementById("closeOrderModal")?.addEventListener("click", closeOrderModal);
 document.getElementById("orderModal")?.addEventListener("click", (e) => {
     if (e.target.id === "orderModal") closeOrderModal();
+});
+
+// Notification modal event listeners
+document.getElementById("notificationModal")?.addEventListener("click", (e) => {
+    if (e.target.id === "notificationModal") closeNotificationModal();
 });
 document.getElementById("toggleFinalSort")?.addEventListener("click", () => {
     document.getElementById("finalSortPanel")?.classList.toggle("hidden");
