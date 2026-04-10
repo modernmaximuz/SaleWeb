@@ -1,3 +1,4 @@
+console.log("TOKEN CHECK:", process.env.MANAGE_BOT_TOKEN);
 const { Client, GatewayIntentBits, PermissionsBitField, EmbedBuilder } = require("discord.js");
 
 // Bot configuration
