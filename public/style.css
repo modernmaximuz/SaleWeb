@@ -413,40 +413,143 @@ button:active {
 }
 
 .removeCartBtn {
-    margin-left: auto;
-    padding: 6px 10px;
-    background: #2a2a3a;
-    border: 1px solid #3a3a50;
-    border-radius: 8px;
+margin-left: auto;
+padding: 6px 10px;
+background: #2a2a3a;
+border: 1px solid #3a3a50;
+border-radius: 8px;
+}
+
+/* Profile Configuration Modal */
+#profileConfigModal {
+position: fixed;
+inset: 0;
+background: rgba(0, 0, 0, 0.7);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 6000;
+}
+
+#profileConfigModalBox {
+background: linear-gradient(180deg, #1a1a25 0%, #14141c 100%);
+border: 1px solid #2a2a3a;
+border-radius: 16px;
+padding: 24px;
+min-width: 400px;
+max-width: 600px;
+max-height: 80vh;
+overflow-y: auto;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Upload Components */
+.upload-container {
+display: flex;
+gap: 12px;
+align-items: center;
+margin-bottom: 12px;
+}
+
+.upload-button {
+background: linear-gradient(135deg, #4c8dff 0%, #3a6bc7 100%);
+color: white;
+border: none;
+border-radius: 8px;
+padding: 10px 16px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.upload-button:hover {
+background: linear-gradient(135deg, #5b9aff 0%, #4a7ad6 100%);
+transform: translateY(-1px);
+}
+
+.upload-options {
+display: flex;
+align-items: center;
+gap: 8px;
+color: #ccc;
+}
+
+.upload-options input {
+flex: 1;
+min-width: 200px;
+}
+
+#avatarPreview {
+margin-top: 12px;
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+#avatarPreviewImg {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+object-fit: cover;
+border: 2px solid #2a2a3a;
+}
+
+#uploadProgress {
+display: flex;
+flex-direction: column;
+gap: 8px;
+align-items: center;
+}
+
+.progress-bar {
+width: 120px;
+height: 6px;
+background: #2a2a3a;
+border-radius: 3px;
+overflow: hidden;
+}
+
+.progress-fill {
+height: 100%;
+background: linear-gradient(90deg, #4c8dff, #3a6bc7);
+border-radius: 3px;
+transition: width 0.3s ease;
+width: 0%;
+}
+
+.progress-text {
+font-size: 12px;
+color: #9bc2ff;
 }
 
 #loginModal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.68);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 7000;
+position: fixed;
+inset: 0;
+background: rgba(0, 0, 0, 0.68);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 7000;
 }
 
 #loginModalBox {
-    position: relative;
-    width: min(520px, 92vw);
-    padding: 22px;
-    border-radius: 16px;
-    border: 1px solid #2a2a3a;
-    background: linear-gradient(180deg, #191928 0%, #111118 100%);
-    box-shadow: 0 18px 55px rgba(0, 0, 0, 0.6);
+position: relative;
+width: min(520px, 92vw);
+padding: 22px;
+border-radius: 16px;
+border: 1px solid #2a2a3a;
+background: linear-gradient(180deg, #191928 0%, #111118 100%);
+box-shadow: 0 18px 55px rgba(0, 0, 0, 0.6);
 }
 
 #loginModalBox h2 {
-    margin-bottom: 8px;
+margin-bottom: 8px;
 }
 
 #loginModalBox p {
-    opacity: 0.82;
-    margin-bottom: 14px;
+opacity: 0.82;
+margin-bottom: 14px;
 }
 
 #modalDiscordLogin {
