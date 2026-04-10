@@ -163,6 +163,17 @@ async function writeCartDb(db) {
     await fs.writeFile(CART_DB_PATH, JSON.stringify(db, null, 2), "utf8");
 }
 
+// Serve tabs pages
+app.get("/tabs/:tab", (req, res) => {
+    const { tab } = req.params;
+    res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
+});
+
+// Serve support page directly
+app.get("/support", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
+});
+
 // Load paste
 app.get("/load/:id", async (req, res) => {
     const pasteId = req.params.id;
