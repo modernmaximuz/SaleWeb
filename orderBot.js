@@ -10,6 +10,7 @@ const SCAMMER_ROLE_ID = "1491771111426363562";
 const BASE = "https://pastefy.app/api/v2";
 const API_KEY = process.env.API_KEY;
 const GUILD_ID = process.env.GUILD_ID;
+const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL"; // Same paste for bot communication
 
 const client = new Client({
     intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
@@ -121,6 +122,57 @@ async function registerCommands() {
 client.on("ready", async () => {
     console.log("Order bot ready");
     await registerCommands();
+    
+    // Check for cross-bot messages
+    setInterval(async () => {
+        try {
+            const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+                headers: { Authorization: `Bearer ${API_KEY}` }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const messages = JSON.parse(data.content || "[]");
+                const now = Date.now();
+                
+                // Process messages meant for this bot and are recent (within 30 seconds)
+                const orderMessages = messages.filter(msg => 
+                    msg.bot === "order" && 
+                    (now - msg.timestamp) < 30000
+                );
+                
+                if (orderMessages.length > 0) {
+                    const guild = client.guilds.cache.get(GUILD_ID);
+                    if (guild) {
+                        for (const msg of orderMessages) {
+                            const channel = guild.channels.cache.get(msg.channelId);
+                            if (channel) {
+                                await channel.send(msg.message);
+                            }
+                        }
+                        
+                        // Mark messages as processed by removing them
+                        const processedMessages = messages.filter(msg => 
+                            !(msg.bot === "order" && (now - msg.timestamp) < 30000)
+                        );
+                        
+                        await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+                            method: "PUT",
+                            headers: {
+                                Authorization: `Bearer ${API_KEY}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                content: JSON.stringify(processedMessages, null, 2)
+                            })
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error checking bot messages:', error);
+        }
+    }, 5000); // Check every 5 seconds
 });
 
 async function createOrderChannel(order) {
