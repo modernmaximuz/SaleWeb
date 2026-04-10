@@ -144,7 +144,58 @@ function handleRealTimeUpdate(data) {
         case 'typing':
             showTypingIndicator(data.user, data.isTyping);
             break;
+        case 'chat_reset':
+            messages = [];
+            renderMessages();
+            updateResetTimer(data.nextReset);
+            showNotification('Chat has been reset for the week!');
+            break;
     }
+}
+
+// Update reset timer display
+function updateResetTimer(nextResetTime) {
+    const timerEl = document.getElementById('resetTimer');
+    if (!timerEl) return;
+    
+    if (nextResetTime) {
+        const updateTimer = () => {
+            const now = Date.now();
+            const timeLeft = nextResetTime - now;
+            
+            if (timeLeft <= 0) {
+                timerEl.textContent = 'Chat will reset soon...';
+                return;
+            }
+            
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let timeString = '';
+            if (days > 0) timeString += `${days}d `;
+            if (hours > 0) timeString += `${hours}h `;
+            timeString += `${minutes}m`;
+            
+            timerEl.textContent = `Chat resets in: ${timeString}`;
+        };
+        
+        updateTimer();
+        setInterval(updateTimer, 60000); // Update every minute
+    }
+}
+
+// Show notification
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'chat-notification';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
 }
 
 // Render messages
