@@ -58,12 +58,17 @@ async function initChat() {
 // Load existing messages
 async function loadMessages() {
     try {
-        const res = await fetch(`/load/${CHAT_PASTE_ID}`);
+        const res = await fetch('/chat/messages');
         const data = await res.json();
         
-        if (data.content) {
-            messages = JSON.parse(data.content) || [];
+        if (data.messages) {
+            messages = data.messages;
             renderMessages();
+        }
+        
+        // Update reset timer if available
+        if (data.nextReset) {
+            updateResetTimer(data.nextReset);
         }
     } catch (error) {
         console.error('Failed to load messages:', error);
