@@ -28,49 +28,61 @@ async function initChat() {
     try {
         console.log('Initializing chat...');
         
-        // Check if user is logged in
-        const headers = {};
-        
-        // Add Firebase token for admin users
-        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
-            const firebaseUser = firebase.auth().currentUser;
-            console.log('Firebase user found:', firebaseUser.email);
-            
-            const token = await firebaseUser.getIdToken();
-            headers.Authorization = `Bearer ${token}`;
-            
-            // Set currentUser from Firebase immediately for admin users
-            currentUser = {
-                id: firebaseUser.uid,
-                username: firebaseUser.email,
-                email: firebaseUser.email,
-                type: "admin",
-                isAdmin: true
-            };
-            isAdmin = true;
-            console.log('Firebase admin user set:', currentUser);
+        // Wait for Firebase to be ready and check auth state
+        if (window.firebase && firebase.auth) {
+            firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+                console.log('Firebase auth state changed:', firebaseUser ? firebaseUser.email : 'No user');
+                
+                if (firebaseUser) {
+                    // Firebase user is logged in
+                    const token = await firebaseUser.getIdToken();
+                    const headers = { Authorization: `Bearer ${token}` };
+                    
+                    // Set currentUser from Firebase immediately for admin users
+                    currentUser = {
+                        id: firebaseUser.uid,
+                        username: firebaseUser.email,
+                        email: firebaseUser.email,
+                        type: "admin",
+                        isAdmin: true
+                    };
+                    isAdmin = true;
+                    console.log('Firebase admin user set:', currentUser);
+                    
+                    // Try to get user info from server
+                    try {
+                        const res = await fetch('/me', { headers });
+                        const user = await res.json();
+                        console.log('Server response:', user);
+                        
+                        if (user) {
+                            currentUser = user;
+                            isAdmin = !!user.isAdmin;
+                            console.log('User set from server:', currentUser, 'Is admin:', isAdmin);
+                        }
+                    } catch (serverError) {
+                        console.error('Server auth check failed:', serverError);
+                        // Keep Firebase user if server fails
+                    }
+                } else {
+                    // No Firebase user
+                    currentUser = null;
+                    isAdmin = false;
+                    console.log('No Firebase user found');
+                }
+                
+                await loadMessages();
+                setupEventListeners();
+                connectRealTime();
+                updateUI();
+            });
+        } else {
+            console.error('Firebase not available');
+            await loadMessages();
+            setupEventListeners();
+            connectRealTime();
+            updateUI();
         }
-        
-        // Try to get user info from server
-        try {
-            const res = await fetch('/me', { headers });
-            const user = await res.json();
-            console.log('Server response:', user);
-            
-            if (user) {
-                currentUser = user;
-                isAdmin = !!user.isAdmin;
-                console.log('User set from server:', currentUser, 'Is admin:', isAdmin);
-            }
-        } catch (serverError) {
-            console.error('Server auth check failed:', serverError);
-            // Keep Firebase user if server fails
-        }
-        
-        await loadMessages();
-        setupEventListeners();
-        connectRealTime();
-        updateUI();
         
     } catch (error) {
         console.error('Failed to initialize chat:', error);
