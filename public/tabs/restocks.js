@@ -160,9 +160,43 @@ function renderRestocks() {
     noRestocks.classList.add('hidden');
     container.innerHTML = '';
     
-    restocks.forEach(restock => {
-        const restockEl = createRestockElement(restock);
-        container.appendChild(restockEl);
+    // Sort dates and render grouped restocks
+    const sortedDates = Object.keys(groupedRestocks).sort((a, b) => new Date(b) - new Date(a));
+    
+    sortedDates.forEach(dateKey => {
+        const dateGroup = groupedRestocks[dateKey];
+        const sortedHours = Object.keys(dateGroup).sort((a, b) => b - a);
+        
+        // Create date section
+        const dateSection = document.createElement('div');
+        dateSection.className = 'restock-date-section';
+        
+        const dateHeader = document.createElement('h3');
+        dateHeader.className = 'date-header';
+        dateHeader.textContent = dateKey;
+        dateSection.appendChild(dateHeader);
+        
+        // Render each hour group
+        sortedHours.forEach(hour => {
+            const hourGroup = dateGroup[hour];
+            const hourSection = document.createElement('div');
+            hourSection.className = 'restock-hour-section';
+            
+            const hourHeader = document.createElement('h4');
+            hourHeader.className = 'hour-header';
+            hourHeader.textContent = `${hour}:00 - ${hour}:59`;
+            hourSection.appendChild(hourHeader);
+            
+            // Render restocks in this hour
+            hourGroup.forEach(restock => {
+                const restockEl = createRestockElement(restock);
+                hourSection.appendChild(restockEl);
+            });
+            
+            dateSection.appendChild(hourSection);
+        });
+        
+        container.appendChild(dateSection);
     });
 }
 
