@@ -23,7 +23,7 @@ loadEnv();
 
 // Bot configuration
 const BOT_TOKEN = process.env.MANAGE_BOT_TOKEN;
-const GUILD_ID = "1492190841987666011";
+const GUILD_ID = "1490558125303009280";
 const ADMIN_ROLE_ID = "1491763556209786950"; // Support Team role or higher
 const MOD_ROLE_ID = "1492197702807851049"; // Mod role
 const MUTED_ROLE_ID = "1492197287487606844"; // Muted role (you'll need to create this)
