@@ -72,6 +72,46 @@
     <button id="nextPage">Next ▶</button>
 </div>
 
+<!-- Profile Configuration Modal -->
+<div id="profileConfigModal" class="hidden">
+    <div id="profileConfigModalBox">
+        <div class="modalHeader">
+            <h3>Configure Profile</h3>
+            <button class="closeModal" onclick="closeProfileConfigModal()">×</button>
+        </div>
+        <div class="modalContent">
+            <div class="form-group">
+                <label for="displayName">Display Name:</label>
+                <input type="text" id="displayName" placeholder="Enter your display name">
+            </div>
+            <div class="form-group">
+                <label for="avatarUpload">Profile Picture:</label>
+                <div class="upload-container">
+                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                    <button type="button" id="uploadBtn" class="upload-button">Choose Image</button>
+                    <div class="upload-options">
+                        <span>or</span>
+                        <input type="text" id="avatarUrl" placeholder="Enter image URL">
+                    </div>
+                </div>
+                <div id="avatarPreview">
+                    <img id="avatarPreviewImg" src="/images/default-avatar.png" alt="Avatar Preview">
+                    <div id="uploadProgress" class="hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">Uploading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modalButtons">
+                <button class="cancelBtn" onclick="closeProfileConfigModal()">Cancel</button>
+                <button class="submitBtn" onclick="saveProfile()">Save Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="/firebase.js"></script>
