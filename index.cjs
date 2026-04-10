@@ -982,6 +982,15 @@ app.put('/admin/profile', verifyToken, async (req, res) => {
     }
 });
 
+const { createOrderChannel } = require("./orderBot");
+const { addMute, removeMute, isMuted, muteLogs } = require("./managementBot");
+
+app.post("/accept-order", async (req,res)=>{
+    const order = req.body;
+    await createOrderChannel(order);
+    res.send("ok");
+});
+
 app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
@@ -1117,14 +1126,5 @@ app.get("/logout-discord", (req, res) => {
 
     res.setHeader("Set-Cookie", cookie);
     res.redirect("/");
-});
-
-const { createOrderChannel } = require("./orderBot");
-const { addMute, removeMute, isMuted, muteLogs } = require("./managementBot");
-
-app.post("/accept-order", async (req,res)=>{
-    const order = req.body;
-    await createOrderChannel(order);
-    res.send("ok");
 });
 
