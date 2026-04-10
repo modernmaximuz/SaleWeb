@@ -204,6 +204,94 @@ document.addEventListener("click", () => {
     profileDropdown.classList.add("hidden");
 });
 
+// ------------------ PROFILE CONFIGURATION ------------------
+function openProfileConfigModal() {
+    loadProfileData();
+    document.getElementById("profileConfigModal").classList.remove("hidden");
+}
+
+function closeProfileConfigModal() {
+    document.getElementById("profileConfigModal").classList.add("hidden");
+}
+
+async function loadProfileData() {
+    try {
+        const token = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch("/admin/profile", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        
+        if (res.ok) {
+            const profile = await res.json();
+            document.getElementById("displayName").value = profile.displayName || '';
+            document.getElementById("avatarUrl").value = profile.avatar || '';
+            updateAvatarPreview();
+        }
+    } catch (error) {
+        console.error('Failed to load profile:', error);
+    }
+}
+
+function updateAvatarPreview() {
+    const avatarUrl = document.getElementById("avatarUrl").value.trim();
+    const previewImg = document.getElementById("avatarPreviewImg");
+    
+    if (avatarUrl) {
+        previewImg.src = avatarUrl;
+        previewImg.onerror = () => {
+            previewImg.src = "/images/default-avatar.png";
+        };
+    } else {
+        previewImg.src = "/images/default-avatar.png";
+    }
+}
+
+async function saveProfile() {
+    const displayName = document.getElementById("displayName").value.trim();
+    const avatarUrl = document.getElementById("avatarUrl").value.trim();
+    
+    if (!displayName) {
+        alert('Display name is required.');
+        return;
+    }
+    
+    try {
+        const token = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch("/admin/profile", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ displayName, avatar })
+        });
+        
+        if (res.ok) {
+            closeProfileConfigModal();
+            // Update profile display if needed
+            if (document.getElementById("profileName")) {
+                document.getElementById("profileName").textContent = displayName;
+            }
+        } else {
+            const error = await res.json();
+            alert('Failed to save profile: ' + (error.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Failed to save profile:', error);
+        alert('Failed to save profile. Please try again.');
+    }
+}
+
+// Add event listener for avatar URL input
+document.addEventListener("DOMContentLoaded", () => {
+    const avatarUrlInput = document.getElementById("avatarUrl");
+    if (avatarUrlInput) {
+        avatarUrlInput.addEventListener("input", updateAvatarPreview);
+    }
+});
+
 // ===== GLOBAL AUTH CHECK (used by navbar & pages) =====
 window.isLoggedIn = async function () {
     // Check Firebase
