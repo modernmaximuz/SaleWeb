@@ -296,17 +296,22 @@ function createMessageElement(message) {
         div.classList.add('muted');
     }
     
-    const avatar = message.isAdmin ? '/hades.gif' : 
-                   (message.avatar === 'admin' ? '/hades.gif' : `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`);
+    const avatar = message.isAdmin ? 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true' : 
+                   (message.avatar === 'admin' ? 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true' : `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`);
+    
+    // Check if user can delete their own message (within 10 seconds)
+    const timeSinceMessage = Date.now() - message.timestamp;
+    const canDeleteOwnMessage = currentUser && currentUser.id === message.userId && timeSinceMessage < 10000;
     
     div.innerHTML = `
         <div class="message-avatar" onclick="showUserActions('${message.userId}', '${message.username}', '${message.avatar}', ${message.isAdmin})">
-            <img src="${avatar}" alt="${message.username}" onerror="this.src='/hades.gif'">
+            <img src="${avatar}" alt="${message.username}" onerror="this.src='https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true'">
         </div>
         <div class="message-content">
             <div class="message-header">
                 <span class="message-author">${message.isAdmin ? 'Admin' : message.username}</span>
                 <span class="message-time">${formatTime(message.timestamp)}</span>
+                ${canDeleteOwnMessage ? `<button class="delete-message-btn" onclick="deleteOwnMessage('${message.id}')">×</button>` : ''}
                 ${message.replyTo ? `<span class="reply-indicator">Replying to ${message.replyTo.username}</span>` : ''}
             </div>
             <div class="message-text">${isMuted ? '[Muted]' : message.text}</div>
@@ -590,6 +595,34 @@ function setupEventListeners() {
 function handleTyping() {
     // Typing indicator disabled - not working properly
     return;
+}
+
+// Delete own message function
+async function deleteOwnMessage(messageId) {
+    if (!currentUser) return;
+    
+    const message = messages.find(m => m.id === messageId);
+    if (!message) return;
+    
+    // Verify it's the user's own message and within 10 seconds
+    const timeSinceMessage = Date.now() - message.timestamp;
+    if (message.userId !== currentUser.id || timeSinceMessage >= 10000) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(`/chat/message/${messageId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (res.ok) {
+            messages = messages.filter(m => m.id !== messageId);
+            renderMessages();
+        }
+    } catch (error) {
+        console.error('Failed to delete message:', error);
+    }
 }
 
 // Update send button state
