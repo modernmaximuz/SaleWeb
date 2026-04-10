@@ -33,6 +33,26 @@ function showProfile(user, type) {
             avatar.style.backgroundImage = "";
         }
     }
+
+    // Add admin options for Firebase users
+    updateProfileDropdown(type === "firebase");
+}
+
+function updateProfileDropdown(isAdmin) {
+    const profileDropdown = document.getElementById("profileDropdown");
+    if (!profileDropdown) return;
+
+    if (isAdmin) {
+        profileDropdown.innerHTML = `
+            <button id="logoutBtn">Logout</button>
+            <button id="profileConfigBtn">Configure Profile</button>
+            <button onclick="location.href='/restocks'">Manage Restocks</button>
+        `;
+    } else {
+        profileDropdown.innerHTML = `
+            <button id="logoutBtn">Logout</button>
+        `;
+    }
 }
 
 function resetUI() {
@@ -151,22 +171,28 @@ firebase.auth().onAuthStateChanged(async (user) => {
 });
 
 // ------------------ LOGOUT ------------------
-document.getElementById("logoutBtn").onclick = async () => {
-    try {
-        if (firebase.auth().currentUser) {
-            await firebase.auth().signOut();
+document.addEventListener("click", async (e) => {
+    if (e.target.id === "logoutBtn") {
+        try {
+            if (firebase.auth().currentUser) {
+                await firebase.auth().signOut();
+            }
+
+            await fetch("/logout-discord");
+
+            resetUI();
+
+            // Force redirect every time
+            window.location.href = "/";
+        } catch (err) {
+            console.error("Logout error:", err);
         }
-
-        await fetch("/logout-discord");
-
-        resetUI();
-
-        // 🔥 FORCE REDIRECT EVERY TIME
-        window.location.href = "/";
-    } catch (err) {
-        console.error("Logout error:", err);
     }
-};
+    
+    if (e.target.id === "profileConfigBtn") {
+        openProfileConfigModal();
+    }
+});
 
 // ------------------ PROFILE DROPDOWN ------------------
 profileMain?.addEventListener("click", (e) => {
