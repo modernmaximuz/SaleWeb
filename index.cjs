@@ -345,6 +345,256 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
     }
 });
 
+// Chat System
+const CHAT_PASTE_ID = "lBybg0MJ";
+const chatClients = new Set();
+const typingUsers = new Map();
+
+// Server-Sent Events for real-time updates
+app.get('/chat/events', (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+    });
+
+    const clientId = Date.now().toString();
+    chatClients.add({ id: clientId, res });
+
+    // Send initial connection event
+    res.write(`data: ${JSON.stringify({ type: 'connected', clientId })}\n\n`);
+
+    // Remove client on disconnect
+    req.on('close', () => {
+        chatClients.forEach(client => {
+            if (client.id === clientId) {
+                chatClients.delete(client);
+            }
+        });
+    });
+});
+
+// Broadcast message to all connected clients
+function broadcastToClients(data) {
+    chatClients.forEach(client => {
+        try {
+            client.res.write(`data: ${JSON.stringify(data)}\n\n`);
+        } catch (error) {
+            // Remove dead clients
+            chatClients.delete(client);
+        }
+    });
+}
+
+// Send new message
+app.post('/chat/message', async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Discord login required' });
+        }
+
+        const { text, replyTo } = req.body;
+        if (!text || !text.trim()) {
+            return res.status(400).json({ error: 'Message text is required' });
+        }
+
+        // Load existing messages
+        const parsed = await readPasteContent(CHAT_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: 'Failed to load chat messages' });
+        }
+
+        const messages = parseOrdersContent(parsed.content);
+        
+        // Check if user is muted
+        const mutedUsers = new Set();
+        // You could store muted users in a separate paste or database
+        
+        if (mutedUsers.has(user.id)) {
+            return res.status(403).json({ error: 'You are muted' });
+        }
+
+        // Create new message
+        const message = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            userId: user.id,
+            username: user.username,
+            avatar: user.avatar,
+            text: text.trim(),
+            timestamp: Date.now(),
+            isAdmin: false, // Discord users are not admins
+            replyTo: replyTo || null
+        };
+
+        messages.push(message);
+
+        // Save messages
+        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify(messages, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save message' });
+        }
+
+        // Broadcast to all clients
+        broadcastToClients({
+            type: 'new_message',
+            message
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Delete message (admin only)
+app.delete('/chat/message/:messageId', verifyToken, async (req, res) => {
+    try {
+        const { messageId } = req.params;
+
+        // Load messages
+        const parsed = await readPasteContent(CHAT_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: 'Failed to load chat messages' });
+        }
+
+        const messages = parseOrdersContent(parsed.content);
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+
+        if (messageIndex === -1) {
+            return res.status(404).json({ error: 'Message not found' });
+        }
+
+        // Remove message
+        messages.splice(messageIndex, 1);
+
+        // Save messages
+        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify(messages, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save messages' });
+        }
+
+        // Broadcast deletion
+        broadcastToClients({
+            type: 'message_deleted',
+            messageId
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to delete message:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Mute user (admin only)
+app.post('/chat/mute', verifyToken, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        
+        // In a real implementation, you'd store muted users in a database or separate paste
+        // For now, we'll broadcast the mute event
+        broadcastToClients({
+            type: 'user_muted',
+            userId
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to mute user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Unmute user (admin only)
+app.post('/chat/unmute', verifyToken, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        
+        broadcastToClients({
+            type: 'user_unmuted',
+            userId
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to unmute user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Delete all user messages (admin only)
+app.post('/chat/delete-user-messages', verifyToken, async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        // Load messages
+        const parsed = await readPasteContent(CHAT_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: 'Failed to load chat messages' });
+        }
+
+        const messages = parseOrdersContent(parsed.content);
+        
+        // Filter out user's messages
+        const filteredMessages = messages.filter(m => m.userId !== userId);
+
+        // Save messages
+        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify(filteredMessages, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save messages' });
+        }
+
+        // Broadcast that messages were deleted
+        broadcastToClients({
+            type: 'user_messages_deleted',
+            userId
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to delete user messages:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Typing indicator
+app.post('/chat/typing', (req, res) => {
+    try {
+        const { userId, username, isTyping } = req.body;
+
+        if (isTyping) {
+            typingUsers.set(userId, username);
+            // Clear typing indicator after 3 seconds
+            setTimeout(() => {
+                typingUsers.delete(userId);
+                broadcastToClients({
+                    type: 'typing',
+                    userId,
+                    username,
+                    isTyping: false
+                });
+            }, 3000);
+        } else {
+            typingUsers.delete(userId);
+        }
+
+        broadcastToClients({
+            type: 'typing',
+            userId,
+            username,
+            isTyping
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to handle typing:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
