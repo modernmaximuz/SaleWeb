@@ -229,7 +229,7 @@ window.confirmRemoveOrder = async function confirmRemoveOrder(i) {
         showNotificationModal(
             "Error",
             err.error || "Failed to remove order.",
-            "❌",
+            "",
             [{ text: "OK", type: "primary", action: closeNotificationModal }]
         );
         return;
@@ -238,7 +238,65 @@ window.confirmRemoveOrder = async function confirmRemoveOrder(i) {
     showNotificationModal(
         "Success",
         "Order removed successfully!",
-        "✅",
+        "",
+        [{ text: "OK", type: "primary", action: () => { closeNotificationModal(); loadOrders(); } }]
+    );
+};
+
+window.deleteFinalResult = async function deleteFinalResult(i) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        showNotificationModal(
+            "Authentication Required",
+            "Admin login required to perform this action.",
+            "",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
+        return;
+    }
+
+    const order = ordersCache[i];
+    if (!order) return;
+
+    showNotificationModal(
+        "Delete Final Result",
+        `Are you sure you want to delete the final result for this order from ${order.user}? The order will be reset to pending status.`,
+        "",
+        [
+            { text: "Cancel", type: "secondary", action: closeNotificationModal },
+            { text: "Delete Result", type: "danger", action: () => confirmDeleteFinalResult(i) }
+        ]
+    );
+};
+
+window.confirmDeleteFinalResult = async function confirmDeleteFinalResult(i) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const token = await user.getIdToken();
+    const res = await fetch(`/orders/${i}/result`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showNotificationModal(
+            "Error",
+            err.error || "Failed to delete final result.",
+            "",
+            [{ text: "OK", type: "primary", action: closeNotificationModal }]
+        );
+        return;
+    }
+
+    showNotificationModal(
+        "Success",
+        "Final result deleted successfully! Order reset to pending.",
+        "",
         [{ text: "OK", type: "primary", action: () => { closeNotificationModal(); loadOrders(); } }]
     );
 };
