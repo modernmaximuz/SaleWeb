@@ -27,7 +27,15 @@ function filterBadWords(text) {
 async function initChat() {
     try {
         // Check if user is logged in
-        const res = await fetch('/me');
+        const headers = {};
+        
+        // Add Firebase token for admin users
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+            const token = await firebase.auth().currentUser.getIdToken();
+            headers.Authorization = `Bearer ${token}`;
+        }
+        
+        const res = await fetch('/me', { headers });
         const user = await res.json();
         
         if (user) {
