@@ -4,8 +4,8 @@ const { Client, GatewayIntentBits, PermissionsBitField, EmbedBuilder } = require
 const BOT_TOKEN = process.env.MANAGE_BOT_TOKEN;
 const GUILD_ID = "1492190841987666011";
 const ADMIN_ROLE_ID = "1491763556209786950"; // Support Team role or higher
-const MOD_ROLE_ID = "1491771111426363562"; // Mod role
-const MUTED_ROLE_ID = "1491772222222222222"; // Muted role (you'll need to create this)
+const MOD_ROLE_ID = "1492197702807851049"; // Mod role
+const MUTED_ROLE_ID = "1492197287487606844"; // Muted role (you'll need to create this)
 
 // Mute storage (in production, use a database)
 const mutes = new Map();
