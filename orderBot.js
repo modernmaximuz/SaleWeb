@@ -177,6 +177,14 @@ function inCustomerChannel(interaction) {
     return !!channel && channel.parentId === CUSTOMER_CATEGORY_ID;
 }
 
+function hasRequiredRole(interaction, requiredRoleIds = [SUPPORT_ROLE_ID]) {
+    const member = interaction.member;
+    if (!member) return false;
+    
+    // Check if user has any of the required roles
+    return requiredRoleIds.some(roleId => member.roles.cache.has(roleId));
+}
+
 async function closeChannelInOneHour(channel, note) {
     await channel.send(note);
     setTimeout(async () => {
@@ -193,6 +201,15 @@ client.on("interactionCreate", async (interaction) => {
 
     const { commandName } = interaction;
     if (!["success", "scam", "wrongorder", "cancel"].includes(commandName)) return;
+
+    // Check if user has required role permissions
+    if (!hasRequiredRole(interaction)) {
+        await interaction.reply({
+            content: "You don't have permission to use this command. Required role: Support Team or higher.",
+            ephemeral: true
+        });
+        return;
+    }
 
     if (!inCustomerChannel(interaction)) {
         await interaction.reply({
