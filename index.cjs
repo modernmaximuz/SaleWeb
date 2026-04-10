@@ -519,6 +519,27 @@ function broadcastToClients(data) {
     });
 }
 
+// Get chat messages
+app.get('/chat/messages', async (req, res) => {
+    try {
+        const parsed = await readPasteContent(CHAT_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: 'Failed to load chat messages' });
+        }
+
+        const chatData = JSON.parse(parsed.content || '{}');
+        const messages = chatData.messages || [];
+        
+        res.json({
+            messages,
+            nextReset: chatData.lastReset || getNextResetTime().getTime()
+        });
+    } catch (error) {
+        console.error('Failed to get chat messages:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Send new message
 app.post('/chat/message', async (req, res) => {
     try {
