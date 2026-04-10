@@ -217,6 +217,136 @@
     font-weight: 700;
 }
 
+/* Custom Notification Modal */
+#notificationModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 6000;
+}
+
+#notificationModalBox {
+    background: linear-gradient(180deg, #1a1a25 0%, #14141c 100%);
+    border: 1px solid #2a2a3a;
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 320px;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#notificationModalIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+#notificationModalTitle {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #ffffff;
+}
+
+#notificationModalMessage {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+#notificationModalButtons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.notificationBtn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.notificationBtn.primary {
+    background: #4c8dff;
+    color: white;
+}
+
+.notificationBtn.primary:hover {
+    background: #5b9aff;
+    transform: translateY(-1px);
+}
+
+.notificationBtn.secondary {
+    background: #2a2a3a;
+    color: #eaeaea;
+}
+
+.notificationBtn.secondary:hover {
+    background: #3a3a4a;
+    transform: translateY(-1px);
+}
+
+.notificationBtn.danger {
+    background: #8b2f3a;
+    color: white;
+}
+
+.notificationBtn.danger:hover {
+    background: #9b3f4a;
+    transform: translateY(-1px);
+}
+
+.notificationBtn.success {
+    background: #2a7f3a;
+    color: white;
+}
+
+.notificationBtn.success:hover {
+    background: #3a8f4a;
+    transform: translateY(-1px);
+}
+
+/* Input for decline reason */
+#declineReasonInput {
+    width: 100%;
+    padding: 12px;
+    background: #0f0f13;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    color: #eaeaea;
+    font-size: 14px;
+    margin-bottom: 16px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#declineReasonInput:focus {
+    outline: none;
+    border-color: #4c8dff;
+    box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.2);
+}
+
 @media (max-width: 900px) {
     .ordersSection {
         padding: 0 12px;
