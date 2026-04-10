@@ -1,8 +1,29 @@
 const { Client, GatewayIntentBits, PermissionsBitField, EmbedBuilder } = require("discord.js");
+const fs = require('fs');
+const path = require('path');
+
+// Load environment variables from .env file
+function loadEnv() {
+    const envPath = path.join(__dirname, '.env');
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        envContent.split('\n').forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#')) {
+                const [key, ...valueParts] = trimmed.split('=');
+                if (key && valueParts.length > 0) {
+                    process.env[key.trim()] = valueParts.join('=').trim();
+                }
+            }
+        });
+    }
+}
+
+loadEnv();
 
 // Bot configuration
 const BOT_TOKEN = process.env.MANAGE_BOT_TOKEN;
-const GUILD_ID = "1490558125303009280";
+const GUILD_ID = "1492190841987666011";
 const ADMIN_ROLE_ID = "1491763556209786950"; // Support Team role or higher
 const MOD_ROLE_ID = "1492197702807851049"; // Mod role
 const MUTED_ROLE_ID = "1492197287487606844"; // Muted role (you'll need to create this)
