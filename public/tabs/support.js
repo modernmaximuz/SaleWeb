@@ -33,15 +33,31 @@ async function initChat() {
         if (window.firebase && firebase.auth && firebase.auth().currentUser) {
             const token = await firebase.auth().currentUser.getIdToken();
             headers.Authorization = `Bearer ${token}`;
+            
+            // Set currentUser from Firebase immediately for admin users
+            const firebaseUser = firebase.auth().currentUser;
+            currentUser = {
+                id: firebaseUser.uid,
+                username: firebaseUser.email,
+                email: firebaseUser.email,
+                type: "admin",
+                isAdmin: true
+            };
+            isAdmin = true;
         }
         
-        const res = await fetch('/me', { headers });
-        const user = await res.json();
-        
-        if (user) {
-            currentUser = user;
-            // Check if user is admin (from server response)
-            isAdmin = !!user.isAdmin;
+        // Try to get user info from server
+        try {
+            const res = await fetch('/me', { headers });
+            const user = await res.json();
+            
+            if (user) {
+                currentUser = user;
+                isAdmin = !!user.isAdmin;
+            }
+        } catch (serverError) {
+            console.error('Server auth check failed:', serverError);
+            // Keep Firebase user if server fails
         }
         
         await loadMessages();
