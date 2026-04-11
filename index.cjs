@@ -168,6 +168,11 @@ const path = require("path");
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
+// Redirect /proofs to /tabs/proofs.html
+app.get("/proofs", (req, res) => {
+    res.redirect("/tabs/proofs.html");
+});
+
 app.get("/*", (req, res, next) => {
     const path = req.params[0];
 
@@ -385,6 +390,7 @@ app.post("/orders/finalize", async (req, res) => {
         if (!cleanItems.length) return res.status(400).json({ error: "No valid items" });
 
         const order = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
             user: user.username,
             discordId: user.id,
             date: new Date().toISOString(),
@@ -540,7 +546,52 @@ app.delete("/orders/:index", verifyToken, async (req, res) => {
         return res.json({ message: "Order removed successfully" });
     } catch (error) {
         console.error("Error removing order:", error);
-        return res.status(500).json({ error: "Failed to remove order" });
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Delete order by ID (for final results)
+app.delete("/orders/id/:orderId", verifyToken, async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        
+        if (!orderId) {
+            return res.status(400).json({ error: "Order ID required" });
+        }
+
+        const parsed = await readPasteContent(ORDER_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(500).json({ error: "Failed to load orders" });
+        }
+
+        const orders = parseOrdersContent(parsed.content);
+        const orderIndex = orders.findIndex(order => order.id === orderId);
+        
+        if (orderIndex === -1) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        const order = orders[orderIndex];
+        
+        // Only allow deletion of accepted orders or final results
+        const deletableStatuses = ['accepted', 'success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'];
+        if (!deletableStatuses.includes(order.status)) {
+            return res.status(400).json({ error: "Can only remove accepted or completed orders" });
+        }
+
+        // Remove the order
+        orders.splice(orderIndex, 1);
+        
+        // Save the updated orders
+        const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: "Failed to save orders" });
+        }
+
+        return res.json({ message: "Order removed successfully" });
+    } catch (error) {
+        console.error("Error removing order:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 });
 

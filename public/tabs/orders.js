@@ -219,13 +219,12 @@ window.confirmRemoveOrder = async function confirmRemoveOrder(i) {
     if (!order) return;
 
     const token = await user.getIdToken();
-    const res = await fetch(`/delete-order-result`, {
-        method: "POST",
+    const res = await fetch(`/orders/id/${order.id}`, {
+        method: "DELETE",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ orderId: order.id })
+        }
     });
 
     if (!res.ok) {
