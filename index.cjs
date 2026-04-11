@@ -438,20 +438,23 @@ async function getDiscordMemberCount() {
             if (!content.trim()) {
                 content = '{}';
             }
-            const stats = JSON.parse(content);
-            return stats.memberCount || 0;
+            
+            // Try to parse JSON, handle errors gracefully
+            try {
+                const stats = JSON.parse(content);
+                return stats.memberCount || 0;
+            } catch (parseError) {
+                console.error('JSON parse error, initializing paste:', parseError.message);
+                // Initialize with valid JSON if parsing fails
+                await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify({ memberCount: 0, lastUpdated: new Date().toISOString() }, null, 2));
+                return 0;
+            }
         }
         // Initialize the paste if it doesn't exist
         await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify({ memberCount: 0, lastUpdated: new Date().toISOString() }, null, 2));
         return 0;
     } catch (error) {
         console.error('Failed to get Discord member count:', error);
-        // Initialize paste with valid JSON if parsing fails
-        try {
-            await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify({ memberCount: 0, lastUpdated: new Date().toISOString() }, null, 2));
-        } catch (writeError) {
-            console.error('Failed to initialize Discord stats paste:', writeError);
-        }
         return 0;
     }
 }

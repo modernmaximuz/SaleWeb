@@ -46,12 +46,18 @@ async function loadDashboardData() {
         const stats = await statsData.json();
         
         // Load Discord data directly from /IWEJETFl paste
-        const discordData = await fetch('/load/IWEJETFl');
-        const discord = await discordData.json();
+        let discord = null;
+        try {
+            const discordData = await fetch('/load/IWEJETFl');
+            discord = await discordData.json();
+        } catch (discordError) {
+            console.error('Failed to load Discord data from /IWEJETFl:', discordError);
+            discord = null;
+        }
         
         // Update statistics
         updateStatistics(stats);
-        updateDiscordInfo(discord);
+        updateDiscordInfo(discord, stats);
         
     } catch (error) {
         console.error('Failed to load dashboard data:', error);
@@ -80,21 +86,34 @@ function updateStatistics(stats) {
 }
 
 // Update Discord information
-function updateDiscordInfo(discord) {
-    // Update Discord members count from /IWEJETFl paste
+function updateDiscordInfo(discord, backendStats) {
+    let memberCount = 0;
+    
+    // Try to get from /IWEJETFl paste first
+    if (discord && discord.memberCount !== undefined) {
+        memberCount = discord.memberCount;
+        console.log(`[DASHBOARD] Using /IWEJETFl data: ${memberCount}`);
+    } else if (backendStats && backendStats.discordMembers !== undefined) {
+        memberCount = backendStats.discordMembers;
+        console.log(`[DASHBOARD] Using backend stats: ${memberCount}`);
+    } else {
+        console.log(`[DASHBOARD] No Discord data available, using 0`);
+    }
+    
+    // Update Discord members count
     const discordMembersEl = document.getElementById('discordMembers');
-    if (discordMembersEl && discord.memberCount !== undefined) {
-        discordMembersEl.textContent = discord.memberCount;
+    if (discordMembersEl) {
+        discordMembersEl.textContent = memberCount;
     }
     
     // Update success count to match Discord members
     const successCountEl = document.getElementById('successCount');
-    if (successCountEl && discord.memberCount !== undefined) {
-        successCountEl.textContent = discord.memberCount;
+    if (successCountEl) {
+        successCountEl.textContent = memberCount;
     }
     
-    console.log(`[DASHBOARD] Updated Discord members: ${discord.memberCount}`);
-    console.log(`[DASHBOARD] Updated success count: ${discord.memberCount}`);
+    console.log(`[DASHBOARD] Final Discord members: ${memberCount}`);
+    console.log(`[DASHBOARD] Final success count: ${memberCount}`);
 }
 
 // Format number with commas
