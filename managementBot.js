@@ -607,7 +607,12 @@ async function getMemberCount() {
         return humanMembers.size;
     } catch (error) {
         console.error('[DISCORD] Error getting member count:', error);
-        return guild.members.cache.filter(member => !member.user.bot).size; // Fallback to cached count
+        // Fallback to cached count if guild is available
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (guild) {
+            return guild.members.cache.filter(member => !member.user.bot).size;
+        }
+        return 0;
     }
 }
 
