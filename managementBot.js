@@ -53,9 +53,9 @@ async function initializePaste() {
         });
         
         if (response.ok) {
-            console.log('[DEBUG] Paste initialized with empty array');
+            // Paste initialized
         } else {
-            console.log('[DEBUG] Failed to initialize paste:', response.status);
+            console.error('Failed to initialize paste:', response.status);
         }
     } catch (error) {
         console.error('Failed to initialize paste:', error);
@@ -64,38 +64,33 @@ async function initializePaste() {
 
 async function triggerBotMessage(botType, message, channelId) {
     try {
-        console.log(`[DEBUG] Triggering bot message: ${botType} - ${message}`);
-        
         // Store the message in the communication paste
         const current = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
             headers: { Authorization: `Bearer ${API_KEY}` }
         });
         
-        let messages = [];
         if (current.ok) {
             const data = await current.json();
+            let messages = [];
             try {
                 messages = JSON.parse(data.content || "[]");
                 if (!Array.isArray(messages)) messages = [];
             } catch (error) {
-                console.log('[DEBUG] Invalid JSON in paste, initializing...');
                 messages = [];
                 await initializePaste();
             }
         } else {
-            console.log('[DEBUG] Paste not found, initializing...');
             await initializePaste();
         }
         
+        // Add new message
         messages.push({
-            id: crypto.randomUUID(),
+            id: Date.now().toString(),
             bot: botType,
             message: message,
             channelId: channelId,
             timestamp: Date.now()
         });
-        
-        console.log(`[DEBUG] Saving message to paste. Total messages: ${messages.length}`);
         
         // Save to paste
         const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
@@ -109,10 +104,8 @@ async function triggerBotMessage(botType, message, channelId) {
             })
         });
         
-        if (response.ok) {
-            console.log(`[DEBUG] Message saved successfully to paste`);
-        } else {
-            console.log(`[DEBUG] Failed to save message: ${response.status}`);
+        if (!response.ok) {
+            console.error('Failed to save message:', response.status);
         }
     } catch (error) {
         console.error('Failed to trigger bot message:', error);
@@ -660,7 +653,7 @@ async function sendMemberCountToBackend(memberCount) {
         
         console.log(`[DISCORD] Sending to backend:`, JSON.stringify(stats, null, 2));
         
-        const response = await fetch('http://localhost:3000/discord/update-stats', {
+        const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -766,7 +759,6 @@ setInterval(async () => {
                 messages = JSON.parse(data.content || "[]");
                 if (!Array.isArray(messages)) messages = [];
             } catch (error) {
-                console.log('[DEBUG] Invalid JSON in paste, using empty array');
                 messages = [];
             }
             const now = Date.now();
