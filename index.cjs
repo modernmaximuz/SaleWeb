@@ -313,10 +313,48 @@ async function writeCartDb(db) {
     await fs.writeFile(CART_DB_PATH, JSON.stringify(db, null, 2), "utf8");
 }
 
-// Serve tabs pages
-app.get("/tabs/:tab", (req, res) => {
+// Authentication middleware for tabs
+function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const token = authHeader.substring(7);
+    
+    // Verify Firebase token
+    admin.auth().verifyIdToken(token)
+        .then(decodedToken => {
+            req.user = decodedToken;
+            next();
+        })
+        .catch(error => {
+            console.error('Token verification failed:', error);
+            res.status(401).json({ error: 'Invalid token' });
+        });
+}
+
+// Serve tabs pages (with auth check for HTML)
+app.get("/tabs/:tab", async (req, res) => {
     const { tab } = req.params;
-    res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
+    
+    try {
+        // Check if user is authenticated via Firebase
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            await admin.auth().verifyIdToken(token);
+            // User is authenticated, serve the page
+            res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
+        } else {
+            // User not authenticated, redirect to login
+            res.redirect('/login.html');
+        }
+    } catch (error) {
+        // Authentication failed, redirect to login
+        res.redirect('/login.html');
+    }
 });
 
 // Dashboard statistics endpoint
@@ -382,6 +420,8 @@ async function getDiscordMemberCount() {
             const stats = JSON.parse(statsParsed.content || '{}');
             return stats.memberCount || 0;
         }
+        // Initialize the paste if it doesn't exist
+        await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify({ memberCount: 0, lastUpdated: new Date().toISOString() }, null, 2));
         return 0;
     } catch (error) {
         console.error('Failed to get Discord member count:', error);

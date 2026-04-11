@@ -15,7 +15,6 @@
 
     <!-- CENTER NAVIGATION -->
     <div id="navCenter">
-        <button class="navBtn active">Dashboard</button>
         <button class="navBtn" onclick="location.href='/restocks'">Restocks</button>
 
         <div class="dropdown">
@@ -62,11 +61,6 @@
 
 <!-- Dashboard Content -->
 <div class="dashboard-container">
-    <div class="dashboard-header">
-        <h1><i class="fas fa-chart-line"></i> Dashboard Statistics</h1>
-        <p>Real-time system metrics and performance data</p>
-    </div>
-
     <div class="stats-grid">
         <!-- HITS_COUNT - Success Count -->
         <div class="stat-card">
@@ -76,7 +70,7 @@
             <div class="stat-content">
                 <div class="stat-label">Success Count</div>
                 <div class="stat-value" id="successCount">0</div>
-                <div class="stat-description">Active Users</div>
+                <div class="stat-description">Total Success</div>
             </div>
         </div>
 
@@ -88,7 +82,7 @@
             <div class="stat-content">
                 <div class="stat-label">Discord Members</div>
                 <div class="stat-value" id="discordMembers">0</div>
-                <div class="stat-description">Total members (excluding bots)</div>
+                <div class="stat-description">Total members</div>
             </div>
         </div>
 
@@ -101,43 +95,6 @@
                 <div class="stat-label">Total Restocks</div>
                 <div class="stat-value" id="totalRestocks">0</div>
                 <div class="stat-description">Overall restocks of all items</div>
-            </div>
-        </div>
-
-        <!-- Additional Stats -->
-        <div class="stat-card">
-            <div class="stat-icon info">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Last Update</div>
-                <div class="stat-value" id="lastUpdate">Never</div>
-                <div class="stat-description">System last refreshed</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Additional Information -->
-    <div class="info-section">
-        <div class="info-card">
-            <h3><i class="fas fa-info-circle"></i> System Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Server Status:</span>
-                    <span class="info-value status-online">Online</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Discord Channel:</span>
-                    <span class="info-value" id="channelName">Loading...</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Stock Monitoring:</span>
-                    <span class="info-value status-active">Active</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">API Response:</span>
-                    <span class="info-value" id="apiStatus">Checking...</span>
-                </div>
             </div>
         </div>
     </div>
