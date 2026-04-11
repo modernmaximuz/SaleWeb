@@ -213,24 +213,250 @@ h1 {
     border: 1px solid rgba(40, 167, 69, 0.3);
 }
 
+/* Admin notice styling */
+.admin-only-notice {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.notice-content h3 {
+    color: #ffc107;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.notice-content p {
+    color: #b8b8c8;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.notice-content a {
+    color: #4c8dff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.notice-content a:hover {
+    text-decoration: underline;
+}
+
+/* Improved proof layout */
+.proof-item {
+    background: linear-gradient(135deg, #1a1a25 0%, #161620 100%);
+    border: 1px solid #2a2a3a;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.proof-item:hover {
+    background: linear-gradient(135deg, #1f1f2a 0%, #1b1b25 100%);
+    border-color: #3a3a4a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.proof-header {
+    background: rgba(76, 141, 255, 0.1);
+    border-bottom: 1px solid #2a2a3a;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.proof-transaction {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.transaction-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.transaction-value {
+    color: #4c8dff;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.proof-date {
+    color: #b8b8c8;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.proof-content {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: start;
+}
+
+.proof-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.detail-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.detail-value {
+    color: #eaeaea;
+    font-size: 0.9rem;
+    flex: 1;
+    word-break: break-word;
+}
+
+.proof-image-container {
+    flex-shrink: 0;
+}
+
+.proof-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #2a2a3a;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.proof-image:hover {
+    border-color: #4c8dff;
+    transform: scale(1.05);
+}
+
+.proof-actions {
+    padding: 15px 20px;
+    border-top: 1px solid #2a2a3a;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Image modal styling */
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.close-modal {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #ff6b6b;
+    transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
     .main-content {
         margin-top: 80px;
         padding: 15px;
     }
     
-    .proof-item {
+    .proof-header {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .proof-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .proof-image-container {
         text-align: center;
     }
     
     .proof-image {
-        margin: 10px 0;
+        width: 100px;
+        height: 100px;
     }
     
-    .proof-actions {
-        justify-content: center;
-        margin-top: 15px;
+    .detail-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .detail-label {
+        min-width: auto;
     }
     
     .container {

@@ -1,10 +1,34 @@
 let proofsData = [];
 let currentTransaction = null;
+let isAdmin = false;
+
+// Check if user is admin
+async function checkAdminStatus() {
+    // Check for Firebase admin user
+    if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        return true; // Firebase users are admins
+    }
+    
+    // Check for Discord admin user
+    try {
+        const res = await fetch("/me");
+        if (res.ok) {
+            const user = await res.json();
+            return !!user.isAdmin;
+        }
+    } catch (error) {
+        console.error("Failed to check admin status:", error);
+    }
+    
+    return false;
+}
 
 // Initialize the page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    isAdmin = await checkAdminStatus();
     loadProofs();
     setupEventListeners();
+    updateUIForAdminStatus();
 });
 
 function setupEventListeners() {
@@ -20,6 +44,31 @@ function setupEventListeners() {
     
     // Upload button handler
     uploadBtn.addEventListener('click', uploadProof);
+}
+
+function updateUIForAdminStatus() {
+    const proofForm = document.querySelector('.proof-form');
+    const uploadBtn = document.getElementById('uploadProof');
+    
+    if (!isAdmin) {
+        // Hide upload form for non-admins
+        if (proofForm) {
+            proofForm.style.display = 'none';
+        }
+        
+        // Show message for non-admins
+        const container = document.querySelector('.container');
+        const message = document.createElement('div');
+        message.className = 'admin-only-notice';
+        message.innerHTML = `
+            <div class="notice-content">
+                <h3>View Only Mode</h3>
+                <p>Only administrators can upload proofs. You can view existing proofs below.</p>
+                <p><a href="/login.html">Login as Admin</a> to upload proofs.</p>
+            </div>
+        `;
+        container.insertBefore(message, container.querySelector('.proofs-list'));
+    }
 }
 
 async function handleTransactionInput(e) {
@@ -90,6 +139,12 @@ function handleImagePreview(e) {
 }
 
 async function uploadProof() {
+    // Check admin permissions
+    if (!isAdmin) {
+        showError('Only administrators can upload proofs');
+        return;
+    }
+
     const transactionId = document.getElementById('transactionId').value.trim();
     const imageFile = document.getElementById('proofImage').files[0];
     
@@ -116,14 +171,23 @@ async function uploadProof() {
         // Upload image to imgbb
         const imageUrl = await uploadToImgbb(imageFile);
         
-        // Create proof entry
+        // Create proof entry with improved data
         const proof = {
             id: Date.now().toString(),
             transactionId: transactionId,
-            customer: currentTransaction.username,
+            customer: currentTransaction.user || currentTransaction.username,
+            customerDiscordId: currentTransaction.discordId,
             items: currentTransaction.items,
             imageUrl: imageUrl,
-            timestamp: new Date().toISOString()
+            uploadedBy: 'Admin',
+            uploadDate: new Date().toISOString(),
+            formattedDate: new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
         };
         
         // Save proof
@@ -220,24 +284,70 @@ function displayProofs() {
         return;
     }
     
-    container.innerHTML = proofsData.map(proof => `
-        <div class="proof-item">
-            <div class="proof-content">
-                <h4>Transaction ID: ${proof.transactionId}</h4>
-                <p><strong>Customer:</strong> ${proof.customer}</p>
-                <p><strong>Items:</strong> ${proof.items ? proof.items.join(', ') : 'N/A'}</p>
-                <p><strong>Date:</strong> ${new Date(proof.timestamp).toLocaleString()}</p>
+    // Sort proofs by date (newest first)
+    const sortedProofs = [...proofsData].sort((a, b) => 
+        new Date(b.uploadDate || b.timestamp) - new Date(a.uploadDate || a.timestamp)
+    );
+    
+    container.innerHTML = sortedProofs.map(proof => {
+        const items = proof.items ? proof.items.map(item => 
+            typeof item === 'object' ? item.name : item
+        ).join(', ') : 'No items';
+        
+        const uploadDate = proof.formattedDate || new Date(proof.uploadDate || proof.timestamp).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `
+            <div class="proof-item">
+                <div class="proof-header">
+                    <div class="proof-transaction">
+                        <span class="transaction-label">Transaction ID:</span>
+                        <span class="transaction-value">${proof.transactionId}</span>
+                    </div>
+                    <div class="proof-date">${uploadDate}</div>
+                </div>
+                <div class="proof-content">
+                    <div class="proof-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Customer:</span>
+                            <span class="detail-value">${proof.customer || 'Unknown'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Items:</span>
+                            <span class="detail-value">${items}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Uploaded by:</span>
+                            <span class="detail-value">${proof.uploadedBy || 'Admin'}</span>
+                        </div>
+                    </div>
+                    <div class="proof-image-container">
+                        <img src="${proof.imageUrl}" alt="Proof for ${proof.transactionId}" class="proof-image" onclick="openImageModal('${proof.imageUrl}')">
+                    </div>
+                </div>
+                ${isAdmin ? `
+                <div class="proof-actions">
+                    <button class="btn-delete" onclick="deleteProof('${proof.id}')">Delete Proof</button>
+                </div>
+                ` : ''}
             </div>
-            <img src="${proof.imageUrl}" alt="Proof" class="proof-image">
-            <div class="proof-actions">
-                <button class="btn-delete" onclick="deleteProof('${proof.id}')">Delete</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 async function deleteProof(proofId) {
-    if (!confirm('Are you sure you want to delete this proof?')) return;
+    // Check admin permissions
+    if (!isAdmin) {
+        showError('Only administrators can delete proofs');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this proof? This action cannot be undone.')) return;
     
     try {
         proofsData = proofsData.filter(proof => proof.id !== proofId);
@@ -260,6 +370,25 @@ async function deleteProof(proofId) {
         console.error('Error deleting proof:', error);
         showError('Error deleting proof: ' + error.message);
     }
+}
+
+function openImageModal(imageUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-modal" onclick="this.parentElement.parentElement.remove()">&times;</span>
+            <img src="${imageUrl}" alt="Proof Image" class="modal-image">
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
 }
 
 async function updateChannelName() {

@@ -478,7 +478,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         if (!Number.isInteger(index) || index < 0) {
             return res.status(400).json({ error: "Invalid order index" });
         }
-        if (!["accepted", "declined", "cancelled", "success", "wrong_order", "scammer_alert"].includes(status)) {
+        if (!["accepted", "declined", "cancelled"].includes(status)) {
             return res.status(400).json({ error: "Invalid status" });
         }
         if (status === "declined" && !declineReason) {
@@ -497,12 +497,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
             orders[index].declineReason = declineReason;
         }
 
-        // Generate transaction ID for final results
-        if (["success", "wrong_order", "scammer_alert", "cancelled"].includes(status) && 
-            !["success", "wrong_order", "scammer_alert", "cancelled"].includes(previousStatus)) {
-            orders[index].transactionId = generateTransactionId();
-        }
-
+        
         if (status === "accepted" && !wasAccepted) {
             const channelId = await createOrderChannel(orders[index]);
             if (channelId) orders[index].channelId = channelId;
@@ -511,7 +506,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
         if (!writeRes.ok) return res.status(writeRes.status).json({ error: "Failed to save order status" });
 
-        return res.json({ ok: true, transactionId: orders[index].transactionId });
+        return res.json({ ok: true });
     } catch (err) {
         console.error("Update order status failed:", err);
         return res.status(500).json({ error: "Internal Server Error" });

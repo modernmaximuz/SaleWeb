@@ -111,12 +111,7 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
         return;
     }
 
-    // Handle final result statuses directly
-    if (["success", "wrong_order", "scammer_alert"].includes(status)) {
-        await confirmUpdateOrderStatus(i, status);
-        return;
-    }
-
+    
     if (status === "declined") {
         showNotificationModal(
             "Decline Order",
@@ -356,12 +351,7 @@ function renderOrderRow(order, index, admin, customResultText) {
             <button class="orderActionBtn" onclick="updateOrderStatus(${index}, 'accepted')">Accept</button>
             <button class="orderActionBtn declineBtn" onclick="updateOrderStatus(${index}, 'declined')">Decline</button>
             ` : ""}
-            ${admin && result === "accepted" ? `
-            <button class="orderActionBtn successBtn" onclick="updateOrderStatus(${index}, 'success')">Success</button>
-            <button class="orderActionBtn wrongOrderBtn" onclick="updateOrderStatus(${index}, 'wrong_order')">Wrong Order</button>
-            <button class="orderActionBtn scammerBtn" onclick="updateOrderStatus(${index}, 'scammer_alert')">Scammer Alert</button>
-            ` : ""}
-            ${canRemove ? `
+                        ${canRemove ? `
             <button class="orderActionBtn danger" onclick="removeOrder(${index})">Remove</button>
             ` : ""}
                         ${admin && order.transactionId ? `
