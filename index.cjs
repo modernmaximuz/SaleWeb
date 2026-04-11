@@ -43,9 +43,15 @@ client.once("ready", () => {
     
     // Track processed message IDs to prevent duplicates
     const processedMessageIds = new Set();
+    let isProcessing = false; // Prevent concurrent processing
     
     // Check for cross-bot messages
     setInterval(async () => {
+        if (isProcessing) {
+            console.log('[DEBUG] Already processing messages, skipping this cycle');
+            return;
+        }
+        isProcessing = true;
         try {
             console.log(`[DEBUG] Checking for bot messages...`);
             const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
@@ -133,6 +139,8 @@ client.once("ready", () => {
             }
         } catch (error) {
             console.log(`[DEBUG] Failed to fetch messages:`, error);
+        } finally {
+            isProcessing = false;
         }
     }, 5000); // Check every 5 seconds
 });
