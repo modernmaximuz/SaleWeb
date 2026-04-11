@@ -109,7 +109,7 @@ function updateStatistics() {
     
     if (lastUpdateEl && statistics.lastUpdate) {
         const date = statistics.lastUpdate;
-        lastUpdateEl.textContent = date.toLocaleDateString('en-US', { timeZone: 'UTC' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+        lastUpdateEl.textContent = date.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Manila' }) + ' PHT';
     }
 }
 
@@ -207,7 +207,7 @@ function createRestockElement(restock) {
     div.className = 'restock-entry';
     
     const date = new Date(restock.date);
-    const formattedDate = date.toLocaleDateString('en-US', { timeZone: 'UTC' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+    const formattedDate = date.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Manila' }) + ' PHT';
     
     // Determine if this is an automatic restock
     const isAutomatic = restock.type === 'automatic_restock';
