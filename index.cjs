@@ -15,6 +15,29 @@ const client = new Client({
     ] 
 });
 
+async function initializePaste() {
+    try {
+        const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                content: "[]"
+            })
+        });
+        
+        if (response.ok) {
+            console.log('[DEBUG] Paste initialized with empty array');
+        } else {
+            console.log('[DEBUG] Failed to initialize paste:', response.status);
+        }
+    } catch (error) {
+        console.error('Failed to initialize paste:', error);
+    }
+}
+
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
     
@@ -33,18 +56,20 @@ client.once("ready", () => {
                     messages = JSON.parse(data.content || "[]");
                     if (!Array.isArray(messages)) messages = [];
                 } catch (error) {
-                    console.log('[DEBUG] Invalid JSON in paste, using empty array');
+                    console.log('[DEBUG] Invalid JSON in paste, initializing...');
                     messages = [];
+                    await initializePaste();
                 }
-                const now = Date.now();
-                
-                console.log(`[DEBUG] Found ${messages.length} total messages in paste`);
-                
-                // Process messages meant for this bot ("login") and are recent (within 30 seconds)
-                const loginMessages = messages.filter(msg => 
-                    msg.bot === "login" && 
-                    (now - msg.timestamp) < 30000
-                );
+            
+            const now = Date.now();
+            
+            console.log(`[DEBUG] Found ${messages.length} total messages in paste`);
+            
+            // Process messages meant for this bot ("login") and are recent (within 30 seconds)
+            const loginMessages = messages.filter(msg => 
+                msg.bot === "login" && 
+                (now - msg.timestamp) < 30000
+            );
                 
                 console.log(`[DEBUG] Found ${loginMessages.length} messages for login bot`);
                 
@@ -83,11 +108,9 @@ client.once("ready", () => {
                         console.log(`[DEBUG] Guild ${GUILD_ID} not found`);
                     }
                 }
-            } else {
-                console.log(`[DEBUG] Failed to fetch messages: ${response.status}`);
             }
         } catch (error) {
-            console.error('Error checking bot messages:', error);
+            console.log(`[DEBUG] Failed to fetch messages:`, error);
         }
     }, 5000); // Check every 5 seconds
 });

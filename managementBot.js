@@ -38,6 +38,29 @@ const muteLogs = [];
 // Cross-bot communication
 const BOT_COMMUNICATION_PASTE_ID = "Jk84rCKt"; // New paste for bot communication
 
+async function initializePaste() {
+    try {
+        const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                content: "[]"
+            })
+        });
+        
+        if (response.ok) {
+            console.log('[DEBUG] Paste initialized with empty array');
+        } else {
+            console.log('[DEBUG] Failed to initialize paste:', response.status);
+        }
+    } catch (error) {
+        console.error('Failed to initialize paste:', error);
+    }
+}
+
 async function triggerBotMessage(botType, message, channelId) {
     try {
         console.log(`[DEBUG] Triggering bot message: ${botType} - ${message}`);
@@ -54,9 +77,13 @@ async function triggerBotMessage(botType, message, channelId) {
                 messages = JSON.parse(data.content || "[]");
                 if (!Array.isArray(messages)) messages = [];
             } catch (error) {
-                console.log('[DEBUG] Invalid JSON in paste, using empty array');
+                console.log('[DEBUG] Invalid JSON in paste, initializing...');
                 messages = [];
+                await initializePaste();
             }
+        } else {
+            console.log('[DEBUG] Paste not found, initializing...');
+            await initializePaste();
         }
         
         messages.push({
