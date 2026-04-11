@@ -4,9 +4,14 @@ let isAdmin = false;
 
 // Check if user is admin
 async function checkAdminStatus() {
-    // Check for Firebase admin user
-    if (window.firebase && firebase.auth && firebase.auth().currentUser) {
-        return true; // Firebase users are admins
+    // Check for Firebase admin user first
+    try {
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+            console.log('Firebase user detected:', firebase.auth().currentUser.email);
+            return true; // Firebase users are admins
+        }
+    } catch (error) {
+        console.error("Firebase admin check failed:", error);
     }
     
     // Check for Discord admin user
@@ -14,20 +19,33 @@ async function checkAdminStatus() {
         const res = await fetch("/me");
         if (res.ok) {
             const user = await res.json();
+            console.log('Discord user detected, admin status:', user.isAdmin);
             return !!user.isAdmin;
         }
     } catch (error) {
-        console.error("Failed to check admin status:", error);
+        console.error("Failed to check Discord admin status:", error);
     }
     
+    console.log('No admin user detected');
     return false;
 }
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', async () => {
+    setupEventListeners();
+    
+    // Set up Firebase auth state listener
+    if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(async (user) => {
+            console.log('Firebase auth state changed:', user ? user.email : 'No user');
+            isAdmin = await checkAdminStatus();
+            updateUIForAdminStatus();
+        });
+    }
+    
+    // Initial check
     isAdmin = await checkAdminStatus();
     loadProofs();
-    setupEventListeners();
     updateUIForAdminStatus();
 });
 
@@ -50,24 +68,62 @@ function updateUIForAdminStatus() {
     const proofForm = document.querySelector('.proof-form');
     const uploadBtn = document.getElementById('uploadProof');
     
+    // Check if user is logged in via Discord (not Firebase)
+    const isDiscordUser = async () => {
+        try {
+            const res = await fetch("/me");
+            if (res.ok) {
+                const user = await res.json();
+                return user && !user.isAdmin; // Discord user but not admin
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    };
+    
     if (!isAdmin) {
         // Hide upload form for non-admins
         if (proofForm) {
             proofForm.style.display = 'none';
         }
         
-        // Show message for non-admins
-        const container = document.querySelector('.container');
-        const message = document.createElement('div');
-        message.className = 'admin-only-notice';
-        message.innerHTML = `
-            <div class="notice-content">
-                <h3>View Only Mode</h3>
-                <p>Only administrators can upload proofs. You can view existing proofs below.</p>
-                <p><a href="/login.html">Login as Admin</a> to upload proofs.</p>
-            </div>
-        `;
-        container.insertBefore(message, container.querySelector('.proofs-list'));
+        // Check if this is a Discord user before showing notice
+        isDiscordUser().then(isDiscord => {
+            if (!isDiscord) {
+                // Only show notice for non-Discord users (guests)
+                const container = document.querySelector('.container');
+                const existingNotice = document.querySelector('.admin-only-notice');
+                
+                // Remove existing notice if any
+                if (existingNotice) {
+                    existingNotice.remove();
+                }
+                
+                // Add new notice
+                const message = document.createElement('div');
+                message.className = 'admin-only-notice';
+                message.innerHTML = `
+                    <div class="notice-content">
+                        <h3>View Only Mode</h3>
+                        <p>Only administrators can upload proofs. You can view existing proofs below.</p>
+                        <p><a href="/login.html">Login as Admin</a> to upload proofs.</p>
+                    </div>
+                `;
+                container.insertBefore(message, container.querySelector('.proofs-list'));
+            }
+            // For Discord users, do nothing - they just see the proofs list without upload form
+        });
+    } else {
+        // Make sure upload form is visible for admins
+        if (proofForm) {
+            proofForm.style.display = 'block';
+        }
+        // Remove any existing notice
+        const existingNotice = document.querySelector('.admin-only-notice');
+        if (existingNotice) {
+            existingNotice.remove();
+        }
     }
 }
 
