@@ -99,14 +99,23 @@ async function sendMemberCountToBackend(memberCount) {
     }
 }
 
+async function updateMemberCount() {
+    try {
+        const memberCount = await getMemberCountFromChannel();
+        await sendMemberCountToBackend(memberCount);
+    } catch (error) {
+        console.error('[AUTH-BOT] Error in update cycle:', error);
+    }
+}
+
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
     
     // Update member count from channel name immediately
-    getMemberCountFromChannel();
+    updateMemberCount();
     
     // Update every 5 minutes
-    setInterval(getMemberCountFromChannel, 300000);
+    setInterval(updateMemberCount, 300000);
     
     // Track processed message IDs to prevent duplicates
     const processedMessageIds = new Set();
