@@ -3,13 +3,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
+    padding: 8px 20px;
     background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
     border-bottom: 2px solid #1a1a2e;
     position: sticky;
     top: 0;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    min-height: 60px;
 }
 
 /* HAMBURGER MENU */
@@ -40,11 +41,15 @@
 .logo-container {
     flex: 1;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .logo {
-    max-height: 50px;
+    max-height: 45px;
     transition: transform 0.3s ease;
+    vertical-align: middle;
 }
 
 .logo:hover {
@@ -199,9 +204,9 @@
 #secondaryHeader {
     background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
     border-bottom: 1px solid #2a2a3a;
-    padding: 10px 0;
+    padding: 8px 0;
     position: sticky;
-    top: 72px;
+    top: 60px;
     z-index: 999;
 }
 
