@@ -76,50 +76,22 @@ async function sendMemberCountToBackend(memberCount) {
     try {
         const stats = {
             memberCount: memberCount,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: new Date().toISOString(),
+            channelName: `ghosts: #${memberCount}`
         };
         
-        console.log(`[AUTH-BOT] Sending to backend: memberCount=${memberCount}`);
+        console.log(`[AUTH-BOT] Writing directly to paste: memberCount=${memberCount}`);
         
-        // Add retry logic with exponential backoff for 429 errors
-        let retryCount = 0;
-        const maxRetries = 3;
+        // Write directly to paste to bypass backend rate limiting
+        const writeRes = await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify(stats, null, 2));
         
-        while (retryCount < maxRetries) {
-            try {
-                const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(stats)
-                });
-                
-                if (response.ok) {
-                    console.log(`[AUTH-BOT] Successfully sent member count: ${memberCount}`);
-                    return;
-                } else if (response.status === 429) {
-                    retryCount++;
-                    const waitTime = 15000 + (retryCount * 10000); // 15s, 25s, 35s
-                    console.log(`[AUTH-BOT] Rate limited (429), retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                    continue;
-                } else {
-                    console.error(`[AUTH-BOT] Failed to save member count: ${response.status}`);
-                    return;
-                }
-            } catch (fetchError) {
-                retryCount++;
-                const waitTime = 15000 + (retryCount * 10000); // 15s, 25s, 35s
-                console.log(`[AUTH-BOT] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-                continue;
-            }
+        if (writeRes.ok) {
+            console.log(`[AUTH-BOT] Successfully updated member count: ${memberCount}`);
+        } else {
+            console.error(`[AUTH-BOT] Failed to write to paste: ${writeRes.status}`);
         }
-        
-        console.error(`[AUTH-BOT] Failed after ${maxRetries} retries - will try again in 5 minutes`);
     } catch (error) {
-        console.error('[AUTH-BOT] Error saving member count:', error);
+        console.error('[AUTH-BOT] Error writing to paste:', error);
     }
 }
 
