@@ -1,8 +1,75 @@
 const MM2_PASTE_ID = "fZ3piaUg";
 const { Client, GatewayIntentBits } = require("discord.js");
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-client.once("ready", () => console.log(`${client.user.tag} is online!`));
+// Cross-bot communication constants
+const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL";
+const BASE = "https://pastefy.app/api/v2";
+const API_KEY = process.env.API_KEY;
+const GUILD_ID = process.env.GUILD_ID;
+
+const client = new Client({ 
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ] 
+});
+
+client.once("ready", () => {
+    console.log(`${client.user.tag} is online!`);
+    
+    // Check for cross-bot messages
+    setInterval(async () => {
+        try {
+            const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+                headers: { Authorization: `Bearer ${API_KEY}` }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const messages = JSON.parse(data.content || "[]");
+                const now = Date.now();
+                
+                // Process messages meant for this bot ("login") and are recent (within 30 seconds)
+                const loginMessages = messages.filter(msg => 
+                    msg.bot === "login" && 
+                    (now - msg.timestamp) < 30000
+                );
+                
+                if (loginMessages.length > 0) {
+                    const guild = client.guilds.cache.get(GUILD_ID);
+                    if (guild) {
+                        for (const msg of loginMessages) {
+                            const channel = guild.channels.cache.get(msg.channelId);
+                            if (channel) {
+                                await channel.send(msg.message);
+                            }
+                        }
+                        
+                        // Mark messages as processed by removing them
+                        const processedMessages = messages.filter(msg => 
+                            !(msg.bot === "login" && (now - msg.timestamp) < 30000)
+                        );
+                        
+                        await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+                            method: "PUT",
+                            headers: {
+                                Authorization: `Bearer ${API_KEY}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                content: JSON.stringify(processedMessages, null, 2)
+                            })
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error checking bot messages:', error);
+        }
+    }, 5000); // Check every 5 seconds
+});
+
 client.login(process.env.DISCORD_BOT_TOKEN);
 
 const fetch = (...args) =>
@@ -102,10 +169,8 @@ async function verifyToken(req, res, next) {
     }
 }
 
-const API_KEY = process.env.API_KEY;
 const PASTE_ID = "PKzNiJG1";
 const ORDER_PASTE_ID = "OQooMS9z";
-const BASE = "https://pastefy.app/api/v2";
 
 async function readPasteContent(pasteId) {
     const r = await fetch(`${BASE}/paste/${pasteId}`, {
