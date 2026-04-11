@@ -81,19 +81,43 @@ async function sendMemberCountToBackend(memberCount) {
         
         console.log(`[AUTH-BOT] Sending to backend: memberCount=${memberCount}`);
         
-        const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(stats)
-        });
+        // Add retry logic with exponential backoff for 429 errors
+        let retryCount = 0;
+        const maxRetries = 3;
         
-        if (response.ok) {
-            console.log(`[AUTH-BOT] Successfully sent member count: ${memberCount}`);
-        } else {
-            console.error(`[AUTH-BOT] Failed to save member count: ${response.status}`);
+        while (retryCount < maxRetries) {
+            try {
+                const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(stats)
+                });
+                
+                if (response.ok) {
+                    console.log(`[AUTH-BOT] Successfully sent member count: ${memberCount}`);
+                    return;
+                } else if (response.status === 429) {
+                    retryCount++;
+                    const waitTime = 15000 + (retryCount * 10000); // 15s, 25s, 35s
+                    console.log(`[AUTH-BOT] Rate limited (429), retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    continue;
+                } else {
+                    console.error(`[AUTH-BOT] Failed to save member count: ${response.status}`);
+                    return;
+                }
+            } catch (fetchError) {
+                retryCount++;
+                const waitTime = 15000 + (retryCount * 10000); // 15s, 25s, 35s
+                console.log(`[AUTH-BOT] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+            }
         }
+        
+        console.error(`[AUTH-BOT] Failed after ${maxRetries} retries - will try again in 5 minutes`);
     } catch (error) {
         console.error('[AUTH-BOT] Error saving member count:', error);
     }
