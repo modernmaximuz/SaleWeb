@@ -433,7 +433,12 @@ async function getDiscordMemberCount() {
     try {
         const statsParsed = await readPasteContent(DISCORD_STATS_PASTE_ID);
         if (statsParsed.ok) {
-            const stats = JSON.parse(statsParsed.content || '{}');
+            // Handle empty or invalid content
+            let content = statsParsed.content || '{}';
+            if (!content.trim()) {
+                content = '{}';
+            }
+            const stats = JSON.parse(content);
             return stats.memberCount || 0;
         }
         // Initialize the paste if it doesn't exist
@@ -441,6 +446,12 @@ async function getDiscordMemberCount() {
         return 0;
     } catch (error) {
         console.error('Failed to get Discord member count:', error);
+        // Initialize paste with valid JSON if parsing fails
+        try {
+            await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify({ memberCount: 0, lastUpdated: new Date().toISOString() }, null, 2));
+        } catch (writeError) {
+            console.error('Failed to initialize Discord stats paste:', writeError);
+        }
         return 0;
     }
 }
@@ -460,11 +471,7 @@ app.post('/discord/update-stats', async (req, res) => {
     try {
         const stats = req.body;
         
-        console.log(`[BACKEND] Received stats:`, JSON.stringify(stats, null, 2));
-        console.log(`[BACKEND] Paste ID: ${DISCORD_STATS_PASTE_ID}`);
-        
         if (!stats || typeof stats.memberCount !== 'number') {
-            console.error(`[BACKEND] Invalid stats object:`, stats);
             return res.status(400).json({ error: 'Invalid stats object' });
         }
         
@@ -475,26 +482,15 @@ app.post('/discord/update-stats', async (req, res) => {
             channelName: stats.channelName || `ghosts: #${stats.memberCount}`
         };
         
-        console.log(`[BACKEND] Writing to paste:`, JSON.stringify(fullStats, null, 2));
-        
         const writeRes = await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify(fullStats, null, 2));
         
-        console.log(`[BACKEND] Paste write response:`, {
-            ok: writeRes.ok,
-            status: writeRes.status
-        });
-        
         if (writeRes.ok) {
-            console.log(`[DISCORD] Successfully saved to /IWEJETFl: ${stats.memberCount} members`);
-            console.log(`[DISCORD] Channel name: ${fullStats.channelName}`);
-            console.log(`[DISCORD] Homepage will display: ${stats.memberCount} Discord Members`);
             res.json({ success: true, stats: fullStats });
         } else {
-            console.error(`[BACKEND] Failed to save to /IWEJETFl: ${writeRes.status}`);
             res.status(500).json({ error: 'Failed to save stats to /IWEJETFl' });
         }
     } catch (error) {
-        console.error('[BACKEND] Failed to update Discord stats:', error);
+        console.error('Failed to update Discord stats:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
