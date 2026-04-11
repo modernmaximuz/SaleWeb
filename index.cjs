@@ -457,10 +457,22 @@ app.get("/dashboard/stats", async (req, res) => {
         let proofCount = 0;
         if (proofsParsed.ok) {
             try {
-                const proofs = JSON.parse(proofsParsed.content || "[]");
+                let content = proofsParsed.content || "[]";
+                // Handle empty or invalid content
+                if (!content.trim()) {
+                    content = "[]";
+                }
+                // Try to parse JSON, handle errors gracefully
+                const proofs = JSON.parse(content);
                 proofCount = Array.isArray(proofs) ? proofs.length : 0;
             } catch (error) {
-                console.error('Failed to parse proofs content:', error);
+                console.error('Failed to parse proofs content, initializing with empty array:', error.message);
+                // Initialize the paste with valid JSON if parsing fails
+                try {
+                    await writePasteContent("TK7bewK1", JSON.stringify([], null, 2));
+                } catch (initError) {
+                    console.error('Failed to initialize proofs paste:', initError);
+                }
                 proofCount = 0;
             }
         }
