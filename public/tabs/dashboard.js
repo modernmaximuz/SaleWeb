@@ -83,6 +83,12 @@ function updateStatistics(stats) {
     if (totalRestocksEl) {
         totalRestocksEl.textContent = stats.totalRestocks || 0;
     }
+    
+    // Total Orders (new field)
+    const totalOrdersEl = document.getElementById('totalOrders');
+    if (totalOrdersEl) {
+        totalOrdersEl.textContent = stats.totalOrders || 0;
+    }
 }
 
 // Update Discord information

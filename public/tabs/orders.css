@@ -467,13 +467,66 @@
     }
 
     .controlsRow select {
-        margin-left: 0;
         width: 100%;
-        margin-top: 6px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 400px) {
+    .orderRow {
+        gap: 8px;
+        padding: 12px;
     }
 
-    #orderModalBox {
-        width: 95vw;
-        padding: 12px;
+    .orderMeta {
+        font-size: 13px;
+    }
+
+    .orderActionBtn {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-height: 32px;
+    }
+
+    .countsRow span {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .controlsRow {
+        gap: 8px;
+    }
+
+    .controlsRow select,
+    .controlsRow input {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    .controlsRow label {
+        font-size: 11px;
+    }
+}
+
+/* Ultra small mobile devices */
+@media (max-width: 320px) {
+    .orderRow {
+        padding: 8px;
+        gap: 6px;
+    }
+
+    .orderMeta {
+        font-size: 12px;
+    }
+
+    .orderActionBtn {
+        font-size: 11px;
+        padding: 4px 8px;
+        min-height: 28px;
+    }
+
+    .countsRow span {
+        font-size: 10px;
+        padding: 2px 6px;
     }
 }

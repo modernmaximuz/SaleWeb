@@ -609,18 +609,139 @@ body {
     }
 }
 
+@media (max-width: 520px) {
+    #restockContainer {
+        margin: 8px;
+    }
+    
+    #restockHeader {
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    #restockHeader h1 {
+        font-size: 1.5rem;
+    }
+    
+    .restock-header {
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .restock-meta {
+        font-size: 13px;
+    }
+    
+    .restock-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .restock-item {
+        padding: 8px;
+    }
+    
+    .item-name {
+        font-size: 12px;
+    }
+    
+    .item-price {
+        font-size: 11px;
+    }
+    
+    .item-stock {
+        font-size: 10px;
+    }
+}
+
 @media (max-width: 480px) {
     .restock-items-grid {
         grid-template-columns: 1fr;
     }
     
-    .restock-item {
-        padding: 16px;
+    #restockContainer {
+        margin: 5px;
     }
     
-    .item-image {
-        width: 100px;
-        height: 100px;
+    #restockHeader {
+        padding: 12px;
+    }
+    
+    #restockHeader h1 {
+        font-size: 1.3rem;
+    }
+    
+    .restock-header {
+        padding: 10px;
+    }
+    
+    .restock-meta {
+        font-size: 12px;
+    }
+    
+    .restock-items-grid {
+        gap: 6px;
+        padding: 10px;
+    }
+    
+    .restock-item {
+        padding: 6px;
+    }
+    
+    .item-name {
+        font-size: 11px;
+    }
+    
+    .item-price {
+        font-size: 10px;
+    }
+    
+    .item-stock {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 400px) {
+    #restockContainer {
+        margin: 3px;
+    }
+    
+    #restockHeader {
+        padding: 10px;
+    }
+    
+    #restockHeader h1 {
+        font-size: 1.1rem;
+    }
+    
+    .restock-header {
+        padding: 8px;
+    }
+    
+    .restock-meta {
+        font-size: 11px;
+    }
+    
+    .restock-items-grid {
+        gap: 4px;
+        padding: 8px;
+    }
+    
+    .restock-item {
+        padding: 4px;
+    }
+    
+    .item-name {
+        font-size: 10px;
+    }
+    
+    .item-price {
+        font-size: 9px;
+    }
+    
+    .item-stock {
+        font-size: 8px;
     }
 }
 

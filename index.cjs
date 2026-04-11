@@ -490,11 +490,25 @@ app.get("/dashboard/stats", async (req, res) => {
         // Get Discord member count (will be updated by Discord bot)
         const discordMembers = await getDiscordMemberCount();
         
+        // Get total orders count
+        let totalOrders = 0;
+        try {
+            const ordersParsed = await readPasteContent(ORDER_PASTE_ID);
+            if (ordersParsed.ok) {
+                const orders = parseOrdersContent(ordersParsed.content);
+                totalOrders = Array.isArray(orders) ? orders.length : 0;
+            }
+        } catch (error) {
+            console.error('Failed to load orders count:', error);
+            totalOrders = 0;
+        }
+        
         res.json({
             successCount: proofCount, // Success Count = Actual uploaded proofs
             discordMembers: discordMembers || 0,
             totalRestocks: totalItemsRestocked,
-            totalRestockEntries: restocks.length
+            totalRestockEntries: restocks.length,
+            totalOrders: totalOrders
         });
     } catch (error) {
         console.error('Failed to load dashboard stats:', error);

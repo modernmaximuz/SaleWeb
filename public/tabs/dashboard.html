@@ -17,19 +17,19 @@
     </a>
     
 <div id="navCenter">
-    <button class="navBtn" onclick="location.href='/tabs/restocks'">Restocks</button>
+    <button class="navBtn" onclick="requireLogin(event, '/restocks', this)">Restocks</button>
 
     <div class="dropdown">
     <button class="navBtn" id="shopToggle">Shop &#9662;</button>
     <div class="dropdownContent" id="shopMenu">
-                <a href="/shop/adoptme">Adopt Me</a>
-                <a href="/shop/mm2">Murder Mystery</a>
+                <a href="/shop/adoptme" onclick="requireLogin(event, '/shop/adoptme', this)">Adopt Me</a>
+                <a href="/shop/mm2" onclick="requireLogin(event, '/shop/mm2', this)">Murder Mystery</a>
             </div>
         </div>
 
-        <button class="navBtn" onclick="location.href='/tabs/proofs'">Proofs</button>
-        <button class="navBtn" onclick="location.href='/tabs/support'">Support</button>
-        <button class="navBtn" onclick="location.href='/tabs/orders'">Orders</button>
+        <button class="navBtn" onclick="requireLogin(event, '/tabs/proofs', this)">Proofs</button>
+        <button class="navBtn" onclick="requireLogin(event, '/support', this)">Support</button>
+        <button class="navBtn" onclick="requireLogin(event, '/tabs/orders', this)">Orders</button>
         <button class="navBtn active">Dashboard</button>
     </div>
 
@@ -63,13 +63,39 @@
 
 <!-- Dashboard Content -->
 <div class="dashboard-container">
-    <div class="dashboard-header">
-        <h1><i class="fas fa-chart-line"></i> Dashboard Statistics</h1>
-        <p>Real-time system metrics and performance data</p>
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h1><i class="fas fa-home"></i> Welcome to Your Dashboard</h1>
+            <p>Track your business performance, monitor inventory, and manage orders all in one place</p>
+            <div class="welcome-stats">
+                <div class="welcome-stat">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Real-time Analytics</span>
+                </div>
+                <div class="welcome-stat">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure Management</span>
+                </div>
+                <div class="welcome-stat">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Friendly</span>
+                </div>
+            </div>
+        </div>
+        <div class="welcome-image">
+            <i class="fas fa-tachometer-alt"></i>
+        </div>
     </div>
 
-    <div class="stats-grid">
-        <!-- HITS_COUNT - Success Count -->
+    <!-- Stats Grid - One Row Layout -->
+    <div class="stats-header">
+        <h2><i class="fas fa-chart-bar"></i> Key Metrics</h2>
+        <p>Live statistics from your shop operations</p>
+    </div>
+
+    <div class="stats-row">
+        <!-- Success Count -->
         <div class="stat-card">
             <div class="stat-icon success">
                 <i class="fas fa-check-circle"></i>
@@ -81,7 +107,7 @@
             </div>
         </div>
 
-        <!-- ACTIVE_USERS - Discord Members -->
+        <!-- Discord Members -->
         <div class="stat-card">
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
@@ -93,7 +119,7 @@
             </div>
         </div>
 
-        <!-- TOTAL_VALUE - Total Restocks -->
+        <!-- Total Restocks -->
         <div class="stat-card">
             <div class="stat-icon warning">
                 <i class="fas fa-boxes"></i>
@@ -105,9 +131,21 @@
             </div>
         </div>
 
-        <!-- Additional Stats -->
+        <!-- Total Orders -->
         <div class="stat-card">
             <div class="stat-icon info">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value" id="totalOrders">0</div>
+                <div class="stat-description">All customer orders</div>
+            </div>
+        </div>
+
+        <!-- Last Update -->
+        <div class="stat-card">
+            <div class="stat-icon secondary">
                 <i class="fas fa-clock"></i>
             </div>
             <div class="stat-content">

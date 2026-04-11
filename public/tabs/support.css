@@ -614,13 +614,172 @@
     }
 }
 
+@media (max-width: 520px) {
+    #chatContainer {
+        margin: 8px;
+        height: calc(100vh - 90px);
+    }
+    
+    #chatHeader {
+        padding: 10px 12px;
+    }
+    
+    #chatHeader h1 {
+        font-size: 18px;
+    }
+    
+    #chatMessages {
+        padding: 8px;
+    }
+    
+    .message {
+        padding: 6px 10px;
+    }
+    
+    .message-avatar {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .message-header {
+        font-size: 12px;
+    }
+    
+    .message-content {
+        font-size: 13px;
+    }
+    
+    .message-timestamp {
+        font-size: 10px;
+    }
+    
+    #chatInputContainer {
+        padding: 10px;
+    }
+    
+    #chatInput {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+    
+    #sendButton {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 60px;
+    }
+}
+
 @media (max-width: 480px) {
     .modalActions {
         flex-direction: column;
     }
     
-    .actionBtn {
-        width: 100%;
+    #chatContainer {
+        margin: 5px;
+        height: calc(100vh - 80px);
+    }
+    
+    #chatHeader {
+        padding: 8px 10px;
+    }
+    
+    #chatHeader h1 {
+        font-size: 16px;
+    }
+    
+    #chatMessages {
+        padding: 6px;
+    }
+    
+    .message {
+        padding: 4px 8px;
+    }
+    
+    .message-avatar {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .message-header {
+        font-size: 11px;
+    }
+    
+    .message-content {
+        font-size: 12px;
+    }
+    
+    .message-timestamp {
+        font-size: 9px;
+    }
+    
+    #chatInputContainer {
+        padding: 8px;
+    }
+    
+    #chatInput {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
+    
+    #sendButton {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 50px;
+    }
+}
+
+@media (max-width: 400px) {
+    #chatContainer {
+        margin: 3px;
+        height: calc(100vh - 70px);
+    }
+    
+    #chatHeader {
+        padding: 6px 8px;
+    }
+    
+    #chatHeader h1 {
+        font-size: 14px;
+    }
+    
+    #chatMessages {
+        padding: 4px;
+    }
+    
+    .message {
+        padding: 3px 6px;
+    }
+    
+    .message-avatar {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .message-header {
+        font-size: 10px;
+    }
+    
+    .message-content {
+        font-size: 11px;
+    }
+    
+    .message-timestamp {
+        font-size: 8px;
+    }
+    
+    #chatInputContainer {
+        padding: 6px;
+    }
+    
+    #chatInput {
+        font-size: 12px;
+        padding: 5px 6px;
+    }
+    
+    #sendButton {
+        padding: 5px 8px;
+        font-size: 11px;
+        min-width: 40px;
     }
 }
 
