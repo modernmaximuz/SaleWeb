@@ -252,6 +252,11 @@ async function verifyToken(req, res, next) {
 const PASTE_ID = "PKzNiJG1";
 const ORDER_PASTE_ID = "OQooMS9z";
 
+// Generate transaction ID function
+function generateTransactionId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9).toUpperCase();
+}
+
 async function readPasteContent(pasteId) {
     const r = await fetch(`${BASE}/paste/${pasteId}`, {
         headers: { Authorization: `Bearer ${API_KEY}` }
@@ -473,7 +478,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         if (!Number.isInteger(index) || index < 0) {
             return res.status(400).json({ error: "Invalid order index" });
         }
-        if (!["accepted", "declined", "cancelled"].includes(status)) {
+        if (!["accepted", "declined", "cancelled", "success", "wrong_order", "scammer_alert"].includes(status)) {
             return res.status(400).json({ error: "Invalid status" });
         }
         if (status === "declined" && !declineReason) {
@@ -486,9 +491,16 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         if (!orders[index]) return res.status(404).json({ error: "Order not found" });
 
         const wasAccepted = orders[index].status === "accepted";
+        const previousStatus = orders[index].status;
         orders[index].status = status;
         if (status === "declined") {
             orders[index].declineReason = declineReason;
+        }
+
+        // Generate transaction ID for final results
+        if (["success", "wrong_order", "scammer_alert", "cancelled"].includes(status) && 
+            !["success", "wrong_order", "scammer_alert", "cancelled"].includes(previousStatus)) {
+            orders[index].transactionId = generateTransactionId();
         }
 
         if (status === "accepted" && !wasAccepted) {
@@ -499,7 +511,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
         if (!writeRes.ok) return res.status(writeRes.status).json({ error: "Failed to save order status" });
 
-        return res.json({ ok: true });
+        return res.json({ ok: true, transactionId: orders[index].transactionId });
     } catch (err) {
         console.error("Update order status failed:", err);
         return res.status(500).json({ error: "Internal Server Error" });

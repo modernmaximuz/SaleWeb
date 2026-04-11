@@ -105,9 +105,15 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
         showNotificationModal(
             "Authentication Required",
             "Admin login required to perform this action.",
-            "🔒",
+            "",
             [{ text: "OK", type: "primary", action: closeNotificationModal }]
         );
+        return;
+    }
+
+    // Handle final result statuses directly
+    if (["success", "wrong_order", "scammer_alert"].includes(status)) {
+        await confirmUpdateOrderStatus(i, status);
         return;
     }
 
@@ -115,7 +121,7 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
         showNotificationModal(
             "Decline Order",
             "Please state your reason for declining this order:",
-            "📝",
+            "",
             []
         );
         
@@ -142,7 +148,7 @@ window.updateOrderStatus = async function updateOrderStatus(i, status) {
     showNotificationModal(
         "Accept Order",
         "Are you sure you want to accept this order? This action cannot be undone.",
-        "✅",
+        "",
         [
             { text: "Cancel", type: "secondary", action: closeNotificationModal },
             { text: "Accept Order", type: "success", action: () => confirmUpdateOrderStatus(i, status) }
@@ -329,10 +335,6 @@ function renderOrderRow(order, index, admin, customResultText) {
     // Determine if admin can remove this order
     const canRemove = admin && ['accepted', 'success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'].includes(result);
     
-    // Determine if this is a final result that can be deleted
-    const isFinalResult = ['success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'].includes(result);
-    const canDeleteFinalResult = admin && isFinalResult;
-    
     return `
     <div class="orderRow">
         <div class="orderMeta">
@@ -354,13 +356,15 @@ function renderOrderRow(order, index, admin, customResultText) {
             <button class="orderActionBtn" onclick="updateOrderStatus(${index}, 'accepted')">Accept</button>
             <button class="orderActionBtn declineBtn" onclick="updateOrderStatus(${index}, 'declined')">Decline</button>
             ` : ""}
+            ${admin && result === "accepted" ? `
+            <button class="orderActionBtn successBtn" onclick="updateOrderStatus(${index}, 'success')">Success</button>
+            <button class="orderActionBtn wrongOrderBtn" onclick="updateOrderStatus(${index}, 'wrong_order')">Wrong Order</button>
+            <button class="orderActionBtn scammerBtn" onclick="updateOrderStatus(${index}, 'scammer_alert')">Scammer Alert</button>
+            ` : ""}
             ${canRemove ? `
             <button class="orderActionBtn danger" onclick="removeOrder(${index})">Remove</button>
             ` : ""}
-            ${canDeleteFinalResult ? `
-            <button class="orderActionBtn danger" onclick="deleteFinalResult(${index})">Delete Result</button>
-            ` : ""}
-            ${admin && order.transactionId ? `
+                        ${admin && order.transactionId ? `
             <button class="orderActionBtn proofBtn" onclick="window.open('/tabs/proofs.html', '_blank')">Upload Proof</button>
             ` : ""}
         </div>

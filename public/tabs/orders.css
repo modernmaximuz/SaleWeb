@@ -347,6 +347,36 @@
     transform: translateY(-1px);
 }
 
+.successBtn {
+    background: #28a745;
+    color: white;
+}
+
+.successBtn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.wrongOrderBtn {
+    background: #ffc107;
+    color: #212529;
+}
+
+.wrongOrderBtn:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+}
+
+.scammerBtn {
+    background: #dc3545;
+    color: white;
+}
+
+.scammerBtn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
 /* Input for decline reason */
 #declineReasonInput {
     width: 100%;
