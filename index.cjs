@@ -54,9 +54,9 @@ async function getMemberCountFromChannel() {
             return 0;
         }
         
-        // Extract member count from channel name "ghosts: #X"
+        // Extract member count from channel name "Ghosts: X"
         const channelName = channel.name;
-        const match = channelName.match(/ghosts: #(\d+)/);
+        const match = channelName.match(/Ghosts: (\d+)/);
         
         if (match) {
             const memberCount = parseInt(match[1], 10);
