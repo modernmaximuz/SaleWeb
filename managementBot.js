@@ -582,21 +582,29 @@ async function registerCommands() {
 // Get Discord member count (excluding bots)
 async function getMemberCount() {
     try {
+        console.log(`[DISCORD] GUILD_ID: ${GUILD_ID}`);
         const guild = client.guilds.cache.get(GUILD_ID);
         if (!guild) {
-            console.error('Guild not found');
+            console.error('[DISCORD] Guild not found');
+            console.log(`[DISCORD] Available guilds: ${client.guilds.cache.map(g => g.id + ' (' + g.name + ')').join(', ')}`);
             return 0;
         }
         
+        console.log(`[DISCORD] Found guild: ${guild.name} (ID: ${guild.id})`);
+        console.log(`[DISCORD] Total members in cache: ${guild.members.cache.size}`);
+        
         // Fetch all members
         await guild.members.fetch();
+        console.log(`[DISCORD] Members after fetch: ${guild.members.cache.size}`);
         
         // Filter out bots
         const humanMembers = guild.members.cache.filter(member => !member.user.bot);
+        console.log(`[DISCORD] Human members (excluding bots): ${humanMembers.size}`);
+        console.log(`[DISCORD] Bot members: ${guild.members.cache.filter(member => member.user.bot).size}`);
         
         return humanMembers.size;
     } catch (error) {
-        console.error('Error getting member count:', error);
+        console.error('[DISCORD] Error getting member count:', error);
         return 0;
     }
 }

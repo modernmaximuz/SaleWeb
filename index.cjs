@@ -29,9 +29,9 @@ async function initializePaste() {
         });
         
         if (response.ok) {
-            console.log('[DEBUG] Paste initialized with empty array');
+            // Paste initialized
         } else {
-            console.log('[DEBUG] Failed to initialize paste:', response.status);
+            console.error('Failed to initialize paste:', response.status);
         }
     } catch (error) {
         console.error('Failed to initialize paste:', error);
@@ -48,12 +48,10 @@ client.once("ready", () => {
     // Check for cross-bot messages
     setInterval(async () => {
         if (isProcessing) {
-            console.log('[DEBUG] Already processing messages, skipping this cycle');
             return;
         }
         isProcessing = true;
         try {
-            console.log(`[DEBUG] Checking for bot messages...`);
             const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
                 headers: { Authorization: `Bearer ${API_KEY}` }
             });
@@ -65,14 +63,11 @@ client.once("ready", () => {
                     messages = JSON.parse(data.content || "[]");
                     if (!Array.isArray(messages)) messages = [];
                 } catch (error) {
-                    console.log('[DEBUG] Invalid JSON in paste, initializing...');
                     messages = [];
                     await initializePaste();
                 }
             
             const now = Date.now();
-            
-            console.log(`[DEBUG] Found ${messages.length} total messages in paste`);
             
             // Process messages meant for this bot ("login") and are recent (within 30 seconds)
             // Also filter out already processed messages
@@ -82,22 +77,16 @@ client.once("ready", () => {
                 !processedMessageIds.has(msg.id)
             );
                 
-                console.log(`[DEBUG] Found ${loginMessages.length} messages for login bot`);
-                console.log(`[DEBUG] Processed message IDs: ${Array.from(processedMessageIds).slice(0, 5)}`);
-                
                 if (loginMessages.length > 0) {
                     const guild = client.guilds.cache.get(GUILD_ID);
                     if (guild) {
-                        console.log(`[DEBUG] Found guild: ${guild.name}`);
                         for (const msg of loginMessages) {
                             const channel = guild.channels.cache.get(msg.channelId);
                             if (channel) {
-                                console.log(`[DEBUG] Sending message to channel ${msg.channelId}: ${msg.message}`);
                                 await channel.send(msg.message);
                                 // Mark this message as processed
                                 processedMessageIds.add(msg.id);
                             } else {
-                                console.log(`[DEBUG] Channel ${msg.channelId} not found`);
                                 // Still mark as processed even if channel not found
                                 processedMessageIds.add(msg.id);
                             }
@@ -109,7 +98,6 @@ client.once("ready", () => {
                             !(msg.bot === "login" && processedMessageIds.has(msg.id))
                         );
                         const afterCount = processedMessages.length;
-                        console.log(`[DEBUG] Removed ${beforeCount - afterCount} processed messages from paste`);
                         
                         // Clean up old message IDs (older than 2 minutes) to prevent memory leaks
                         const twoMinutesAgo = now - 120000;
@@ -130,15 +118,13 @@ client.once("ready", () => {
                                 content: JSON.stringify(processedMessages, null, 2)
                             })
                         });
-                        
-                        console.log(`[DEBUG] Processed and removed ${loginMessages.length} messages`);
                     } else {
-                        console.log(`[DEBUG] Guild ${GUILD_ID} not found`);
+                        console.error(`Guild ${GUILD_ID} not found`);
                     }
                 }
             }
         } catch (error) {
-            console.log(`[DEBUG] Failed to fetch messages:`, error);
+            console.error('Failed to fetch messages:', error);
         } finally {
             isProcessing = false;
         }
