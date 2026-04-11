@@ -1,18 +1,6 @@
-/* Topbar */
+/* Topbar - DISABLED - Using new #mainHeader instead */
 #topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(180deg, rgba(10,10,15,0.97) 0%, rgba(10,10,15,0.92) 100%);
-    backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 25px;
-    border-bottom: 1px solid #1f1f2b;
-    z-index: 999;
-    flex-wrap: wrap;
+    display: none;
 }
 
 #profileDropdown {
@@ -27,17 +15,12 @@
     z-index: 2000; /* ✅ add this */
 }
 
-/* Logo */
+/* Logo - DISABLED - Using new header styles instead */
 #logo {
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: #4c8dff;
+    display: none;
 }
 
-.logo {
-    height: 55px;   /* increase this freely */
-}
+/* .logo - DISABLED - Using new header styles in navbar.css */
 /* Right side */
 #navRight {
     display: flex;
