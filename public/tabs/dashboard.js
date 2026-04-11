@@ -53,17 +53,8 @@ async function loadDashboardData() {
         updateStatistics(stats);
         updateDiscordInfo(discord);
         
-        // Update last update time
-        updateLastUpdateTime();
-        
-        // Update API status
-        document.getElementById('apiStatus').textContent = 'Connected';
-        document.getElementById('apiStatus').style.color = '#28a745';
-        
     } catch (error) {
         console.error('Failed to load dashboard data:', error);
-        document.getElementById('apiStatus').textContent = 'Error';
-        document.getElementById('apiStatus').style.color = '#dc3545';
     }
 }
 
@@ -90,25 +81,8 @@ function updateStatistics(stats) {
 
 // Update Discord information
 function updateDiscordInfo(discord) {
-    // Update channel name
-    const channelNameEl = document.getElementById('channelName');
-    if (channelNameEl && discord.channelName) {
-        channelNameEl.textContent = discord.channelName;
-    }
-}
-
-// Update last update time
-function updateLastUpdateTime() {
-    const lastUpdateEl = document.getElementById('lastUpdate');
-    if (lastUpdateEl) {
-        const now = new Date();
-        const formattedTime = now.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            timeZone: 'Asia/Manila'
-        });
-        lastUpdateEl.textContent = formattedTime + ' PHT';
-    }
+    // Discord info is handled by the stats update now
+    // Channel name is updated automatically by the Discord bot
 }
 
 // Format number with commas

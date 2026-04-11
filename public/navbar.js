@@ -60,24 +60,7 @@ window.addEventListener("load", () => {
         return true;
     }
 
-    // Buttons
-    document.querySelectorAll(".navBtn").forEach(btn => {
-        const text = btn.textContent.trim();
-
-        if (text === "Restocks")
-            btn.addEventListener("click", (e) => requireLogin(e, "/restocks", btn));
-
-        if (text === "Proofs")
-            btn.addEventListener("click", (e) => requireLogin(e, "/proofs", btn));
-
-        if (text === "Support")
-            btn.addEventListener("click", (e) => requireLogin(e, "/support", btn));
-    });
-
-    // Shop links
-    document.querySelectorAll("#shopMenu a").forEach(a => {
-        a.addEventListener("click", (e) => requireLogin(e, a.getAttribute("href"), a));
-    });
+    // Event listeners are now handled by onclick handlers in HTML
 
     // Dropdown toggle
     const shopToggle = document.getElementById("shopToggle");

@@ -348,12 +348,12 @@ app.get("/tabs/:tab", async (req, res) => {
             // User is authenticated, serve the page
             res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
         } else {
-            // User not authenticated, redirect to login
-            res.redirect('/login.html');
+            // User not authenticated, return 401 for popup handling
+            res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
-        // Authentication failed, redirect to login
-        res.redirect('/login.html');
+        // Authentication failed, return 401 for popup handling
+        res.status(401).json({ error: 'Authentication required' });
     }
 });
 
@@ -366,10 +366,10 @@ app.get("/tabs/orders", async (req, res) => {
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "orders.html"));
         } else {
-            res.redirect('/login.html');
+            res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
-        res.redirect('/login.html');
+        res.status(401).json({ error: 'Authentication required' });
     }
 });
 
@@ -491,10 +491,10 @@ app.get("/support", async (req, res) => {
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
         } else {
-            res.redirect('/login.html');
+            res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
-        res.redirect('/login.html');
+        res.status(401).json({ error: 'Authentication required' });
     }
 });
 
@@ -507,10 +507,10 @@ app.get("/restocks", async (req, res) => {
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
         } else {
-            res.redirect('/login.html');
+            res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
-        res.redirect('/login.html');
+        res.status(401).json({ error: 'Authentication required' });
     }
 });
 
@@ -523,10 +523,10 @@ app.get("/shop/:shop", async (req, res) => {
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "shop", `${req.params.shop}.html`));
         } else {
-            res.redirect('/login.html');
+            res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
-        res.redirect('/login.html');
+        res.status(401).json({ error: 'Authentication required' });
     }
 });
 
@@ -539,10 +539,10 @@ app.get("/dashboard", async (req, res) => {
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "dashboard.html"));
         } else {
-            res.redirect('/login.html');
+            res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
-        res.redirect('/login.html');
+        res.status(401).json({ error: 'Authentication required' });
     }
 });
 
