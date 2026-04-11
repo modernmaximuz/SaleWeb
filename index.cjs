@@ -469,8 +469,10 @@ app.post('/discord/update-stats', async (req, res) => {
         const writeRes = await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify(stats, null, 2));
         
         if (writeRes.ok) {
-            console.log(`[DISCORD] Updated member count: ${memberCount}`);
-            res.json({ success: true });
+            console.log(`[DISCORD] Backend updated member count: ${memberCount}`);
+            console.log(`[DISCORD] Channel name should be: ghosts: #${memberCount}`);
+            console.log(`[DISCORD] Homepage will display: ${memberCount} Discord Members`);
+            res.json({ success: true, memberCount });
         } else {
             res.status(500).json({ error: 'Failed to save stats' });
         }

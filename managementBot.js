@@ -621,13 +621,15 @@ async function updateChannelName() {
         const memberCount = await getMemberCount();
         const newName = `ghosts: #${memberCount}`;
         
-        // Only update if name is different
-        if (channel.name !== newName) {
-            await channel.setName(newName);
-            console.log(`[DISCORD] Updated channel name to: ${newName}`);
-        }
+        console.log(`[DISCORD] Current member count: ${memberCount}`);
+        console.log(`[DISCORD] Setting channel name to: ${newName}`);
+        console.log(`[DISCORD] Current channel name: ${channel.name}`);
         
-        // Send member count to backend for dashboard
+        // Always update to ensure synchronization
+        await channel.setName(newName);
+        console.log(`[DISCORD] Successfully updated channel name to: ${newName}`);
+        
+        // Send member count to backend for dashboard (ensure homepage matches)
         await sendMemberCountToBackend(memberCount);
         
         return newName;
