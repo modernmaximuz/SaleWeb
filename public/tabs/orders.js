@@ -355,7 +355,7 @@ function renderOrderRow(order, index, admin, customResultText) {
             <button class="orderActionBtn danger" onclick="removeOrder(${index})">Remove</button>
             ` : ""}
                         ${admin && order.transactionId ? `
-            <button class="orderActionBtn proofBtn" onclick="window.open('/tabs/proofs.html', '_blank')">Upload Proof</button>
+            <button class="orderActionBtn proofBtn" onclick="window.open('/tabs/proofs.html?transactionId=${order.transactionId}', '_blank')">Upload Proof</button>
             ` : ""}
         </div>
     </div>`;

@@ -1,3 +1,4 @@
+const ORDER_PASTE = "OQooMS9z";
 let proofsData = [];
 let currentTransaction = null;
 let isAdmin = false;
@@ -33,6 +34,18 @@ async function checkAdminStatus() {
 // Initialize the page
 document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
+    
+    // Check for URL parameters (auto-fill from orders page)
+    const urlParams = new URLSearchParams(window.location.search);
+    const transactionId = urlParams.get('transactionId');
+    if (transactionId) {
+        const transactionInput = document.getElementById('transactionId');
+        if (transactionInput) {
+            transactionInput.value = transactionId;
+            // Trigger the transaction lookup
+            await handleTransactionInput({ target: { value: transactionId } });
+        }
+    }
     
     // Set up Firebase auth state listener
     if (window.firebase && firebase.auth) {
@@ -111,7 +124,7 @@ async function handleTransactionInput(e) {
 
 async function loadTransaction(transactionId) {
     try {
-        const response = await fetch(`/load/orderFinalResults`);
+        const response = await fetch(`/load/${ORDER_PASTE}`);
         if (!response.ok) throw new Error('Failed to load orders');
         
         const orders = await response.json();
