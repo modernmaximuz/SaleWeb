@@ -6,15 +6,24 @@ body {
     background: #000000;
     background-image: 
         url('/images/background.gif'),
-        radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(184, 134, 11, 0.1) 0%, transparent 50%),
-        linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(25, 0, 25, 0.6) 100%);
-    background-size: cover, auto, auto, auto, auto;
+        radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(184, 134, 11, 0.02) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(25, 0, 25, 0.95) 100%);
+    background-size: 100% 100%, auto, auto, auto, auto;
     background-position: center, 20% 50%, 80% 20%, 40% 80%, center;
     background-repeat: no-repeat, repeat, repeat, repeat, repeat;
-    background-attachment: fixed, fixed, fixed, fixed, fixed;
+    background-attachment: scroll, scroll, scroll, scroll, scroll;
     min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Mobile-specific background fixes */
+@media (max-width: 768px) {
+    body {
+        background-size: cover, auto, auto, auto, auto;
+        background-attachment: scroll, scroll, scroll, scroll, scroll;
+    }
 }
 
 /* ==================== MAIN HEADER ==================== */
@@ -23,18 +32,18 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 8px 20px;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(26, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0.85) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.98) 0%, rgba(26, 0, 0, 0.95) 50%, rgba(0, 0, 0, 0.98) 100%);
     border-bottom: 2px solid #8B0000;
     position: sticky;
     top: 0;
     z-index: 1000;
     box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.7),
+        0 4px 20px rgba(0, 0, 0, 0.9),
         0 0 40px rgba(139, 0, 0, 0.3),
         0 0 60px rgba(255, 69, 0, 0.1),
         inset 0 1px 0 rgba(255, 69, 0, 0.1);
     min-height: 60px;
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(5px);
 }
 
 /* HAMBURGER MENU */
@@ -285,18 +294,18 @@ body {
 
 /* ==================== SECONDARY HEADER ==================== */
 #secondaryHeader {
-    background: linear-gradient(180deg, rgba(10, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(10, 0, 0, 0.8) 100%);
+    background: linear-gradient(180deg, rgba(10, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.95) 50%, rgba(10, 0, 0, 0.98) 100%);
     border-bottom: 1px solid #8B0000;
     padding: 8px 0;
     position: sticky;
     top: 60px;
     z-index: 999;
     box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.6),
+        0 4px 20px rgba(0, 0, 0, 0.8),
         0 0 40px rgba(139, 0, 0, 0.2),
         0 0 60px rgba(255, 69, 0, 0.1),
         inset 0 1px 0 rgba(255, 69, 0, 0.1);
-    backdrop-filter: blur(25px);
+    backdrop-filter: blur(5px);
     position: relative;
 }
 
