@@ -6,10 +6,14 @@ window.requireLogin = async function(e, goTo, btn) {
         e.preventDefault();
 
         let ok = false;
+        let hasFirebaseAuth = false;
 
-        if (window.isLoggedIn) {
-            ok = await window.isLoggedIn();
+        // Check Firebase authentication first
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+            hasFirebaseAuth = true;
+            ok = true;
         } else {
+            // Check Discord authentication as fallback
             try {
                 const res = await fetch("/me");
                 const user = await res.json();
@@ -55,7 +59,13 @@ window.requireLogin = async function(e, goTo, btn) {
             return false;
         }
 
-        if (goTo) window.location.href = goTo;
+        // For Firebase authenticated users going to protected tabs, we need to handle the token
+        if (goTo && hasFirebaseAuth && (goTo.includes('/tabs/') || goTo.includes('/shop/') || goTo === '/support')) {
+            // Navigate directly - the tab will check Firebase auth state on load
+            window.location.href = goTo;
+        } else if (goTo) {
+            window.location.href = goTo;
+        }
         return true;
 }
 

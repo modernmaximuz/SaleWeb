@@ -398,15 +398,24 @@ app.get("/tabs/:tab", async (req, res) => {
     const { tab } = req.params;
     
     try {
-        // Check if user is authenticated via Firebase
+        // First check if user is authenticated via Firebase token
         const authHeader = req.headers.authorization;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             await admin.auth().verifyIdToken(token);
-            // User is authenticated, serve the page
+            // User is authenticated via Firebase, serve the page
+            res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
+            return;
+        }
+        
+        // If no Firebase token, check if it's a direct browser navigation
+        // For direct navigation, we'll serve the page and let the client-side handle auth
+        const userAgent = req.headers['user-agent'] || '';
+        if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+            // This is a browser request, serve the page and let client-side handle auth
             res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
         } else {
-            // User not authenticated, return 401 for popup handling
+            // This is an API request, require authentication
             res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
@@ -635,12 +644,22 @@ app.post('/discord/update-stats', async (req, res) => {
 // Serve support page with auth check
 app.get("/support", async (req, res) => {
     try {
+        // First check if user is authenticated via Firebase token
         const authHeader = req.headers.authorization;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
+            return;
+        }
+        
+        // If no Firebase token, check if it's a direct browser navigation
+        const userAgent = req.headers['user-agent'] || '';
+        if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+            // This is a browser request, serve the page and let client-side handle auth
+            res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
         } else {
+            // This is an API request, require authentication
             res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
@@ -651,12 +670,22 @@ app.get("/support", async (req, res) => {
 // Serve restocks page with auth check
 app.get("/restocks", async (req, res) => {
     try {
+        // First check if user is authenticated via Firebase token
         const authHeader = req.headers.authorization;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
+            return;
+        }
+        
+        // If no Firebase token, check if it's a direct browser navigation
+        const userAgent = req.headers['user-agent'] || '';
+        if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+            // This is a browser request, serve the page and let client-side handle auth
+            res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
         } else {
+            // This is an API request, require authentication
             res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
@@ -667,12 +696,22 @@ app.get("/restocks", async (req, res) => {
 // Serve shop pages with auth check
 app.get("/shop/:shop", async (req, res) => {
     try {
+        // First check if user is authenticated via Firebase token
         const authHeader = req.headers.authorization;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "shop", `${req.params.shop}.html`));
+            return;
+        }
+        
+        // If no Firebase token, check if it's a direct browser navigation
+        const userAgent = req.headers['user-agent'] || '';
+        if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+            // This is a browser request, serve the page and let client-side handle auth
+            res.sendFile(path.join(__dirname, "public", "shop", `${req.params.shop}.html`));
         } else {
+            // This is an API request, require authentication
             res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
@@ -683,12 +722,22 @@ app.get("/shop/:shop", async (req, res) => {
 // Serve dashboard page with auth check
 app.get("/dashboard", async (req, res) => {
     try {
+        // First check if user is authenticated via Firebase token
         const authHeader = req.headers.authorization;
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             await admin.auth().verifyIdToken(token);
             res.sendFile(path.join(__dirname, "public", "tabs", "dashboard.html"));
+            return;
+        }
+        
+        // If no Firebase token, check if it's a direct browser navigation
+        const userAgent = req.headers['user-agent'] || '';
+        if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+            // This is a browser request, serve the page and let client-side handle auth
+            res.sendFile(path.join(__dirname, "public", "tabs", "dashboard.html"));
         } else {
+            // This is an API request, require authentication
             res.status(401).json({ error: 'Authentication required' });
         }
     } catch (error) {
