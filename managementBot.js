@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, PermissionsBitField, EmbedBuilder } = require("discord.js");
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const fetch = (...args) => import("node-fetch").then(({default: fetch}) => fetch(...args));
 
 // Load environment variables from .env file
@@ -87,7 +88,7 @@ async function triggerBotMessage(botType, message, channelId) {
         }
         
         messages.push({
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             bot: botType,
             message: message,
             channelId: channelId,
