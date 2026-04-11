@@ -1,4 +1,5 @@
 const MM2_PASTE_ID = "fZ3piaUg";
+const ADOPTME_PASTE_ID = "QkT4dqYG"; // Pastefy ID for Adopt Me shop
 const { Client, GatewayIntentBits } = require("discord.js");
 
 // Cross-bot communication constants
@@ -523,9 +524,35 @@ const DISCORD_STATS_PASTE_ID = "IWEJETFl";
 // Stock deduction function for successful orders
 async function deductStockFromOrder(order) {
     try {
-        const stockData = await readPasteContent(MM2_PASTE_ID);
+        // Determine which shop this order belongs to
+        let shopType = 'mm2'; // default
+        let pasteId = MM2_PASTE_ID;
+        let stockKey = 'mm2';
+        
+        // Check if items belong to Adopt Me shop by checking if they exist in Adopt Me stock
+        if (order.items && order.items.length > 0) {
+            try {
+                const adoptmeStockData = await readPasteContent(ADOPTME_PASTE_ID);
+                if (adoptmeStockData.ok) {
+                    const adoptmeContent = JSON.parse(adoptmeStockData.content || '{}');
+                    if (adoptmeContent.adoptme) {
+                        // Check if any item exists in Adopt Me stock
+                        const firstItem = order.items[0];
+                        if (adoptmeContent.adoptme[firstItem.name]) {
+                            shopType = 'adoptme';
+                            pasteId = ADOPTME_PASTE_ID;
+                            stockKey = 'adoptme';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Failed to check Adopt Me stock, defaulting to MM2');
+            }
+        }
+
+        const stockData = await readPasteContent(pasteId);
         if (!stockData.ok) {
-            console.error('Failed to read stock data for deduction');
+            console.error(`Failed to read ${shopType} stock data for deduction`);
             return;
         }
 
@@ -533,12 +560,12 @@ async function deductStockFromOrder(order) {
         try {
             stockContent = JSON.parse(stockData.content || '{}');
         } catch (error) {
-            console.error('Failed to parse stock content:', error);
+            console.error(`Failed to parse ${shopType} stock content:`, error);
             return;
         }
 
-        if (!stockContent.mm2) {
-            console.log('No MM2 stock data found for deduction');
+        if (!stockContent[stockKey]) {
+            console.log(`No ${shopType} stock data found for deduction`);
             return;
         }
 
@@ -547,24 +574,24 @@ async function deductStockFromOrder(order) {
             const itemName = item.name;
             const quantity = Math.max(0, Number(item.qty || 0));
             
-            if (!stockContent.mm2[itemName]) {
-                console.log(`Item ${itemName} not found in stock data`);
+            if (!stockContent[stockKey][itemName]) {
+                console.log(`Item ${itemName} not found in ${shopType} stock data`);
                 continue;
             }
             
-            const currentStock = Number(stockContent.mm2[itemName].stock || 0);
+            const currentStock = Number(stockContent[stockKey][itemName].stock || 0);
             const newStock = Math.max(0, currentStock - quantity);
             
-            stockContent.mm2[itemName].stock = newStock;
-            console.log(`Deducted ${quantity} from ${itemName}: ${currentStock} -> ${newStock}`);
+            stockContent[stockKey][itemName].stock = newStock;
+            console.log(`Deducted ${quantity} from ${shopType} ${itemName}: ${currentStock} -> ${newStock}`);
         }
 
         // Save updated stock data
-        const writeRes = await writePasteContent(MM2_PASTE_ID, JSON.stringify(stockContent, null, 2));
+        const writeRes = await writePasteContent(pasteId, JSON.stringify(stockContent, null, 2));
         if (writeRes.ok) {
-            console.log(`Successfully deducted stock for order ${order.id || 'unknown'}`);
+            console.log(`Successfully deducted ${shopType} stock for order ${order.id || 'unknown'}`);
         } else {
-            console.error('Failed to save updated stock data');
+            console.error(`Failed to save updated ${shopType} stock data`);
         }
     } catch (error) {
         console.error('Error deducting stock from order:', error);
@@ -1405,6 +1432,7 @@ const restockClients = new Set();
 
 // Stock monitoring system
 let previousMM2Stock = {};
+let previousAdoptmeStock = {};
 const STOCK_CHECK_INTERVAL = 30000; // Check every 30 seconds
 
 // Initialize stock tracking
@@ -1430,10 +1458,21 @@ async function initializeStockTracking() {
         if (mm2Parsed.ok) {
             const mm2Data = JSON.parse(mm2Parsed.content || '{}');
             previousMM2Stock = mm2Data.mm2 || {};
-            console.log('[STOCK] Initial stock tracking initialized');
-            console.log(`[STOCK] Tracking ${Object.keys(previousMM2Stock).length} items`);
+            console.log('[STOCK] Initial MM2 stock tracking initialized');
+            console.log(`[STOCK] Tracking ${Object.keys(previousMM2Stock).length} MM2 items`);
         } else {
             console.error('[STOCK] Failed to load MM2 paste for initialization');
+        }
+
+        // Initialize Adopt Me stock tracking
+        const adoptmeParsed = await readPasteContent(ADOPTME_PASTE_ID);
+        if (adoptmeParsed.ok) {
+            const adoptmeData = JSON.parse(adoptmeParsed.content || '{}');
+            previousAdoptmeStock = adoptmeData.adoptme || {};
+            console.log('[STOCK] Initial Adopt Me stock tracking initialized');
+            console.log(`[STOCK] Tracking ${Object.keys(previousAdoptmeStock).length} Adopt Me items`);
+        } else {
+            console.error('[STOCK] Failed to load Adopt Me paste for initialization');
         }
     } catch (error) {
         console.error('[STOCK] Failed to initialize stock tracking:', error);
@@ -1483,21 +1522,38 @@ async function cleanInvalidRestocks() {
 // Monitor stock changes
 async function monitorStockChanges() {
     try {
+        // Monitor MM2 stock changes
         const mm2Parsed = await readPasteContent(MM2_PASTE_ID);
-        if (!mm2Parsed.ok) {
-            console.log('[STOCK] Failed to fetch current stock');
-            return;
+        if (mm2Parsed.ok) {
+            const mm2Data = JSON.parse(mm2Parsed.content || '{}');
+            const currentMM2Stock = mm2Data.mm2 || {};
+            
+            const mm2Changes = detectStockChanges(previousMM2Stock, currentMM2Stock);
+            
+            if (mm2Changes.length > 0) {
+                console.log(`[STOCK] Detected ${mm2Changes.length} MM2 stock changes:`, mm2Changes.map(c => `${c.item} (${c.previousStock}->${c.newStock})`));
+                await recordStockChanges(mm2Changes, 'mm2');
+                previousMM2Stock = JSON.parse(JSON.stringify(currentMM2Stock)); // Deep copy
+            }
+        } else {
+            console.log('[STOCK] Failed to fetch current MM2 stock');
         }
 
-        const mm2Data = JSON.parse(mm2Parsed.content || '{}');
-        const currentStock = mm2Data.mm2 || {};
-        
-        const changes = detectStockChanges(previousMM2Stock, currentStock);
-        
-        if (changes.length > 0) {
-            console.log(`[STOCK] Detected ${changes.length} stock changes:`, changes.map(c => `${c.item} (${c.previousStock}→${c.newStock})`));
-            await recordStockChanges(changes);
-            previousMM2Stock = JSON.parse(JSON.stringify(currentStock)); // Deep copy
+        // Monitor Adopt Me stock changes
+        const adoptmeParsed = await readPasteContent(ADOPTME_PASTE_ID);
+        if (adoptmeParsed.ok) {
+            const adoptmeData = JSON.parse(adoptmeParsed.content || '{}');
+            const currentAdoptmeStock = adoptmeData.adoptme || {};
+            
+            const adoptmeChanges = detectStockChanges(previousAdoptmeStock, currentAdoptmeStock);
+            
+            if (adoptmeChanges.length > 0) {
+                console.log(`[STOCK] Detected ${adoptmeChanges.length} Adopt Me stock changes:`, adoptmeChanges.map(c => `${c.item} (${c.previousStock}->${c.newStock})`));
+                await recordStockChanges(adoptmeChanges, 'adoptme');
+                previousAdoptmeStock = JSON.parse(JSON.stringify(currentAdoptmeStock)); // Deep copy
+            }
+        } else {
+            console.log('[STOCK] Failed to fetch current Adopt Me stock');
         }
     } catch (error) {
         console.error('[STOCK] Error monitoring stock changes:', error);
@@ -1536,7 +1592,7 @@ function detectStockChanges(previous, current) {
 }
 
 // Record stock changes to restock tracking
-async function recordStockChanges(changes) {
+async function recordStockChanges(changes, shopType = 'mm2') {
     try {
         // Load existing restocks
         const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
@@ -1550,7 +1606,7 @@ async function recordStockChanges(changes) {
         );
         
         if (validChanges.length === 0) {
-            console.log('[STOCK] No valid items to record (all items had 0 price or no name)');
+            console.log(`[STOCK] No valid items to record for ${shopType} (all items had 0 price or no name)`);
             return;
         }
         
@@ -1567,9 +1623,9 @@ async function recordStockChanges(changes) {
             id: `stock_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             items: restockItems,
             date: new Date().toISOString(),
-            adminName: 'MM2 Shop Monitor',
+            adminName: `${shopType === 'adoptme' ? 'Adopt Me' : 'MM2'} Shop Monitor`,
             type: 'automatic_restock',
-            source: 'mm2_shop_monitoring'
+            source: `${shopType}_shop_monitoring`
         };
         
         restocks.unshift(restock);
@@ -1583,7 +1639,7 @@ async function recordStockChanges(changes) {
         // Save updated restocks
         const writeRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify(restocks, null, 2));
         if (writeRes.ok) {
-            console.log(`[STOCK] Successfully recorded restock with ${changes.length} items`);
+            console.log(`[STOCK] Successfully recorded ${shopType} restock with ${changes.length} items`);
             console.log(`[STOCK] Restock ID: ${restock.id}, Items: ${restockItems.map(i => i.name).join(', ')}`);
         } else {
             console.error('[STOCK] Failed to save stock changes');

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Adopt Me Stock</title>
+
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/navbar.css">
+<link rel="stylesheet" href="/shop/adoptme.css">
+
+</head>
+<body>
+
+<div id="topbar">
+    <a href="/">
+        <img src="/images/logo.png" class="logo">
+    </a>
+    
+<div id="navCenter">
+    <button class="navBtn">Restocks</button>
+
+    <div class="dropdown">
+        <button class="navBtn" id="shopToggle">Shop &#9662;</button>
+        <div class="dropdownContent" id="shopMenu">
+            <a href="/shop/adoptme">Adopt Me</a>
+            <a href="/shop/mm2">Murder Mystery</a>
+        </div>
+    </div>
+
+    <button class="navBtn">Proofs</button>
+    <button class="navBtn">Support</button>
+    <button class="navBtn" onclick="location.href='/tabs/orders'">Orders</button>
+</div>
+
+<div id="navRight">
+    <button id="loginToggle">Login</button>
+<div id="cartIcon">
+    <img src="/images/cart.png" id="cartImg">
+    <span id="cartCount">0</span>
+</div>
+<div id="cartPopup" class="hidden">
+    <div id="cartBox">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+
+        <div id="cartTotal">Total: &#8369;0</div>
+
+        <button id="finalizeOrder">Finalize Order</button>
+    </div>
+</div>
+    <div id="profileBox" class="hidden">
+        <div id="profileMain">
+            <div class="avatar"></div>
+            <span id="profileName">User</span>
+        </div>
+        <div id="profileDropdown" class="hidden">
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<h1 style="text-align:center;">Adopt Me Stock</h1> <div id="searchContainer">
+    <input type="text" id="searchInput" placeholder="Search items..." />
+</div>
+
+<div id="stockContainer"></div>
+<div id="pagination" class="pagination">
+    <button id="prevPage">&#9666; Prev</button>
+    <span id="pageInfo">Page 1</span>
+    <button id="nextPage">Next &#9656;</button>
+</div>
+
+<!-- Profile Configuration Modal -->
+<div id="profileConfigModal" class="hidden">
+    <div id="profileConfigModalBox">
+        <div class="modalHeader">
+            <h3>Configure Profile</h3>
+            <button class="closeModal" onclick="closeProfileConfigModal()">&#215;</button>
+        </div>
+        <div class="modalContent">
+            <div class="form-group">
+                <label for="displayName">Display Name:</label>
+                <input type="text" id="displayName" placeholder="Enter your display name">
+            </div>
+            <div class="form-group">
+                <label for="avatarUpload">Profile Picture:</label>
+                <div class="upload-container">
+                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                    <button type="button" id="uploadBtn" class="upload-button">Choose Image</button>
+                    <div class="upload-options">
+                        <span>or</span>
+                        <input type="text" id="avatarUrl" placeholder="Enter image URL">
+                    </div>
+                </div>
+                <div id="avatarPreview">
+                    <img id="avatarPreviewImg" src="/images/default-avatar.png" alt="Avatar Preview">
+                    <div id="uploadProgress" class="hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">Uploading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modalButtons">
+                <button class="cancelBtn" onclick="closeProfileConfigModal()">Cancel</button>
+                <button class="submitBtn" onclick="saveProfile()">Save Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="/firebase.js"></script>
+
+<script src="/script.js"></script>
+<script src="/navbar.js"></script>
+<script src="/cart.js"></script>
+<script src="/shop/adoptme.js"></script>
+
+</body>
+</html>
