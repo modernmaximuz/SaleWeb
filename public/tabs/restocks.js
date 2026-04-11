@@ -209,14 +209,39 @@ function createRestockElement(restock) {
     const date = new Date(restock.date);
     const formattedDate = date.toLocaleDateString('en-US', { timeZone: 'UTC' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
     
+    // Determine if this is an automatic restock
+    const isAutomatic = restock.type === 'automatic_restock';
+    const title = isAutomatic ? 'Automatic Restock Detected' : 'Restocked Items';
+    const adminName = isAutomatic ? `${restock.adminName} (Automatic)` : restock.adminName;
+    
     let itemsHtml = '';
     restock.items.forEach(item => {
+        // Handle both manual and automatic restock item formats
+        const itemName = item.name || '';
+        const itemPrice = item.price || 0;
+        const itemImg = item.img || '/images/default-item.png';
+        
+        // Additional info for automatic restocks
+        let stockInfo = '';
+        if (isAutomatic && (item.stockAdded !== undefined || item.previousStock !== undefined || item.newStock !== undefined)) {
+            const stockAdded = item.stockAdded || 0;
+            const prevStock = item.previousStock || 0;
+            const newStock = item.newStock || 0;
+            stockInfo = `
+                <div class="stock-change-info">
+                    <span class="stock-change">+${stockAdded} stock</span>
+                    <span class="stock-details">${prevStock} &rarr; ${newStock}</span>
+                </div>
+            `;
+        }
+        
         itemsHtml += `
             <div class="restock-item">
-                <img src="${item.img || '/images/default-item.png'}" alt="${item.name}" class="item-image">
+                <img src="${itemImg}" alt="${itemName}" class="item-image">
                 <div class="item-details">
-                    <h4 class="item-name">${item.name}</h4>
-                    <p class="item-price">&#8369;${item.price.toFixed(2)}</p>
+                    <h4 class="item-name">${itemName}</h4>
+                    <p class="item-price">&#8369;${itemPrice.toFixed(2)}</p>
+                    ${stockInfo}
                 </div>
             </div>
         `;
@@ -224,10 +249,11 @@ function createRestockElement(restock) {
     
     div.innerHTML = `
         <div class="restock-header">
-            <h3 class="restock-title">Restocked Items</h3>
+            <h3 class="restock-title">${title}</h3>
             <div class="restock-meta">
                 <span class="restock-date">${formattedDate}</span>
-                <span class="restock-admin">by ${restock.adminName}</span>
+                <span class="restock-admin">by ${adminName}</span>
+                ${isAutomatic ? '<span class="restock-badge automatic">Automatic</span>' : ''}
             </div>
         </div>
         <div class="restock-items-grid">

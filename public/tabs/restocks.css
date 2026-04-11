@@ -224,17 +224,18 @@ body {
 
 /* Restock Entry */
 .restock-entry {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
+    padding: 20px;
     margin-bottom: 20px;
-    overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .restock-entry:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
 }
 
 .restock-header {
@@ -643,4 +644,43 @@ body {
 #addRestockModalBox::-webkit-scrollbar-thumb:hover,
 #profileConfigModalBox::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* Restock Badge */
+.restock-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+}
+
+.restock-badge.automatic {
+    background: var(--success-color);
+    color: white;
+}
+
+/* Stock Change Information */
+.stock-change-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.stock-change {
+    color: var(--success-color);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.stock-details {
+    color: var(--text-secondary);
+    font-size: 11px;
 }

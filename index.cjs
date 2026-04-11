@@ -975,9 +975,163 @@ app.post('/chat/typing', (req, res) => {
 
 // Restock System
 const RESTOCK_PASTE_ID = "1J0ghD9n";
-const RESTOCK_TRACKING_PASTE_ID = "2K4lmN8p"; // New paste for accurate time tracking
+const RESTOCK_TRACKING_PASTE_ID = "1J0ghD9n"; // Use the same paste ID as requested
 const ADMIN_PROFILE_PASTE_ID = "Rb1bV3T6";
 const restockClients = new Set();
+
+// Stock monitoring system
+let previousMM2Stock = {};
+const STOCK_CHECK_INTERVAL = 30000; // Check every 30 seconds
+
+// Initialize stock tracking
+async function initializeStockTracking() {
+    try {
+        const mm2Parsed = await readPasteContent(MM2_PASTE_ID);
+        if (mm2Parsed.ok) {
+            const mm2Data = JSON.parse(mm2Parsed.content || '{}');
+            previousMM2Stock = mm2Data.mm2 || {};
+            console.log('[STOCK] Initial stock tracking initialized');
+        }
+    } catch (error) {
+        console.error('[STOCK] Failed to initialize stock tracking:', error);
+    }
+}
+
+// Monitor stock changes
+async function monitorStockChanges() {
+    try {
+        const mm2Parsed = await readPasteContent(MM2_PASTE_ID);
+        if (!mm2Parsed.ok) {
+            console.log('[STOCK] Failed to fetch current stock');
+            return;
+        }
+
+        const mm2Data = JSON.parse(mm2Parsed.content || '{}');
+        const currentStock = mm2Data.mm2 || {};
+        
+        const changes = detectStockChanges(previousMM2Stock, currentStock);
+        
+        if (changes.length > 0) {
+            console.log(`[STOCK] Detected ${changes.length} stock changes`);
+            await recordStockChanges(changes);
+            previousMM2Stock = currentStock;
+        }
+    } catch (error) {
+        console.error('[STOCK] Error monitoring stock changes:', error);
+    }
+}
+
+// Detect changes between previous and current stock
+function detectStockChanges(previous, current) {
+    const changes = [];
+    const allItems = new Set([...Object.keys(previous), ...Object.keys(current)]);
+    
+    for (const itemName of allItems) {
+        const prevItem = previous[itemName];
+        const currItem = current[itemName];
+        
+        const prevStock = prevItem ? prevItem.stock : 0;
+        const currStock = currItem ? currItem.stock : 0;
+        
+        // Check for stock increase (restock)
+        if (currStock > prevStock) {
+            changes.push({
+                type: 'restock',
+                item: itemName,
+                previousStock: prevStock,
+                newStock: currStock,
+                change: currStock - prevStock,
+                price: currItem ? currItem.price : (prevItem ? prevItem.price : 0),
+                img: currItem ? currItem.img : (prevItem ? prevItem.img : '/images/default-item.png'),
+                timestamp: new Date().toISOString()
+            });
+        }
+        // Check for new item (was out of stock, now has stock)
+        else if (prevStock === 0 && currStock > 0) {
+            changes.push({
+                type: 'new_item',
+                item: itemName,
+                previousStock: 0,
+                newStock: currStock,
+                change: currStock,
+                price: currItem ? currItem.price : 0,
+                img: currItem ? currItem.img : '/images/default-item.png',
+                timestamp: new Date().toISOString()
+            });
+        }
+    }
+    
+    return changes;
+}
+
+// Record stock changes to restock tracking
+async function recordStockChanges(changes) {
+    try {
+        // Load existing restocks
+        const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
+        const restocks = restocksParsed.ok ? parseOrdersContent(restocksParsed.content) : [];
+        
+        // Group changes by timestamp to create restock entries
+        const changesByTimestamp = {};
+        changes.forEach(change => {
+            const timeKey = new Date(change.timestamp).getTime();
+            if (!changesByTimestamp[timeKey]) {
+                changesByTimestamp[timeKey] = [];
+            }
+            changesByTimestamp[timeKey].push(change);
+        });
+        
+        // Create restock entries for each timestamp group
+        for (const [timestamp, timestampChanges] of Object.entries(changesByTimestamp)) {
+            const restockItems = timestampChanges.map(change => ({
+                name: change.item,
+                price: change.price,
+                img: change.img,
+                stockAdded: change.change,
+                previousStock: change.previousStock,
+                newStock: change.newStock
+            }));
+            
+            const restock = {
+                id: `stock_${timestamp}_${Math.random().toString(36).substr(2, 5)}`,
+                items: restockItems,
+                date: new Date(parseInt(timestamp)).toISOString(),
+                adminName: 'Stock Monitor',
+                type: 'automatic_restock',
+                source: 'mm2_shop_monitoring'
+            };
+            
+            restocks.unshift(restock);
+            
+            // Broadcast the restock update
+            broadcastRestockUpdate({
+                type: 'new_restock',
+                restock
+            });
+        }
+        
+        // Save updated restocks
+        const writeRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify(restocks, null, 2));
+        if (writeRes.ok) {
+            console.log(`[STOCK] Successfully recorded ${changes.length} stock changes`);
+        } else {
+            console.error('[STOCK] Failed to save stock changes');
+        }
+        
+    } catch (error) {
+        console.error('[STOCK] Error recording stock changes:', error);
+    }
+}
+
+// Start stock monitoring
+client.once('ready', () => {
+    // Initialize stock tracking after bot is ready
+    setTimeout(initializeStockTracking, 5000);
+    
+    // Start monitoring interval
+    setInterval(monitorStockChanges, STOCK_CHECK_INTERVAL);
+    console.log(`[STOCK] Stock monitoring started with ${STOCK_CHECK_INTERVAL/1000}s interval`);
+});
 
 // Server-Sent Events for restock updates
 app.get('/restock/events', (req, res) => {
