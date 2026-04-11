@@ -285,6 +285,36 @@ function setupEventListeners() {
     }
 }
 
+// Clean invalid restocks
+async function cleanInvalidRestocks() {
+    if (!confirm('Are you sure you want to remove all invalid restock entries? This will remove entries with 0 price or no item name.')) {
+        return;
+    }
+    
+    try {
+        const token = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch('/restock/clean', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        });
+        
+        if (res.ok) {
+            const result = await res.json();
+            alert(`Successfully removed ${result.message}. Remaining: ${result.remaining}`);
+            await loadRestocks(); // Reload the restocks list
+        } else {
+            const error = await res.json();
+            alert('Failed to clean restocks: ' + (error.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Failed to clean restocks:', error);
+        alert('Failed to clean restocks. Please try again.');
+    }
+}
+
 // Update UI based on user state
 function updateUI() {
     const adminControls = document.getElementById('adminControls');

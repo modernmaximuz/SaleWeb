@@ -996,6 +996,9 @@ async function initializeStockTracking() {
             } else {
                 console.error('[STOCK] Failed to initialize restocks paste');
             }
+        } else {
+            // Clean existing invalid restocks
+            await cleanInvalidRestocks();
         }
 
         // Initialize MM2 stock tracking
@@ -1010,6 +1013,46 @@ async function initializeStockTracking() {
         }
     } catch (error) {
         console.error('[STOCK] Failed to initialize stock tracking:', error);
+    }
+}
+
+// Clean invalid restocks function
+async function cleanInvalidRestocks() {
+    try {
+        const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
+        if (!restocksParsed.ok) {
+            return;
+        }
+
+        const restocks = parseOrdersContent(restocksParsed.content);
+        const originalCount = restocks.length;
+        
+        // Filter out invalid restocks
+        const validRestocks = restocks.filter(restock => {
+            // Check if restock has valid items
+            if (!restock.items || !Array.isArray(restock.items)) {
+                return false;
+            }
+            
+            // Check if all items in restock are valid
+            return restock.items.some(item => 
+                item && 
+                item.name && 
+                item.name.trim() && 
+                item.price > 0
+            );
+        });
+        
+        // Only save if there are changes
+        if (validRestocks.length !== originalCount) {
+            const writeRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify(validRestocks, null, 2));
+            if (writeRes.ok) {
+                const removedCount = originalCount - validRestocks.length;
+                console.log(`[STOCK] Auto-cleaned ${removedCount} invalid restock entries during initialization`);
+            }
+        }
+    } catch (error) {
+        console.error('[STOCK] Failed to clean invalid restocks:', error);
     }
 }
 
@@ -1075,8 +1118,19 @@ async function recordStockChanges(changes) {
         const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
         const restocks = restocksParsed.ok ? parseOrdersContent(restocksParsed.content) : [];
         
-        // Create a single restock entry for all changes detected at this time
-        const restockItems = changes.map(change => ({
+        // Filter out invalid items and create restock entry
+        const validChanges = changes.filter(change => 
+            change.item && 
+            change.item.trim() && 
+            change.price > 0
+        );
+        
+        if (validChanges.length === 0) {
+            console.log('[STOCK] No valid items to record (all items had 0 price or no name)');
+            return;
+        }
+        
+        const restockItems = validChanges.map(change => ({
             name: change.item,
             price: change.price,
             img: change.img,
@@ -1287,6 +1341,54 @@ app.get('/admin/profile', verifyToken, async (req, res) => {
         }
     } catch (error) {
         console.error('Failed to load admin profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Clean invalid restocks (admin only)
+app.delete('/restock/clean', verifyToken, async (req, res) => {
+    try {
+        // Load existing restocks
+        const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
+        if (!restocksParsed.ok) {
+            return res.status(500).json({ error: 'Failed to load restocks' });
+        }
+
+        const restocks = parseOrdersContent(restocksParsed.content);
+        const originalCount = restocks.length;
+        
+        // Filter out invalid restocks
+        const validRestocks = restocks.filter(restock => {
+            // Check if restock has valid items
+            if (!restock.items || !Array.isArray(restock.items)) {
+                return false;
+            }
+            
+            // Check if all items in the restock are valid
+            return restock.items.some(item => 
+                item && 
+                item.name && 
+                item.name.trim() && 
+                item.price > 0
+            );
+        });
+        
+        // Save cleaned restocks
+        const writeRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify(validRestocks, null, 2));
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save cleaned restocks' });
+        }
+        
+        const removedCount = originalCount - validRestocks.length;
+        console.log(`[STOCK] Cleaned ${removedCount} invalid restock entries`);
+        
+        res.json({ 
+            success: true, 
+            message: `Removed ${removedCount} invalid restock entries`,
+            remaining: validRestocks.length
+        });
+    } catch (error) {
+        console.error('Failed to clean restocks:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
