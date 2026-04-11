@@ -10,7 +10,7 @@ const SCAMMER_ROLE_ID = "1491771111426363562";
 const BASE = "https://pastefy.app/api/v2";
 const API_KEY = process.env.API_KEY;
 const GUILD_ID = process.env.GUILD_ID;
-const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL"; // Same paste for bot communication
+const BOT_COMMUNICATION_PASTE_ID = "Jk84rCKt"; // Same paste for bot communication
 
 const client = new Client({
     intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]

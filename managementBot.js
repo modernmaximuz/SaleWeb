@@ -36,7 +36,7 @@ const mutes = new Map();
 const muteLogs = [];
 
 // Cross-bot communication
-const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL"; // New paste for bot communication
+const BOT_COMMUNICATION_PASTE_ID = "Jk84rCKt"; // New paste for bot communication
 
 async function triggerBotMessage(botType, message, channelId) {
     try {

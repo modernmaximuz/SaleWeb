@@ -2,7 +2,7 @@ const MM2_PASTE_ID = "fZ3piaUg";
 const { Client, GatewayIntentBits } = require("discord.js");
 
 // Cross-bot communication constants
-const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL";
+const BOT_COMMUNICATION_PASTE_ID = "Jk84rCKt";
 const BASE = "https://pastefy.app/api/v2";
 const API_KEY = process.env.API_KEY;
 const GUILD_ID = process.env.GUILD_ID;
