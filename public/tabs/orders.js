@@ -329,6 +329,10 @@ function renderOrderRow(order, index, admin, customResultText) {
     // Determine if admin can remove this order
     const canRemove = admin && ['accepted', 'success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'].includes(result);
     
+    // Determine if this is a final result that can be deleted
+    const isFinalResult = ['success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'].includes(result);
+    const canDeleteFinalResult = admin && isFinalResult;
+    
     return `
     <div class="orderRow">
         <div class="orderMeta">
@@ -352,6 +356,9 @@ function renderOrderRow(order, index, admin, customResultText) {
             ` : ""}
             ${canRemove ? `
             <button class="orderActionBtn danger" onclick="removeOrder(${index})">Remove</button>
+            ` : ""}
+            ${canDeleteFinalResult ? `
+            <button class="orderActionBtn danger" onclick="deleteFinalResult(${index})">Delete Result</button>
             ` : ""}
             ${admin && order.transactionId ? `
             <button class="orderActionBtn proofBtn" onclick="window.open('/tabs/proofs.html', '_blank')">Upload Proof</button>
@@ -434,7 +441,7 @@ async function loadOrders() {
 
     const finalRendered = applyFinalSortAndFilter(finalEntries);
     finalRendered.forEach(({ o, i }) => {
-        finalList.innerHTML += renderOrderRow(o, i, false);
+        finalList.innerHTML += renderOrderRow(o, i, admin);
     });
 
     updateFinalCounts(finalEntries);
