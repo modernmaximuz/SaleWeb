@@ -21,6 +21,7 @@ client.once("ready", () => {
     // Check for cross-bot messages
     setInterval(async () => {
         try {
+            console.log(`[DEBUG] Checking for bot messages...`);
             const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
                 headers: { Authorization: `Bearer ${API_KEY}` }
             });
@@ -30,19 +31,27 @@ client.once("ready", () => {
                 const messages = JSON.parse(data.content || "[]");
                 const now = Date.now();
                 
+                console.log(`[DEBUG] Found ${messages.length} total messages in paste`);
+                
                 // Process messages meant for this bot ("login") and are recent (within 30 seconds)
                 const loginMessages = messages.filter(msg => 
                     msg.bot === "login" && 
                     (now - msg.timestamp) < 30000
                 );
                 
+                console.log(`[DEBUG] Found ${loginMessages.length} messages for login bot`);
+                
                 if (loginMessages.length > 0) {
                     const guild = client.guilds.cache.get(GUILD_ID);
                     if (guild) {
+                        console.log(`[DEBUG] Found guild: ${guild.name}`);
                         for (const msg of loginMessages) {
                             const channel = guild.channels.cache.get(msg.channelId);
                             if (channel) {
+                                console.log(`[DEBUG] Sending message to channel ${msg.channelId}: ${msg.message}`);
                                 await channel.send(msg.message);
+                            } else {
+                                console.log(`[DEBUG] Channel ${msg.channelId} not found`);
                             }
                         }
                         
@@ -61,8 +70,14 @@ client.once("ready", () => {
                                 content: JSON.stringify(processedMessages, null, 2)
                             })
                         });
+                        
+                        console.log(`[DEBUG] Processed and removed ${loginMessages.length} messages`);
+                    } else {
+                        console.log(`[DEBUG] Guild ${GUILD_ID} not found`);
                     }
                 }
+            } else {
+                console.log(`[DEBUG] Failed to fetch messages: ${response.status}`);
             }
         } catch (error) {
             console.error('Error checking bot messages:', error);

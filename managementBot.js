@@ -40,6 +40,8 @@ const BOT_COMMUNICATION_PASTE_ID = "Xy7zK9pL"; // New paste for bot communicatio
 
 async function triggerBotMessage(botType, message, channelId) {
     try {
+        console.log(`[DEBUG] Triggering bot message: ${botType} - ${message}`);
+        
         // Store the message in the communication paste
         const current = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
             headers: { Authorization: `Bearer ${API_KEY}` }
@@ -59,8 +61,10 @@ async function triggerBotMessage(botType, message, channelId) {
             timestamp: Date.now()
         });
         
+        console.log(`[DEBUG] Saving message to paste. Total messages: ${messages.length}`);
+        
         // Save to paste
-        await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
+        const response = await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${API_KEY}`,
@@ -70,6 +74,12 @@ async function triggerBotMessage(botType, message, channelId) {
                 content: JSON.stringify(messages, null, 2)
             })
         });
+        
+        if (response.ok) {
+            console.log(`[DEBUG] Message saved successfully to paste`);
+        } else {
+            console.log(`[DEBUG] Failed to save message: ${response.status}`);
+        }
     } catch (error) {
         console.error('Failed to trigger bot message:', error);
     }
