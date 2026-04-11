@@ -986,11 +986,27 @@ const STOCK_CHECK_INTERVAL = 30000; // Check every 30 seconds
 // Initialize stock tracking
 async function initializeStockTracking() {
     try {
+        // Initialize restocks paste if needed
+        const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
+        if (!restocksParsed.ok || restocksParsed.status === 404) {
+            console.log('[STOCK] Initializing restocks paste...');
+            const initRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify([], null, 2));
+            if (initRes.ok) {
+                console.log('[STOCK] Restocks paste initialized successfully');
+            } else {
+                console.error('[STOCK] Failed to initialize restocks paste');
+            }
+        }
+
+        // Initialize MM2 stock tracking
         const mm2Parsed = await readPasteContent(MM2_PASTE_ID);
         if (mm2Parsed.ok) {
             const mm2Data = JSON.parse(mm2Parsed.content || '{}');
             previousMM2Stock = mm2Data.mm2 || {};
             console.log('[STOCK] Initial stock tracking initialized');
+            console.log(`[STOCK] Tracking ${Object.keys(previousMM2Stock).length} items`);
+        } else {
+            console.error('[STOCK] Failed to load MM2 paste for initialization');
         }
     } catch (error) {
         console.error('[STOCK] Failed to initialize stock tracking:', error);
@@ -1012,9 +1028,9 @@ async function monitorStockChanges() {
         const changes = detectStockChanges(previousMM2Stock, currentStock);
         
         if (changes.length > 0) {
-            console.log(`[STOCK] Detected ${changes.length} stock changes`);
+            console.log(`[STOCK] Detected ${changes.length} stock changes:`, changes.map(c => `${c.item} (${c.previousStock}→${c.newStock})`));
             await recordStockChanges(changes);
-            previousMM2Stock = currentStock;
+            previousMM2Stock = JSON.parse(JSON.stringify(currentStock)); // Deep copy
         }
     } catch (error) {
         console.error('[STOCK] Error monitoring stock changes:', error);
@@ -1033,29 +1049,17 @@ function detectStockChanges(previous, current) {
         const prevStock = prevItem ? prevItem.stock : 0;
         const currStock = currItem ? currItem.stock : 0;
         
-        // Check for stock increase (restock)
+        // Check for stock increase (restock) - this covers both new items and restocks
         if (currStock > prevStock) {
+            const changeType = prevStock === 0 ? 'new_item' : 'restock';
             changes.push({
-                type: 'restock',
+                type: changeType,
                 item: itemName,
                 previousStock: prevStock,
                 newStock: currStock,
                 change: currStock - prevStock,
                 price: currItem ? currItem.price : (prevItem ? prevItem.price : 0),
                 img: currItem ? currItem.img : (prevItem ? prevItem.img : '/images/default-item.png'),
-                timestamp: new Date().toISOString()
-            });
-        }
-        // Check for new item (was out of stock, now has stock)
-        else if (prevStock === 0 && currStock > 0) {
-            changes.push({
-                type: 'new_item',
-                item: itemName,
-                previousStock: 0,
-                newStock: currStock,
-                change: currStock,
-                price: currItem ? currItem.price : 0,
-                img: currItem ? currItem.img : '/images/default-item.png',
                 timestamp: new Date().toISOString()
             });
         }
@@ -1071,49 +1075,38 @@ async function recordStockChanges(changes) {
         const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
         const restocks = restocksParsed.ok ? parseOrdersContent(restocksParsed.content) : [];
         
-        // Group changes by timestamp to create restock entries
-        const changesByTimestamp = {};
-        changes.forEach(change => {
-            const timeKey = new Date(change.timestamp).getTime();
-            if (!changesByTimestamp[timeKey]) {
-                changesByTimestamp[timeKey] = [];
-            }
-            changesByTimestamp[timeKey].push(change);
-        });
+        // Create a single restock entry for all changes detected at this time
+        const restockItems = changes.map(change => ({
+            name: change.item,
+            price: change.price,
+            img: change.img,
+            stockAdded: change.change,
+            previousStock: change.previousStock,
+            newStock: change.newStock
+        }));
         
-        // Create restock entries for each timestamp group
-        for (const [timestamp, timestampChanges] of Object.entries(changesByTimestamp)) {
-            const restockItems = timestampChanges.map(change => ({
-                name: change.item,
-                price: change.price,
-                img: change.img,
-                stockAdded: change.change,
-                previousStock: change.previousStock,
-                newStock: change.newStock
-            }));
-            
-            const restock = {
-                id: `stock_${timestamp}_${Math.random().toString(36).substr(2, 5)}`,
-                items: restockItems,
-                date: new Date(parseInt(timestamp)).toISOString(),
-                adminName: 'Stock Monitor',
-                type: 'automatic_restock',
-                source: 'mm2_shop_monitoring'
-            };
-            
-            restocks.unshift(restock);
-            
-            // Broadcast the restock update
-            broadcastRestockUpdate({
-                type: 'new_restock',
-                restock
-            });
-        }
+        const restock = {
+            id: `stock_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+            items: restockItems,
+            date: new Date().toISOString(),
+            adminName: 'MM2 Shop Monitor',
+            type: 'automatic_restock',
+            source: 'mm2_shop_monitoring'
+        };
+        
+        restocks.unshift(restock);
+        
+        // Broadcast restock update
+        broadcastRestockUpdate({
+            type: 'new_restock',
+            restock
+        });
         
         // Save updated restocks
         const writeRes = await writePasteContent(RESTOCK_PASTE_ID, JSON.stringify(restocks, null, 2));
         if (writeRes.ok) {
-            console.log(`[STOCK] Successfully recorded ${changes.length} stock changes`);
+            console.log(`[STOCK] Successfully recorded restock with ${changes.length} items`);
+            console.log(`[STOCK] Restock ID: ${restock.id}, Items: ${restockItems.map(i => i.name).join(', ')}`);
         } else {
             console.error('[STOCK] Failed to save stock changes');
         }
@@ -1123,15 +1116,22 @@ async function recordStockChanges(changes) {
     }
 }
 
-// Start stock monitoring
-client.once('ready', () => {
-    // Initialize stock tracking after bot is ready
-    setTimeout(initializeStockTracking, 5000);
-    
-    // Start monitoring interval
-    setInterval(monitorStockChanges, STOCK_CHECK_INTERVAL);
-    console.log(`[STOCK] Stock monitoring started with ${STOCK_CHECK_INTERVAL/1000}s interval`);
-});
+// Start stock monitoring (independent of Discord bot)
+async function startStockMonitoring() {
+    try {
+        // Initialize stock tracking
+        await initializeStockTracking();
+        
+        // Start monitoring interval
+        setInterval(monitorStockChanges, STOCK_CHECK_INTERVAL);
+        console.log(`[STOCK] Stock monitoring started with ${STOCK_CHECK_INTERVAL/1000}s interval`);
+    } catch (error) {
+        console.error('[STOCK] Failed to start stock monitoring:', error);
+    }
+}
+
+// Initialize stock monitoring when server starts
+startStockMonitoring();
 
 // Server-Sent Events for restock updates
 app.get('/restock/events', (req, res) => {
