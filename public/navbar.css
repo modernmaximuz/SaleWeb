@@ -5,9 +5,11 @@ body {
     box-sizing: border-box;
     background: #000000;
     background-image: 
-        radial-gradient(circle at 20% 50%, rgba(120, 0, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 0, 120, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(0, 255, 120, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(184, 134, 11, 0.08) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(25, 0, 25, 0.8) 100%);
+    background-attachment: fixed;
 }
 
 /* ==================== MAIN HEADER ==================== */
@@ -16,24 +18,25 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 8px 20px;
-    background: linear-gradient(180deg, #000000 0%, #0a0a0f 50%, #000000 100%);
-    border-bottom: 2px solid #1a0033;
+    background: linear-gradient(180deg, #000000 0%, #1a0000 50%, #000000 100%);
+    border-bottom: 2px solid #8B0000;
     position: sticky;
     top: 0;
     z-index: 1000;
     box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.8),
-        0 0 40px rgba(138, 43, 226, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        0 4px 20px rgba(0, 0, 0, 0.9),
+        0 0 40px rgba(139, 0, 0, 0.3),
+        0 0 60px rgba(255, 69, 0, 0.1),
+        inset 0 1px 0 rgba(255, 69, 0, 0.1);
     min-height: 60px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
 }
 
 /* HAMBURGER MENU */
 #hamburgerToggle {
-    background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
-    border: 1px solid #330066;
-    color: #ff0066;
+    background: linear-gradient(135deg, #1a0000 0%, #0d0000 100%);
+    border: 1px solid #8B0000;
+    color: #FF4500;
     font-size: 20px;
     padding: 12px;
     border-radius: 12px;
@@ -47,8 +50,8 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 
-        0 0 20px rgba(255, 0, 102, 0.2),
-        inset 0 0 20px rgba(138, 43, 226, 0.1);
+        0 0 20px rgba(139, 0, 0, 0.3),
+        inset 0 0 20px rgba(255, 69, 0, 0.1);
 }
 
 #hamburgerToggle::before {
@@ -58,7 +61,7 @@ body {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255, 0, 102, 0.3), transparent);
+    background: linear-gradient(45deg, transparent, rgba(255, 69, 0, 0.4), transparent);
     transform: rotate(45deg) translateX(-100%);
     transition: transform 0.6s ease;
 }
@@ -68,19 +71,19 @@ body {
 }
 
 #hamburgerToggle:hover {
-    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
-    border-color: #ff0066;
+    background: linear-gradient(135deg, #8B0000 0%, #FF4500 100%);
+    border-color: #FF4500;
     transform: scale(1.1) rotate(5deg);
     box-shadow: 
-        0 0 30px rgba(255, 0, 102, 0.6),
-        0 0 60px rgba(255, 0, 102, 0.3),
-        inset 0 0 20px rgba(255, 255, 255, 0.2);
-    animation: pulse 1.5s infinite;
+        0 0 30px rgba(139, 0, 0, 0.7),
+        0 0 60px rgba(255, 69, 0, 0.4),
+        inset 0 0 20px rgba(255, 140, 0, 0.2);
+    animation: hadesPulse 1.5s infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 102, 0.6), 0 0 60px rgba(255, 0, 102, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.2); }
-    50% { box-shadow: 0 0 40px rgba(255, 0, 102, 0.8), 0 0 80px rgba(255, 0, 102, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.3); }
+@keyframes hadesPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(139, 0, 0, 0.7), 0 0 60px rgba(255, 69, 0, 0.4), inset 0 0 20px rgba(255, 140, 0, 0.2); }
+    50% { box-shadow: 0 0 40px rgba(139, 0, 0, 0.9), 0 0 80px rgba(255, 69, 0, 0.6), inset 0 0 30px rgba(255, 140, 0, 0.3); }
 }
 
 /* LOGO CONTAINER */
@@ -109,7 +112,7 @@ body {
     transform: translate(-50%, -50%);
     width: 120px;
     height: 120px;
-    background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(139, 0, 0, 0.15) 0%, rgba(255, 69, 0, 0.1) 50%, transparent 70%);
     border-radius: 50%;
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -118,15 +121,15 @@ body {
 
 .logo-container:hover::before {
     opacity: 1;
-    animation: logoGlow 2s ease-in-out infinite;
+    animation: hadesLogoGlow 2s ease-in-out infinite;
 }
 
 .logo:hover {
     transform: scale(1.15) rotate(2deg);
-    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.6)) drop-shadow(0 0 60px rgba(255, 0, 102, 0.3));
+    filter: drop-shadow(0 0 30px rgba(139, 0, 0, 0.7)) drop-shadow(0 0 60px rgba(255, 69, 0, 0.4));
 }
 
-@keyframes logoGlow {
+@keyframes hadesLogoGlow {
     0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
     50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
 }
@@ -277,16 +280,17 @@ body {
 
 /* ==================== SECONDARY HEADER ==================== */
 #secondaryHeader {
-    background: linear-gradient(180deg, #0a001a 0%, #000000 50%, #0a001a 100%);
-    border-bottom: 1px solid #330066;
+    background: linear-gradient(180deg, #0a0000 0%, #000000 50%, #0a0000 100%);
+    border-bottom: 1px solid #8B0000;
     padding: 8px 0;
     position: sticky;
     top: 60px;
     z-index: 999;
     box-shadow: 
         0 4px 20px rgba(0, 0, 0, 0.9),
-        0 0 40px rgba(138, 43, 226, 0.1),
-        inset 0 1px 0 rgba(255, 0, 102, 0.1);
+        0 0 40px rgba(139, 0, 0, 0.2),
+        0 0 60px rgba(255, 69, 0, 0.1),
+        inset 0 1px 0 rgba(255, 69, 0, 0.1);
     backdrop-filter: blur(15px);
     position: relative;
 }
@@ -298,11 +302,11 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #ff0066, transparent);
-    animation: slideLine 3s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent, #FF4500, transparent);
+    animation: hadesSlideLine 3s ease-in-out infinite;
 }
 
-@keyframes slideLine {
+@keyframes hadesSlideLine {
     0%, 100% { transform: translateX(-100%); }
     50% { transform: translateX(100%); }
 }
@@ -316,8 +320,8 @@ body {
 }
 
 .tabBtn {
-    background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
-    border: 1px solid #330066;
+    background: linear-gradient(135deg, #1a0000 0%, #0d0000 100%);
+    border: 1px solid #8B0000;
     color: #ffffff;
     padding: 12px 24px;
     border-radius: 20px;
@@ -331,8 +335,8 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 
-        0 0 20px rgba(138, 43, 226, 0.2),
-        inset 0 0 20px rgba(255, 0, 102, 0.05);
+        0 0 20px rgba(139, 0, 0, 0.3),
+        inset 0 0 20px rgba(255, 69, 0, 0.1);
 }
 
 .tabBtn::before {
@@ -342,7 +346,7 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 0, 102, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.5), transparent);
     transition: left 0.6s ease;
 }
 
@@ -353,7 +357,7 @@ body {
     left: 50%;
     width: 0;
     height: 0;
-    background: radial-gradient(circle, rgba(255, 0, 102, 0.6) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(139, 0, 0, 0.7) 0%, rgba(255, 69, 0, 0.4) 50%, transparent 70%);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     transition: all 0.5s ease;
@@ -371,19 +375,19 @@ body {
 }
 
 .tabBtn:hover {
-    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
-    border-color: #ff0066;
+    background: linear-gradient(135deg, #8B0000 0%, #FF4500 100%);
+    border-color: #FF4500;
     transform: translateY(-3px) scale(1.05);
     box-shadow: 
-        0 8px 30px rgba(255, 0, 102, 0.4),
-        0 0 50px rgba(255, 0, 102, 0.2),
-        inset 0 0 30px rgba(255, 255, 255, 0.1);
-    animation: tabPulse 1s ease-in-out infinite;
+        0 8px 30px rgba(139, 0, 0, 0.5),
+        0 0 50px rgba(255, 69, 0, 0.3),
+        inset 0 0 30px rgba(255, 140, 0, 0.15);
+    animation: hadesTabPulse 1s ease-in-out infinite;
 }
 
-@keyframes tabPulse {
-    0%, 100% { box-shadow: 0 8px 30px rgba(255, 0, 102, 0.4), 0 0 50px rgba(255, 0, 102, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.1); }
-    50% { box-shadow: 0 12px 40px rgba(255, 0, 102, 0.6), 0 0 70px rgba(255, 0, 102, 0.3), inset 0 0 40px rgba(255, 255, 255, 0.15); }
+@keyframes hadesTabPulse {
+    0%, 100% { box-shadow: 0 8px 30px rgba(139, 0, 0, 0.5), 0 0 50px rgba(255, 69, 0, 0.3), inset 0 0 30px rgba(255, 140, 0, 15); }
+    50% { box-shadow: 0 12px 40px rgba(139, 0, 0, 0.7), 0 0 70px rgba(255, 69, 0, 0.4), inset 0 0 40px rgba(255, 140, 0, 0.2); }
 }
 
 .tabBtn i {
@@ -742,21 +746,27 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.8);
-    background: linear-gradient(135deg, #0a001a 0%, #000000 100%);
-    border: 2px solid #330066;
+    background: linear-gradient(135deg, #0a0000 0%, #000000 100%);
+    border: 2px solid #8B0000;
     border-radius: 20px;
     padding: 30px;
-    z-index: 10000;
+    z-index: 9999;
     box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.9),
-        0 0 100px rgba(138, 43, 226, 0.3),
-        inset 0 0 30px rgba(255, 0, 102, 0.1);
+        0 20px 60px rgba(0, 0, 0, 0.95),
+        0 0 100px rgba(139, 0, 0, 0.4),
+        0 0 150px rgba(255, 69, 0, 0.2),
+        inset 0 0 30px rgba(255, 69, 0, 0.1);
     opacity: 0;
     visibility: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     min-width: 300px;
     max-width: 500px;
     backdrop-filter: blur(20px);
+    pointer-events: none;
+}
+
+.custom-popup.active {
+    pointer-events: auto;
 }
 
 .custom-popup.active {
@@ -772,26 +782,26 @@ body {
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, #ff0066, #330066, #ff0066);
+    background: linear-gradient(45deg, #8B0000, #FF4500, #B8860B, #8B0000);
     border-radius: 20px;
     z-index: -1;
-    animation: borderGlow 2s linear infinite;
+    animation: hadesBorderGlow 3s linear infinite;
 }
 
-@keyframes borderGlow {
-    0%, 100% { opacity: 0.5; }
+@keyframes hadesBorderGlow {
+    0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
 
 .popup-header {
-    color: #ff0066;
+    color: #FF4500;
     font-size: 20px;
     font-weight: 700;
     margin-bottom: 15px;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 2px;
-    text-shadow: 0 0 20px rgba(255, 0, 102, 0.5);
+    text-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
 }
 
 .popup-content {
@@ -809,9 +819,9 @@ body {
 }
 
 .popup-btn {
-    background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
-    border: 1px solid #330066;
-    color: #ff0066;
+    background: linear-gradient(135deg, #1a0000 0%, #0d0000 100%);
+    border: 1px solid #8B0000;
+    color: #FF4500;
     padding: 12px 24px;
     border-radius: 12px;
     cursor: pointer;
@@ -829,7 +839,7 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 0, 102, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.4), transparent);
     transition: left 0.5s ease;
 }
 
@@ -838,16 +848,16 @@ body {
 }
 
 .popup-btn:hover {
-    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
-    border-color: #ff0066;
+    background: linear-gradient(135deg, #8B0000 0%, #FF4500 100%);
+    border-color: #FF4500;
     color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 0, 102, 0.4);
+    box-shadow: 0 8px 25px rgba(139, 0, 0, 0.5);
 }
 
 .popup-btn.primary {
-    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
-    border-color: #ff0066;
+    background: linear-gradient(135deg, #8B0000 0%, #FF4500 100%);
+    border-color: #FF4500;
     color: #ffffff;
 }
 
@@ -857,12 +867,12 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9998;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
 }
 
 .popup-overlay.active {
