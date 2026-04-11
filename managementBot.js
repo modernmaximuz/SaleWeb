@@ -638,25 +638,33 @@ async function updateChannelName() {
     }
 }
 
-// Send member count to backend
+// Send member count to backend and save to paste
 async function sendMemberCountToBackend(memberCount) {
     try {
         console.log(`[DISCORD] Sending member count to backend: ${memberCount}`);
+        
+        // Save to /IWEJETFl paste
+        const stats = {
+            memberCount: memberCount,
+            lastUpdated: new Date().toISOString(),
+            channelName: `ghosts: #${memberCount}`
+        };
+        
         const response = await fetch('http://localhost:3000/discord/update-stats', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ memberCount })
+            body: JSON.stringify(stats)
         });
         
         if (response.ok) {
-            console.log(`[DISCORD] Successfully sent member count to backend: ${memberCount}`);
+            console.log(`[DISCORD] Successfully saved member count to /IWEJETFl: ${memberCount}`);
         } else {
-            console.error(`[DISCORD] Failed to send member count: ${response.status}`);
+            console.error(`[DISCORD] Failed to save member count: ${response.status}`);
         }
     } catch (error) {
-        console.error('[DISCORD] Error sending member count to backend:', error);
+        console.error('[DISCORD] Error saving member count:', error);
     }
 }
 

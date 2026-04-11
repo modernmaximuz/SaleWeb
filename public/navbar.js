@@ -1,9 +1,8 @@
-window.addEventListener("load", () => {
+const MAX_WARNINGS = 5;
+let warningQueue = [];
 
-    const MAX_WARNINGS = 5;
-    let warningQueue = [];
-
-    async function requireLogin(e, goTo, btn) {
+// Global function for login requirements
+window.requireLogin = async function(e, goTo, btn) {
         e.preventDefault();
 
         let ok = false;
@@ -58,10 +57,10 @@ window.addEventListener("load", () => {
 
         if (goTo) window.location.href = goTo;
         return true;
-    }
+}
 
-    // Event listeners are now handled by onclick handlers in HTML
-
+// Initialize navbar when DOM is loaded
+window.addEventListener("load", () => {
     // Dropdown toggle
     const shopToggle = document.getElementById("shopToggle");
     const shopMenu = document.getElementById("shopMenu");
@@ -69,7 +68,7 @@ window.addEventListener("load", () => {
 
     shopToggle?.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const ok = await requireLogin(e, null, shopToggle);
+        const ok = await window.requireLogin(e, null, shopToggle);
         if (ok) {
             shopMenu.style.display = shopMenu.style.display === "block" ? "none" : "block";
         }
@@ -133,5 +132,4 @@ window.addEventListener("load", () => {
             }
         }
     });
-
 });

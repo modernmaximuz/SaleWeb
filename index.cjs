@@ -426,7 +426,7 @@ app.get("/dashboard/discord", async (req, res) => {
 });
 
 // Discord member count storage
-const DISCORD_STATS_PASTE_ID = "discord_stats";
+const DISCORD_STATS_PASTE_ID = "IWEJETFl";
 
 // Get Discord member count (excluding bots)
 async function getDiscordMemberCount() {
@@ -458,23 +458,28 @@ async function updateDiscordChannelName(memberCount) {
 // Update Discord member count (called by bot)
 app.post('/discord/update-stats', async (req, res) => {
     try {
-        const { memberCount } = req.body;
+        const stats = req.body;
         
-        if (typeof memberCount !== 'number') {
-            return res.status(400).json({ error: 'Invalid member count' });
+        if (!stats || typeof stats.memberCount !== 'number') {
+            return res.status(400).json({ error: 'Invalid stats object' });
         }
         
-        // Save member count to paste
-        const stats = { memberCount, lastUpdated: new Date().toISOString() };
-        const writeRes = await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify(stats, null, 2));
+        // Save full stats to paste
+        const fullStats = {
+            memberCount: stats.memberCount,
+            lastUpdated: stats.lastUpdated || new Date().toISOString(),
+            channelName: stats.channelName || `ghosts: #${stats.memberCount}`
+        };
+        
+        const writeRes = await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify(fullStats, null, 2));
         
         if (writeRes.ok) {
-            console.log(`[DISCORD] Backend updated member count: ${memberCount}`);
-            console.log(`[DISCORD] Channel name should be: ghosts: #${memberCount}`);
-            console.log(`[DISCORD] Homepage will display: ${memberCount} Discord Members`);
-            res.json({ success: true, memberCount });
+            console.log(`[DISCORD] Saved to /IWEJETFl: ${stats.memberCount} members`);
+            console.log(`[DISCORD] Channel name: ${fullStats.channelName}`);
+            console.log(`[DISCORD] Homepage will display: ${stats.memberCount} Discord Members`);
+            res.json({ success: true, stats: fullStats });
         } else {
-            res.status(500).json({ error: 'Failed to save stats' });
+            res.status(500).json({ error: 'Failed to save stats to /IWEJETFl' });
         }
     } catch (error) {
         console.error('Failed to update Discord stats:', error);

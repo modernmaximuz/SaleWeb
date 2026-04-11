@@ -41,12 +41,12 @@ async function initDashboard() {
 // Load dashboard data
 async function loadDashboardData() {
     try {
-        const [statsData, discordData] = await Promise.all([
-            fetch('/dashboard/stats'),
-            fetch('/dashboard/discord')
-        ]);
-        
+        // Load stats from backend
+        const statsData = await fetch('/dashboard/stats');
         const stats = await statsData.json();
+        
+        // Load Discord data directly from /IWEJETFl paste
+        const discordData = await fetch('/load/IWEJETFl');
         const discord = await discordData.json();
         
         // Update statistics
@@ -81,8 +81,20 @@ function updateStatistics(stats) {
 
 // Update Discord information
 function updateDiscordInfo(discord) {
-    // Discord info is handled by the stats update now
-    // Channel name is updated automatically by the Discord bot
+    // Update Discord members count from /IWEJETFl paste
+    const discordMembersEl = document.getElementById('discordMembers');
+    if (discordMembersEl && discord.memberCount !== undefined) {
+        discordMembersEl.textContent = discord.memberCount;
+    }
+    
+    // Update success count to match Discord members
+    const successCountEl = document.getElementById('successCount');
+    if (successCountEl && discord.memberCount !== undefined) {
+        successCountEl.textContent = discord.memberCount;
+    }
+    
+    console.log(`[DASHBOARD] Updated Discord members: ${discord.memberCount}`);
+    console.log(`[DASHBOARD] Updated success count: ${discord.memberCount}`);
 }
 
 // Format number with commas
