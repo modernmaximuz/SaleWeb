@@ -77,6 +77,7 @@ client.once("ready", () => {
             );
                 
                 console.log(`[DEBUG] Found ${loginMessages.length} messages for login bot`);
+                console.log(`[DEBUG] Processed message IDs: ${Array.from(processedMessageIds).slice(0, 5)}`);
                 
                 if (loginMessages.length > 0) {
                     const guild = client.guilds.cache.get(GUILD_ID);
@@ -97,10 +98,12 @@ client.once("ready", () => {
                         }
                         
                         // Mark messages as processed by removing them
+                        const beforeCount = messages.length;
                         const processedMessages = messages.filter(msg => 
-                            !(msg.bot === "login" && (now - msg.timestamp) < 30000) ||
-                            processedMessageIds.has(msg.id)
+                            !(msg.bot === "login" && processedMessageIds.has(msg.id))
                         );
+                        const afterCount = processedMessages.length;
+                        console.log(`[DEBUG] Removed ${beforeCount - afterCount} processed messages from paste`);
                         
                         // Clean up old message IDs (older than 2 minutes) to prevent memory leaks
                         const twoMinutesAgo = now - 120000;
