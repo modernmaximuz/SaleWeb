@@ -41,6 +41,9 @@ async function initializePaste() {
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
     
+    // Track processed message IDs to prevent duplicates
+    const processedMessageIds = new Set();
+    
     // Check for cross-bot messages
     setInterval(async () => {
         try {
@@ -66,9 +69,11 @@ client.once("ready", () => {
             console.log(`[DEBUG] Found ${messages.length} total messages in paste`);
             
             // Process messages meant for this bot ("login") and are recent (within 30 seconds)
+            // Also filter out already processed messages
             const loginMessages = messages.filter(msg => 
                 msg.bot === "login" && 
-                (now - msg.timestamp) < 30000
+                (now - msg.timestamp) < 30000 &&
+                !processedMessageIds.has(msg.id)
             );
                 
                 console.log(`[DEBUG] Found ${loginMessages.length} messages for login bot`);
@@ -82,15 +87,29 @@ client.once("ready", () => {
                             if (channel) {
                                 console.log(`[DEBUG] Sending message to channel ${msg.channelId}: ${msg.message}`);
                                 await channel.send(msg.message);
+                                // Mark this message as processed
+                                processedMessageIds.add(msg.id);
                             } else {
                                 console.log(`[DEBUG] Channel ${msg.channelId} not found`);
+                                // Still mark as processed even if channel not found
+                                processedMessageIds.add(msg.id);
                             }
                         }
                         
                         // Mark messages as processed by removing them
                         const processedMessages = messages.filter(msg => 
-                            !(msg.bot === "login" && (now - msg.timestamp) < 30000)
+                            !(msg.bot === "login" && (now - msg.timestamp) < 30000) ||
+                            processedMessageIds.has(msg.id)
                         );
+                        
+                        // Clean up old message IDs (older than 2 minutes) to prevent memory leaks
+                        const twoMinutesAgo = now - 120000;
+                        for (const msgId of processedMessageIds) {
+                            const msg = messages.find(m => m.id === msgId);
+                            if (msg && (now - msg.timestamp) > 120000) {
+                                processedMessageIds.delete(msgId);
+                            }
+                        }
                         
                         await fetch(`${BASE}/paste/${BOT_COMMUNICATION_PASTE_ID}`, {
                             method: "PUT",
