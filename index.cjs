@@ -38,8 +38,8 @@ async function initializePaste() {
     }
 }
 
-// Member counting functions for dashboard
-async function getMemberCount() {
+// Read member count from channel name (updated by separate member counting bot)
+async function getMemberCountFromChannel() {
     try {
         const guild = client.guilds.cache.get(GUILD_ID);
         if (!guild) {
@@ -47,13 +47,27 @@ async function getMemberCount() {
             return 0;
         }
         
-        // Use ONLY cached members to avoid timeouts and rate limits
-        const memberCount = guild.members.cache.filter(member => !member.user.bot).size;
+        // Get the statistics channel
+        const channel = await guild.channels.fetch('1492478671775207449');
+        if (!channel) {
+            console.error('[AUTH-BOT] Statistics channel not found');
+            return 0;
+        }
         
-        console.log(`[AUTH-BOT] Member count from cache: ${memberCount} (total cached: ${guild.members.cache.size})`);
-        return memberCount;
+        // Extract member count from channel name "ghosts: #X"
+        const channelName = channel.name;
+        const match = channelName.match(/ghosts: #(\d+)/);
+        
+        if (match) {
+            const memberCount = parseInt(match[1], 10);
+            console.log(`[AUTH-BOT] Read member count from channel: ${memberCount}`);
+            return memberCount;
+        } else {
+            console.log('[AUTH-BOT] Could not parse member count from channel name:', channelName);
+            return 0;
+        }
     } catch (error) {
-        console.error('[AUTH-BOT] Error getting member count:', error);
+        console.error('[AUTH-BOT] Error reading member count from channel:', error);
         return 0;
     }
 }
@@ -62,78 +76,37 @@ async function sendMemberCountToBackend(memberCount) {
     try {
         const stats = {
             memberCount: memberCount,
-            lastUpdated: new Date().toISOString(),
-            channelName: `ghosts: #${memberCount}`
+            lastUpdated: new Date().toISOString()
         };
         
         console.log(`[AUTH-BOT] Sending to backend: memberCount=${memberCount}`);
         
-        // More conservative retry logic with longer delays
-        let retryCount = 0;
-        const maxRetries = 2;
+        const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(stats)
+        });
         
-        while (retryCount < maxRetries) {
-            try {
-                const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(stats)
-                });
-                
-                if (response.ok) {
-                    console.log(`[AUTH-BOT] Successfully sent member count: ${memberCount}`);
-                    return;
-                } else if (response.status === 429) {
-                    retryCount++;
-                    const waitTime = 10000 + (retryCount * 5000); // 10s, then 15s
-                    console.log(`[AUTH-BOT] Rate limited, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                    continue;
-                } else {
-                    console.error(`[AUTH-BOT] Failed to save member count: ${response.status}`);
-                    return;
-                }
-            } catch (fetchError) {
-                retryCount++;
-                const waitTime = 10000 + (retryCount * 5000); // 10s, then 15s
-                console.log(`[AUTH-BOT] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-                continue;
-            }
+        if (response.ok) {
+            console.log(`[AUTH-BOT] Successfully sent member count: ${memberCount}`);
+        } else {
+            console.error(`[AUTH-BOT] Failed to save member count: ${response.status}`);
         }
-        
-        console.error(`[AUTH-BOT] Failed after ${maxRetries} retries - will try again in 5 minutes`);
     } catch (error) {
         console.error('[AUTH-BOT] Error saving member count:', error);
     }
 }
 
-async function updateMemberCount() {
-    try {
-        const memberCount = await getMemberCount();
-        await sendMemberCountToBackend(memberCount);
-    } catch (error) {
-        console.error('[AUTH-BOT] Error in update cycle:', error);
-    }
-}
-
-function startMemberCounting() {
-    console.log('[AUTH-BOT] Starting member counting for dashboard');
-    
-    // Update immediately on startup
-    updateMemberCount();
-    
-    // Then update every 5 minutes (300,000ms)
-    setInterval(updateMemberCount, 300000);
-}
-
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
     
-    // Start member counting for dashboard
-    startMemberCounting();
+    // Update member count from channel name immediately
+    getMemberCountFromChannel();
+    
+    // Update every 5 minutes
+    setInterval(getMemberCountFromChannel, 300000);
     
     // Track processed message IDs to prevent duplicates
     const processedMessageIds = new Set();
