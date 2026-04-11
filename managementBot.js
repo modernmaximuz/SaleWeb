@@ -50,7 +50,13 @@ async function triggerBotMessage(botType, message, channelId) {
         let messages = [];
         if (current.ok) {
             const data = await current.json();
-            messages = JSON.parse(data.content || "[]");
+            try {
+                messages = JSON.parse(data.content || "[]");
+                if (!Array.isArray(messages)) messages = [];
+            } catch (error) {
+                console.log('[DEBUG] Invalid JSON in paste, using empty array');
+                messages = [];
+            }
         }
         
         messages.push({
@@ -618,7 +624,14 @@ setInterval(async () => {
         
         if (response.ok) {
             const data = await response.json();
-            const messages = JSON.parse(data.content || "[]");
+            let messages = [];
+            try {
+                messages = JSON.parse(data.content || "[]");
+                if (!Array.isArray(messages)) messages = [];
+            } catch (error) {
+                console.log('[DEBUG] Invalid JSON in paste, using empty array');
+                messages = [];
+            }
             const now = Date.now();
             
             // Process messages meant for this bot and are recent (within 30 seconds)
