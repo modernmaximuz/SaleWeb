@@ -586,8 +586,17 @@ async function getMemberCount() {
         console.log(`[DISCORD] Found guild: ${guild.name} (ID: ${guild.id})`);
         console.log(`[DISCORD] Total members in cache: ${guild.members.cache.size}`);
         
-        // Fetch all members
-        await guild.members.fetch();
+        // Fetch all members with rate limit handling
+        try {
+            await guild.members.fetch();
+        } catch (fetchError) {
+            if (fetchError.code === 'GatewayRateLimitError') {
+                console.log(`[DISCORD] Rate limited, retrying after ${fetchError.retry_after}s`);
+                return guild.members.cache.filter(member => !member.user.bot).size; // Use cached count
+            }
+            throw fetchError;
+        }
+        
         console.log(`[DISCORD] Members after fetch: ${guild.members.cache.size}`);
         
         // Filter out bots
@@ -598,7 +607,7 @@ async function getMemberCount() {
         return humanMembers.size;
     } catch (error) {
         console.error('[DISCORD] Error getting member count:', error);
-        return 0;
+        return guild.members.cache.filter(member => !member.user.bot).size; // Fallback to cached count
     }
 }
 
@@ -653,19 +662,44 @@ async function sendMemberCountToBackend(memberCount) {
         
         console.log(`[DISCORD] Sending to backend:`, JSON.stringify(stats, null, 2));
         
-        const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(stats)
-        });
+        // Add retry logic for 429 errors
+        let retryCount = 0;
+        const maxRetries = 3;
+        let response;
         
-        if (response.ok) {
-            console.log(`[DISCORD] Successfully sent member count to backend: ${memberCount}`);
-        } else {
-            console.error(`[DISCORD] Failed to save member count: ${response.status}`);
+        while (retryCount < maxRetries) {
+            try {
+                response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(stats)
+                });
+                
+                if (response.ok) {
+                    console.log(`[DISCORD] Successfully sent member count to backend: ${memberCount}`);
+                    return;
+                } else if (response.status === 429) {
+                    retryCount++;
+                    const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s, 8s
+                    console.log(`[DISCORD] Rate limited (429), retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    continue;
+                } else {
+                    console.error(`[DISCORD] Failed to save member count: ${response.status}`);
+                    return;
+                }
+            } catch (fetchError) {
+                retryCount++;
+                const waitTime = Math.pow(2, retryCount) * 1000;
+                console.log(`[DISCORD] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms:`, fetchError.message);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+            }
         }
+        
+        console.error(`[DISCORD] Failed after ${maxRetries} retries`);
     } catch (error) {
         console.error('[DISCORD] Error saving member count:', error);
     }
