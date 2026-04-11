@@ -106,6 +106,10 @@
     background: #8b2f3a;
 }
 
+.successBtn {
+    background: #2d8f2d;
+}
+
 .resultBadge {
     padding: 4px 10px;
     border-radius: 999px;

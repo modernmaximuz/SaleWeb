@@ -511,6 +511,57 @@ app.get("/dashboard/discord", async (req, res) => {
 // Discord member count storage
 const DISCORD_STATS_PASTE_ID = "IWEJETFl";
 
+// Stock deduction function for successful orders
+async function deductStockFromOrder(order) {
+    try {
+        const stockData = await readPasteContent(MM2_PASTE_ID);
+        if (!stockData.ok) {
+            console.error('Failed to read stock data for deduction');
+            return;
+        }
+
+        let stockContent;
+        try {
+            stockContent = JSON.parse(stockData.content || '{}');
+        } catch (error) {
+            console.error('Failed to parse stock content:', error);
+            return;
+        }
+
+        if (!stockContent.mm2) {
+            console.log('No MM2 stock data found for deduction');
+            return;
+        }
+
+        // Deduct stock for each item in the order
+        for (const item of order.items || []) {
+            const itemName = item.name;
+            const quantity = Math.max(0, Number(item.qty || 0));
+            
+            if (!stockContent.mm2[itemName]) {
+                console.log(`Item ${itemName} not found in stock data`);
+                continue;
+            }
+            
+            const currentStock = Number(stockContent.mm2[itemName].stock || 0);
+            const newStock = Math.max(0, currentStock - quantity);
+            
+            stockContent.mm2[itemName].stock = newStock;
+            console.log(`Deducted ${quantity} from ${itemName}: ${currentStock} -> ${newStock}`);
+        }
+
+        // Save updated stock data
+        const writeRes = await writePasteContent(MM2_PASTE_ID, JSON.stringify(stockContent, null, 2));
+        if (writeRes.ok) {
+            console.log(`Successfully deducted stock for order ${order.id || 'unknown'}`);
+        } else {
+            console.error('Failed to save updated stock data');
+        }
+    } catch (error) {
+        console.error('Error deducting stock from order:', error);
+    }
+}
+
 // Get Discord member count (excluding bots)
 async function getDiscordMemberCount() {
     try {
@@ -795,7 +846,7 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
         if (!Number.isInteger(index) || index < 0) {
             return res.status(400).json({ error: "Invalid order index" });
         }
-        if (!["accepted", "declined", "cancelled"].includes(status)) {
+        if (!["accepted", "declined", "cancelled", "success"].includes(status)) {
             return res.status(400).json({ error: "Invalid status" });
         }
         if (status === "declined" && !declineReason) {
@@ -809,6 +860,13 @@ app.put("/orders/:index/status", verifyToken, async (req, res) => {
 
         const wasAccepted = orders[index].status === "accepted";
         const previousStatus = orders[index].status;
+        const order = orders[index];
+        
+        // Check if status is changing to success and stock hasn't been deducted yet
+        if (status === "success" && previousStatus !== "success") {
+            await deductStockFromOrder(order);
+        }
+        
         orders[index].status = status;
         if (status === "declined") {
             orders[index].declineReason = declineReason;
