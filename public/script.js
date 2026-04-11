@@ -372,46 +372,76 @@ async function handleImageUpload(event) {
     }
 }
 
-// Mobile menu toggle function
-window.toggleMobileMenu = function() {
-    const topbar = document.getElementById('topbar');
-    const toggleBtn = document.getElementById('mobileMenuToggle');
+// Sidebar toggle function
+window.toggleSidebar = function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
     
-    if (topbar.classList.contains('mobile-open')) {
-        topbar.classList.remove('mobile-open');
-        toggleBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
-        // Close dropdowns when menu closes
-        document.querySelectorAll('.dropdownContent').forEach(dropdown => {
-            dropdown.style.display = 'none';
-        });
+    if (sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
     } else {
-        topbar.classList.add('mobile-open');
-        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Close';
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
     }
 };
 
-// Close mobile menu when clicking outside
+// Profile configuration function
+window.openProfileConfig = function() {
+    if (typeof openProfileConfigModal === 'function') {
+        openProfileConfigModal();
+    } else {
+        console.warn('Profile configuration modal not available');
+    }
+};
+
+// Sidebar logout function
+window.handleSidebarLogout = async function() {
+    try {
+        if (firebase.auth().currentUser) {
+            await firebase.auth().signOut();
+        }
+
+        await fetch("/logout-discord");
+
+        resetUI();
+        toggleSidebar();
+
+        // Force redirect every time
+        window.location.href = "/";
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+};
+
+// Handle dropdown toggles
 document.addEventListener('click', function(e) {
-    const topbar = document.getElementById('topbar');
-    const toggleBtn = document.getElementById('mobileMenuToggle');
+    // Shop dropdown toggle
+    if (e.target.id === 'shopToggle' || e.target.closest('#shopToggle')) {
+        e.preventDefault();
+        const dropdown = document.getElementById('shopMenu');
+        if (dropdown) {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    }
     
-    if (topbar.classList.contains('mobile-open') && 
-        !topbar.contains(e.target) && 
-        !toggleBtn.contains(e.target)) {
-        topbar.classList.remove('mobile-open');
-        toggleBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+    // Close dropdowns when clicking outside
+    if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdownContent').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
     }
 });
 
-// Handle dropdown toggles on mobile
-document.addEventListener('click', function(e) {
-    if (window.innerWidth <= 768) {
-        if (e.target.classList.contains('navBtn') && e.target.id === 'shopToggle') {
-            e.preventDefault();
-            const dropdown = e.target.nextElementSibling;
-            if (dropdown && dropdown.classList.contains('dropdownContent')) {
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            }
+// Close sidebar when pressing Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        
+        if (sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
         }
     }
 });
