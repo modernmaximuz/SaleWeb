@@ -1,5 +1,5 @@
-// Set Firebase session persistence
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
+// Set Firebase session persistence to LOCAL to keep users logged in
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // DOM elements
 const profileBox = document.getElementById("profileBox");
@@ -371,6 +371,20 @@ async function handleImageUpload(event) {
         }
     }
 }
+
+// Mobile menu toggle function
+window.toggleMobileMenu = function() {
+    const topbar = document.getElementById('topbar');
+    const toggleBtn = document.getElementById('mobileMenuToggle');
+    
+    if (topbar.classList.contains('mobile-open')) {
+        topbar.classList.remove('mobile-open');
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+    } else {
+        topbar.classList.add('mobile-open');
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Close';
+    }
+};
 
 // ===== GLOBAL AUTH CHECK (used by navbar & pages) =====
 window.isLoggedIn = async function () {

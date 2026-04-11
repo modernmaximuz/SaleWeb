@@ -431,12 +431,35 @@
 }
 
 @media (max-width: 520px) {
+    .orderRow {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .orderMeta {
+        width: 100%;
+    }
+
+    .orderActions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .orderActionBtn {
+        width: 100%;
+        min-width: auto;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
     .countsRow span {
         font-size: 12px;
     }
 
     .controlsRow {
         gap: 10px;
+        flex-direction: column;
     }
 
     .controlsRow label {

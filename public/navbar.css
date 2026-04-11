@@ -93,19 +93,26 @@
 /* ========== MOBILE SUPPORT ========== */
 @media (max-width: 900px) {
     #topbar {
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .logo {
+        align-self: center;
+        max-height: 40px;
     }
 
     #mobileMenuToggle {
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
-        max-width: 240px;
-        margin: 0 auto;
-        font-weight: 700;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        order: 2;
     }
 
     #navCenter {
@@ -115,14 +122,19 @@
         width: 100%;
         display: none;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
+        order: 3;
     }
 
     .navBtn {
         width: 100%;
-        padding: 12px 14px;
-        font-size: 15px;
-        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 14px;
+        border-radius: 10px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     #navRight {
@@ -131,7 +143,8 @@
         margin-top: 0;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 8px;
+        gap: 6px;
+        order: 4;
     }
 
     #topbar.mobile-open #navCenter,
@@ -139,25 +152,36 @@
         display: flex;
     }
 
-    #topbar.mobile-open #navCenter {
-        flex-direction: column;
-    }
-
     .dropdown {
         width: 100%;
+        position: relative;
     }
 
     .dropdownContent {
         position: static;
-        margin-top: 8px;
+        margin-top: 4px;
         width: 100%;
         min-width: 0;
+        box-shadow: none;
+        border: 1px solid #2a2a3a;
+        background: #1a1a24;
     }
 
-    #navRight button,
-    #cartIcon,
-    #profileMain {
+    .dropdownContent a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    #cartIcon {
         width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
+    }
+
+    #profileBox {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
     }
 }
 
