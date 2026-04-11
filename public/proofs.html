@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Proofs Management</title>
+    <link rel="stylesheet" href="proofs.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Proofs Management</h1>
+        
+        <div class="proof-form">
+            <h2>Upload New Proof</h2>
+            
+            <div class="form-group">
+                <label for="transactionId">Transaction ID:</label>
+                <input type="text" id="transactionId" placeholder="Type transaction ID here..." autocomplete="off">
+                <div id="transactionInfo" class="transaction-info" style="display: none;">
+                    <h3>Transaction Details</h3>
+                    <p><strong>Customer:</strong> <span id="customerName"></span></p>
+                    <p><strong>Items:</strong> <span id="itemsList"></span></p>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="proofImage">Upload Proof Image:</label>
+                <input type="file" id="proofImage" accept="image/*">
+                <div id="imagePreview" class="image-preview"></div>
+            </div>
+            
+            <button id="uploadProof" class="btn-primary">Upload Proof</button>
+        </div>
+        
+        <div class="proofs-list">
+            <h2>Existing Proofs</h2>
+            <div id="proofsContainer"></div>
+        </div>
+    </div>
+    
+    <script src="proofs.js"></script>
+</body>
+</html>

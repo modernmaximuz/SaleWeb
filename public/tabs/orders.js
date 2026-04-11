@@ -215,13 +215,17 @@ window.confirmRemoveOrder = async function confirmRemoveOrder(i) {
     const user = firebase.auth().currentUser;
     if (!user) return;
 
+    const order = ordersCache[i];
+    if (!order) return;
+
     const token = await user.getIdToken();
-    const res = await fetch(`/orders/${i}`, {
-        method: "DELETE",
+    const res = await fetch(`/delete-order-result`, {
+        method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ orderId: order.id })
     });
 
     if (!res.ok) {
@@ -305,6 +309,7 @@ function renderOrderRow(order, index, admin, customResultText) {
     const result = order.status || "pending";
     const resultLabel = customResultText || RESULT_LABELS[result] || "Pending";
     const reasonPart = order.declineReason ? `<div class="orderReason">Reason: ${order.declineReason}</div>` : "";
+    const transactionId = order.transactionId ? `<div class="transactionId"><strong>Transaction ID:</strong> ${order.transactionId}</div>` : "";
     
     // Determine if admin can remove this order
     const canRemove = admin && ['accepted', 'success', 'declined', 'scammer_alert', 'wrong_order', 'cancelled'].includes(result);
@@ -321,6 +326,7 @@ function renderOrderRow(order, index, admin, customResultText) {
                 <span>Result:</span>
                 <span class="resultBadge result-${result}">${resultLabel}</span>
             </div>
+            ${transactionId}
             ${reasonPart}
         </div>
         <div class="orderActions">
@@ -331,6 +337,9 @@ function renderOrderRow(order, index, admin, customResultText) {
             ` : ""}
             ${canRemove ? `
             <button class="orderActionBtn danger" onclick="removeOrder(${index})">Remove</button>
+            ` : ""}
+            ${admin && order.transactionId ? `
+            <button class="orderActionBtn proofBtn" onclick="window.open('/proofs.html', '_blank')">Upload Proof</button>
             ` : ""}
         </div>
     </div>`;

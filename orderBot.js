@@ -105,8 +105,16 @@ async function updateOrderResultByChannel(channelId, result, commandName) {
     orders[index].commandLocked = true;
     orders[index].lastCommand = commandName;
     orders[index].commandAt = new Date().toISOString();
+    // Add transaction ID for completed orders
+    if (["success", "wrong_order", "scammer_alert", "cancelled"].includes(result)) {
+        orders[index].transactionId = generateTransactionId();
+    }
     await saveOrders(orders);
     return { order: orders[index], previousStatus: before };
+}
+
+function generateTransactionId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
 
 async function registerCommands() {

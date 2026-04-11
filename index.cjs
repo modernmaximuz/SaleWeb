@@ -1131,6 +1131,161 @@ app.post("/accept-order", async (req,res)=>{
     res.send("ok");
 });
 
+// Load proofs
+app.get("/load/TK7bewK1", async (req, res) => {
+    try {
+        const parsed = await readPasteContent("TK7bewK1");
+        if (!parsed.ok) {
+            if (parsed.status === 404) {
+                return res.json([]);
+            }
+            return res.status(parsed.status).json({ error: "Failed to load proofs" });
+        }
+        
+        const proofs = JSON.parse(parsed.content || "[]");
+        return res.json(proofs);
+    } catch (error) {
+        console.error("Load proofs failed:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Save proofs
+app.post("/save/TK7bewK1", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+        
+        // Check if user is admin
+        const adminUsers = await readAdminUsers();
+        if (!adminUsers.includes(user.id)) {
+            return res.status(403).json({ error: "Admin access required" });
+        }
+        
+        const proofs = req.body;
+        if (!Array.isArray(proofs)) {
+            return res.status(400).json({ error: "Invalid proofs data" });
+        }
+        
+        const writeRes = await writePasteContent("TK7bewK1", JSON.stringify(proofs, null, 2));
+        if (!writeRes.ok) {
+            return res.status(writeRes.status).json({ error: "Failed to save proofs" });
+        }
+        
+        return res.json({ success: true });
+    } catch (error) {
+        console.error("Save proofs failed:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Update channel name based on proof count
+app.post("/update-channel", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+        
+        // Check if user is admin
+        const adminUsers = await readAdminUsers();
+        if (!adminUsers.includes(user.id)) {
+            return res.status(403).json({ error: "Admin access required" });
+        }
+        
+        const { channelId, proofCount } = req.body;
+        if (!channelId || typeof proofCount !== "number") {
+            return res.status(400).json({ error: "Invalid request data" });
+        }
+        
+        // This would require Discord bot integration to update channel name
+        // For now, we'll just log it and return success
+        console.log(`Channel ${channelId} should be renamed to:  Success: ${proofCount}`);
+        
+        return res.json({ success: true });
+    } catch (error) {
+        console.error("Update channel failed:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Load order final results (for transaction lookup)
+app.get("/load/orderFinalResults", async (req, res) => {
+    try {
+        const parsed = await readPasteContent(ORDER_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(parsed.status).json({ error: "Failed to load orders" });
+        }
+        
+        const orders = parseOrdersContent(parsed.content);
+        const finalResults = orders.filter(order => 
+            ["success", "wrong_order", "scammer_alert", "cancelled", "declined"].includes(order.status)
+        );
+        
+        return res.json(finalResults);
+    } catch (error) {
+        console.error("Load order final results failed:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Delete order final result (admin only)
+app.post("/delete-order-result", async (req, res) => {
+    try {
+        const user = getDiscordUser(req);
+        if (!user) return res.status(401).json({ error: "Discord login required" });
+        
+        // Check if user is admin
+        const adminUsers = await readAdminUsers();
+        if (!adminUsers.includes(user.id)) {
+            return res.status(403).json({ error: "Admin access required" });
+        }
+        
+        const { orderId } = req.body;
+        if (!orderId) {
+            return res.status(400).json({ error: "Order ID required" });
+        }
+        
+        const parsed = await readPasteContent(ORDER_PASTE_ID);
+        if (!parsed.ok) {
+            return res.status(parsed.status).json({ error: "Failed to load orders" });
+        }
+        
+        const orders = parseOrdersContent(parsed.content);
+        const orderIndex = orders.findIndex(order => order.id === orderId);
+        
+        if (orderIndex === -1) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        
+        // Reset order to pending status
+        orders[orderIndex].status = "pending";
+        delete orders[orderIndex].commandLocked;
+        delete orders[orderIndex].lastCommand;
+        delete orders[orderIndex].commandAt;
+        delete orders[orderIndex].transactionId;
+        
+        const writeRes = await writePasteContent(ORDER_PASTE_ID, JSON.stringify(orders, null, 2));
+        if (!writeRes.ok) {
+            return res.status(writeRes.status).json({ error: "Failed to update order" });
+        }
+        
+        return res.json({ success: true });
+    } catch (error) {
+        console.error("Delete order result failed:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+async function readAdminUsers() {
+    try {
+        const parsed = await readPasteContent(ADMIN_PASTE_ID);
+        if (!parsed.ok) return [];
+        return JSON.parse(parsed.content || "[]");
+    } catch (error) {
+        console.error("Failed to read admin users:", error);
+        return [];
+    }
+}
+
 app.listen(process.env.PORT || 3000, () =>
     console.log("Server running")
 );
