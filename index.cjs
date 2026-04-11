@@ -357,6 +357,22 @@ app.get("/tabs/:tab", async (req, res) => {
     }
 });
 
+// Serve orders page with auth check
+app.get("/tabs/orders", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            await admin.auth().verifyIdToken(token);
+            res.sendFile(path.join(__dirname, "public", "tabs", "orders.html"));
+        } else {
+            res.redirect('/login.html');
+        }
+    } catch (error) {
+        res.redirect('/login.html');
+    }
+});
+
 // Dashboard statistics endpoint
 app.get("/dashboard/stats", async (req, res) => {
     try {
@@ -464,17 +480,68 @@ app.post('/discord/update-stats', async (req, res) => {
     }
 });
 
-// Serve support page directly
-app.get("/support", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
+// Serve support page with auth check
+app.get("/support", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            await admin.auth().verifyIdToken(token);
+            res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
+        } else {
+            res.redirect('/login.html');
+        }
+    } catch (error) {
+        res.redirect('/login.html');
+    }
 });
 
-app.get("/restocks", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
+// Serve restocks page with auth check
+app.get("/restocks", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            await admin.auth().verifyIdToken(token);
+            res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
+        } else {
+            res.redirect('/login.html');
+        }
+    } catch (error) {
+        res.redirect('/login.html');
+    }
 });
 
-app.get("/dashboard", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "tabs", "dashboard.html"));
+// Serve shop pages with auth check
+app.get("/shop/:shop", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            await admin.auth().verifyIdToken(token);
+            res.sendFile(path.join(__dirname, "public", "shop", `${req.params.shop}.html`));
+        } else {
+            res.redirect('/login.html');
+        }
+    } catch (error) {
+        res.redirect('/login.html');
+    }
+});
+
+// Serve dashboard page with auth check
+app.get("/dashboard", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            await admin.auth().verifyIdToken(token);
+            res.sendFile(path.join(__dirname, "public", "tabs", "dashboard.html"));
+        } else {
+            res.redirect('/login.html');
+        }
+    } catch (error) {
+        res.redirect('/login.html');
+    }
 });
 
 // Load paste

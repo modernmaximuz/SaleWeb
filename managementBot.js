@@ -639,6 +639,7 @@ async function updateChannelName() {
 // Send member count to backend
 async function sendMemberCountToBackend(memberCount) {
     try {
+        console.log(`[DISCORD] Sending member count to backend: ${memberCount}`);
         const response = await fetch('http://localhost:3000/discord/update-stats', {
             method: 'POST',
             headers: {
@@ -648,7 +649,7 @@ async function sendMemberCountToBackend(memberCount) {
         });
         
         if (response.ok) {
-            console.log(`[DISCORD] Sent member count to backend: ${memberCount}`);
+            console.log(`[DISCORD] Successfully sent member count to backend: ${memberCount}`);
         } else {
             console.error(`[DISCORD] Failed to send member count: ${response.status}`);
         }
@@ -680,6 +681,10 @@ client.once('ready', async () => {
         
         // Update channel name every 5 minutes
         setInterval(updateChannelName, 300000);
+        
+        // Send member count to backend immediately
+        const memberCount = await getMemberCount();
+        await sendMemberCountToBackend(memberCount);
         
         // Check expired mutes every minute
         setInterval(checkExpiredMutes, 60000);
