@@ -319,6 +319,111 @@ app.get("/tabs/:tab", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "tabs", `${tab}.html`));
 });
 
+// Dashboard statistics endpoint
+app.get("/dashboard/stats", async (req, res) => {
+    try {
+        // Get total restocks count
+        const restocksParsed = await readPasteContent(RESTOCK_PASTE_ID);
+        const restocks = restocksParsed.ok ? parseOrdersContent(restocksParsed.content) : [];
+        
+        // Calculate total items restocked
+        let totalItemsRestocked = 0;
+        restocks.forEach(restock => {
+            if (restock.items && Array.isArray(restock.items)) {
+                restock.items.forEach(item => {
+                    if (item.stockAdded) {
+                        totalItemsRestocked += item.stockAdded;
+                    } else {
+                        totalItemsRestocked += 1; // Count as 1 if stockAdded not specified
+                    }
+                });
+            }
+        });
+        
+        // Get Discord member count (will be updated by Discord bot)
+        const discordMembers = await getDiscordMemberCount();
+        
+        res.json({
+            successCount: discordMembers || 0, // Success Count = Active Users (Discord members)
+            discordMembers: discordMembers || 0,
+            totalRestocks: totalItemsRestocked,
+            totalRestockEntries: restocks.length
+        });
+    } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Discord information endpoint
+app.get("/dashboard/discord", async (req, res) => {
+    try {
+        const memberCount = await getDiscordMemberCount();
+        const channelName = await updateDiscordChannelName(memberCount);
+        
+        res.json({
+            memberCount: memberCount || 0,
+            channelName: channelName || `ghosts: #${memberCount || 0}`
+        });
+    } catch (error) {
+        console.error('Failed to get Discord info:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Discord member count storage
+const DISCORD_STATS_PASTE_ID = "discord_stats";
+
+// Get Discord member count (excluding bots)
+async function getDiscordMemberCount() {
+    try {
+        const statsParsed = await readPasteContent(DISCORD_STATS_PASTE_ID);
+        if (statsParsed.ok) {
+            const stats = JSON.parse(statsParsed.content || '{}');
+            return stats.memberCount || 0;
+        }
+        return 0;
+    } catch (error) {
+        console.error('Failed to get Discord member count:', error);
+        return 0;
+    }
+}
+
+// Update Discord channel name with member count
+async function updateDiscordChannelName(memberCount) {
+    try {
+        return `ghosts: #${memberCount || 0}`;
+    } catch (error) {
+        console.error('Failed to update Discord channel name:', error);
+        return 'ghosts: #0';
+    }
+}
+
+// Update Discord member count (called by bot)
+app.post('/discord/update-stats', async (req, res) => {
+    try {
+        const { memberCount } = req.body;
+        
+        if (typeof memberCount !== 'number') {
+            return res.status(400).json({ error: 'Invalid member count' });
+        }
+        
+        // Save member count to paste
+        const stats = { memberCount, lastUpdated: new Date().toISOString() };
+        const writeRes = await writePasteContent(DISCORD_STATS_PASTE_ID, JSON.stringify(stats, null, 2));
+        
+        if (writeRes.ok) {
+            console.log(`[DISCORD] Updated member count: ${memberCount}`);
+            res.json({ success: true });
+        } else {
+            res.status(500).json({ error: 'Failed to save stats' });
+        }
+    } catch (error) {
+        console.error('Failed to update Discord stats:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Serve support page directly
 app.get("/support", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "tabs", "support.html"));
@@ -326,6 +431,10 @@ app.get("/support", (req, res) => {
 
 app.get("/restocks", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "tabs", "restocks.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "tabs", "dashboard.html"));
 });
 
 // Load paste

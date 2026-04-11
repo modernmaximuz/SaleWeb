@@ -579,6 +579,84 @@ async function registerCommands() {
     await client.application.commands.set(commands, GUILD_ID);
 }
 
+// Get Discord member count (excluding bots)
+async function getMemberCount() {
+    try {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) {
+            console.error('Guild not found');
+            return 0;
+        }
+        
+        // Fetch all members
+        await guild.members.fetch();
+        
+        // Filter out bots
+        const humanMembers = guild.members.cache.filter(member => !member.user.bot);
+        
+        return humanMembers.size;
+    } catch (error) {
+        console.error('Error getting member count:', error);
+        return 0;
+    }
+}
+
+// Update Discord channel name with member count
+async function updateChannelName() {
+    try {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) {
+            console.error('Guild not found');
+            return;
+        }
+        
+        const channelId = "1492425351631208529";
+        const channel = guild.channels.cache.get(channelId);
+        
+        if (!channel) {
+            console.error(`Channel ${channelId} not found`);
+            return;
+        }
+        
+        const memberCount = await getMemberCount();
+        const newName = `ghosts: #${memberCount}`;
+        
+        // Only update if name is different
+        if (channel.name !== newName) {
+            await channel.setName(newName);
+            console.log(`[DISCORD] Updated channel name to: ${newName}`);
+        }
+        
+        // Send member count to backend for dashboard
+        await sendMemberCountToBackend(memberCount);
+        
+        return newName;
+    } catch (error) {
+        console.error('Error updating channel name:', error);
+    }
+}
+
+// Send member count to backend
+async function sendMemberCountToBackend(memberCount) {
+    try {
+        const response = await fetch('http://localhost:3000/discord/update-stats', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ memberCount })
+        });
+        
+        if (response.ok) {
+            console.log(`[DISCORD] Sent member count to backend: ${memberCount}`);
+        } else {
+            console.error(`[DISCORD] Failed to send member count: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('[DISCORD] Error sending member count to backend:', error);
+    }
+}
+
 // Bot events
 client.once('ready', async () => {
     console.log('Management Bot is ready!');
@@ -596,6 +674,12 @@ client.once('ready', async () => {
         
         await registerCommands();
         console.log('Commands registered successfully!');
+        
+        // Initial member count and channel update
+        await updateChannelName();
+        
+        // Update channel name every 5 minutes
+        setInterval(updateChannelName, 300000);
         
         // Check expired mutes every minute
         setInterval(checkExpiredMutes, 60000);

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Statistics</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/navbar.css">
+    <link rel="stylesheet" href="/tabs/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="topbar">
+    <a href="/">
+        <img src="/images/logo.png" class="logo">
+    </a>
+    
+<div id="navCenter">
+    <button class="navBtn" onclick="location.href='/tabs/restocks'">Restocks</button>
+
+    <div class="dropdown">
+    <button class="navBtn" id="shopToggle">Shop &#9662;</button>
+    <div class="dropdownContent" id="shopMenu">
+                <a href="/shop/adoptme">Adopt Me</a>
+                <a href="/shop/mm2">Murder Mystery</a>
+            </div>
+        </div>
+
+        <button class="navBtn" onclick="location.href='/tabs/proofs'">Proofs</button>
+        <button class="navBtn" onclick="location.href='/tabs/support'">Support</button>
+        <button class="navBtn" onclick="location.href='/tabs/orders'">Orders</button>
+        <button class="navBtn active">Dashboard</button>
+    </div>
+
+    <div id="navRight">
+        <button id="loginToggle">Login</button>
+<div id="cartIcon">
+    <img src="/images/cart.png" id="cartImg">
+    <span id="cartCount">0</span>
+</div>
+        <div id="cartPopup" class="hidden">
+    <div id="cartBox">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+
+        <div id="cartTotal">Total: &#8369;0</div>
+
+        <button id="finalizeOrder">Finalize Order</button>
+    </div>
+</div>
+        <div id="profileBox" class="hidden">
+            <div id="profileMain">
+                <div class="avatar"></div>
+                <span id="profileName">User</span>
+            </div>
+            <div id="profileDropdown" class="hidden">
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Content -->
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-chart-line"></i> Dashboard Statistics</h1>
+        <p>Real-time system metrics and performance data</p>
+    </div>
+
+    <div class="stats-grid">
+        <!-- HITS_COUNT - Success Count -->
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Success Count</div>
+                <div class="stat-value" id="successCount">0</div>
+                <div class="stat-description">Active Users</div>
+            </div>
+        </div>
+
+        <!-- ACTIVE_USERS - Discord Members -->
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Discord Members</div>
+                <div class="stat-value" id="discordMembers">0</div>
+                <div class="stat-description">Total members (excluding bots)</div>
+            </div>
+        </div>
+
+        <!-- TOTAL_VALUE - Total Restocks -->
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Total Restocks</div>
+                <div class="stat-value" id="totalRestocks">0</div>
+                <div class="stat-description">Overall restocks of all items</div>
+            </div>
+        </div>
+
+        <!-- Additional Stats -->
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Last Update</div>
+                <div class="stat-value" id="lastUpdate">Never</div>
+                <div class="stat-description">System last refreshed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information -->
+    <div class="info-section">
+        <div class="info-card">
+            <h3><i class="fas fa-info-circle"></i> System Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Server Status:</span>
+                    <span class="info-value status-online">Online</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Discord Channel:</span>
+                    <span class="info-value" id="channelName">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Stock Monitoring:</span>
+                    <span class="info-value status-active">Active</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">API Response:</span>
+                    <span class="info-value" id="apiStatus">Checking...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading dashboard data...</p>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="/firebase.js"></script>
+<script src="/script.js"></script>
+<script src="/navbar.js"></script>
+<script src="/cart.js"></script>
+<script src="/tabs/dashboard.js"></script>
+</body>
+</html>
