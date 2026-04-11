@@ -13,7 +13,23 @@ const RESULT_LABELS = {
 };
 
 async function isAdminUser() {
-    return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
+    // Check for Firebase admin user
+    if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        return true; // Firebase users are admins
+    }
+    
+    // Check for Discord admin user
+    try {
+        const res = await fetch("/me");
+        if (res.ok) {
+            const user = await res.json();
+            return !!user.isAdmin;
+        }
+    } catch (error) {
+        console.error("Failed to check admin status:", error);
+    }
+    
+    return false;
 }
 
 function openOrderModal(order) {
