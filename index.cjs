@@ -47,24 +47,10 @@ async function getMemberCount() {
             return 0;
         }
         
-        // Use cached members to avoid rate limits
-        let memberCount = guild.members.cache.filter(member => !member.user.bot).size;
+        // Use ONLY cached members to avoid timeouts and rate limits
+        const memberCount = guild.members.cache.filter(member => !member.user.bot).size;
         
-        // Only fetch if cache is empty
-        if (guild.members.cache.size < 10) {
-            try {
-                await guild.members.fetch();
-                memberCount = guild.members.cache.filter(member => !member.user.bot).size;
-            } catch (fetchError) {
-                if (fetchError.code === 'GatewayRateLimitError') {
-                    console.log(`[AUTH-BOT] Rate limited, using cached count: ${memberCount}`);
-                    return memberCount;
-                }
-                throw fetchError;
-            }
-        }
-        
-        console.log(`[AUTH-BOT] Member count: ${memberCount}`);
+        console.log(`[AUTH-BOT] Member count from cache: ${memberCount} (total cached: ${guild.members.cache.size})`);
         return memberCount;
     } catch (error) {
         console.error('[AUTH-BOT] Error getting member count:', error);
@@ -82,7 +68,7 @@ async function sendMemberCountToBackend(memberCount) {
         
         console.log(`[AUTH-BOT] Sending to backend: memberCount=${memberCount}`);
         
-        // Simple retry logic
+        // More conservative retry logic with longer delays
         let retryCount = 0;
         const maxRetries = 2;
         
@@ -101,7 +87,7 @@ async function sendMemberCountToBackend(memberCount) {
                     return;
                 } else if (response.status === 429) {
                     retryCount++;
-                    const waitTime = 5000; // 5 second wait
+                    const waitTime = 10000 + (retryCount * 5000); // 10s, then 15s
                     console.log(`[AUTH-BOT] Rate limited, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                     continue;
@@ -111,14 +97,14 @@ async function sendMemberCountToBackend(memberCount) {
                 }
             } catch (fetchError) {
                 retryCount++;
-                const waitTime = 5000;
+                const waitTime = 10000 + (retryCount * 5000); // 10s, then 15s
                 console.log(`[AUTH-BOT] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
                 await new Promise(resolve => setTimeout(resolve, waitTime));
                 continue;
             }
         }
         
-        console.error(`[AUTH-BOT] Failed after ${maxRetries} retries`);
+        console.error(`[AUTH-BOT] Failed after ${maxRetries} retries - will try again in 5 minutes`);
     } catch (error) {
         console.error('[AUTH-BOT] Error saving member count:', error);
     }
