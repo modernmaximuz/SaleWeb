@@ -68,8 +68,9 @@ function processRestocks() {
     
     restocks.forEach(restock => {
         const date = new Date(restock.date);
-        const hour = date.getHours();
-        const dateKey = date.toLocaleDateString();
+        // Use UTC date to avoid local timezone conversion
+        const hour = date.getUTCHours();
+        const dateKey = date.toLocaleDateString('en-US', { timeZone: 'UTC' });
         
         // Group by hour
         if (!groupedRestocks[dateKey]) {
@@ -108,7 +109,7 @@ function updateStatistics() {
     
     if (lastUpdateEl && statistics.lastUpdate) {
         const date = statistics.lastUpdate;
-        lastUpdateEl.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        lastUpdateEl.textContent = date.toLocaleDateString('en-US', { timeZone: 'UTC' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
     }
 }
 
@@ -184,7 +185,7 @@ function renderRestocks() {
             
             const hourHeader = document.createElement('h4');
             hourHeader.className = 'hour-header';
-            hourHeader.textContent = `${hour}:00 - ${hour}:59`;
+            hourHeader.textContent = `${hour}:00 - ${hour}:59 UTC`;
             hourSection.appendChild(hourHeader);
             
             // Render restocks in this hour
@@ -206,7 +207,7 @@ function createRestockElement(restock) {
     div.className = 'restock-entry';
     
     const date = new Date(restock.date);
-    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedDate = date.toLocaleDateString('en-US', { timeZone: 'UTC' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
     
     let itemsHtml = '';
     restock.items.forEach(item => {
