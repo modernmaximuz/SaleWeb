@@ -572,149 +572,11 @@ async function registerCommands() {
     await client.application.commands.set(commands, GUILD_ID);
 }
 
-// Get Discord member count (excluding bots)
-async function getMemberCount() {
-    try {
-        console.log(`[DISCORD] GUILD_ID: ${GUILD_ID}`);
-        const guild = client.guilds.cache.get(GUILD_ID);
-        if (!guild) {
-            console.error('[DISCORD] Guild not found');
-            console.log(`[DISCORD] Available guilds: ${client.guilds.cache.map(g => g.id + ' (' + g.name + ')').join(', ')}`);
-            return 0;
-        }
-        
-        console.log(`[DISCORD] Found guild: ${guild.name} (ID: ${guild.id})`);
-        console.log(`[DISCORD] Total members in cache: ${guild.members.cache.size}`);
-        
-        // Fetch all members with rate limit handling
-        try {
-            await guild.members.fetch();
-        } catch (fetchError) {
-            if (fetchError.code === 'GatewayRateLimitError') {
-                console.log(`[DISCORD] Rate limited, retrying after ${fetchError.retry_after}s`);
-                return guild.members.cache.filter(member => !member.user.bot).size; // Use cached count
-            }
-            throw fetchError;
-        }
-        
-        console.log(`[DISCORD] Members after fetch: ${guild.members.cache.size}`);
-        
-        // Filter out bots
-        const humanMembers = guild.members.cache.filter(member => !member.user.bot);
-        console.log(`[DISCORD] Human members (excluding bots): ${humanMembers.size}`);
-        console.log(`[DISCORD] Bot members: ${guild.members.cache.filter(member => member.user.bot).size}`);
-        
-        return humanMembers.size;
-    } catch (error) {
-        console.error('[DISCORD] Error getting member count:', error);
-        // Fallback to cached count if guild is available
-        const guild = client.guilds.cache.get(GUILD_ID);
-        if (guild) {
-            return guild.members.cache.filter(member => !member.user.bot).size;
-        }
-        return 0;
-    }
-}
-
-// Update Discord channel name with member count
-async function updateChannelName() {
-    try {
-        const guild = client.guilds.cache.get(GUILD_ID);
-        if (!guild) {
-            console.error('Guild not found');
-            return;
-        }
-        
-        const channelId = "1492425351631208529";
-        const channel = guild.channels.cache.get(channelId);
-        
-        if (!channel) {
-            console.error(`Channel ${channelId} not found`);
-            return;
-        }
-        
-        const memberCount = await getMemberCount();
-        const newName = `ghosts: #${memberCount}`;
-        
-        console.log(`[DISCORD] Current member count: ${memberCount}`);
-        console.log(`[DISCORD] Setting channel name to: ${newName}`);
-        console.log(`[DISCORD] Current channel name: ${channel.name}`);
-        
-        // Always update to ensure synchronization
-        await channel.setName(newName);
-        console.log(`[DISCORD] Successfully updated channel name to: ${newName}`);
-        
-        // Send member count to backend for dashboard (ensure homepage matches)
-        await sendMemberCountToBackend(memberCount);
-        
-        return newName;
-    } catch (error) {
-        console.error('Error updating channel name:', error);
-    }
-}
-
-// Send member count to backend and save to paste
-async function sendMemberCountToBackend(memberCount) {
-    try {
-        console.log(`[DISCORD] Counted ${memberCount} human members in guild`);
-        
-        // Save to /IWEJETFl paste
-        const stats = {
-            memberCount: memberCount,
-            lastUpdated: new Date().toISOString(),
-            channelName: `ghosts: #${memberCount}`
-        };
-        
-        console.log(`[DISCORD] Sending to backend:`, JSON.stringify(stats, null, 2));
-        
-        // Add retry logic for 429 errors
-        let retryCount = 0;
-        const maxRetries = 3;
-        let response;
-        
-        while (retryCount < maxRetries) {
-            try {
-                response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(stats)
-                });
-                
-                if (response.ok) {
-                    console.log(`[DISCORD] Successfully sent member count to backend: ${memberCount}`);
-                    return;
-                } else if (response.status === 429) {
-                    retryCount++;
-                    const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s, 8s
-                    console.log(`[DISCORD] Rate limited (429), retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                    continue;
-                } else {
-                    console.error(`[DISCORD] Failed to save member count: ${response.status}`);
-                    return;
-                }
-            } catch (fetchError) {
-                retryCount++;
-                const waitTime = Math.pow(2, retryCount) * 1000;
-                console.log(`[DISCORD] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms:`, fetchError.message);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-                continue;
-            }
-        }
-        
-        console.error(`[DISCORD] Failed after ${maxRetries} retries`);
-    } catch (error) {
-        console.error('[DISCORD] Error saving member count:', error);
-    }
-}
 
 // Bot events
 client.once('ready', async () => {
     console.log('Management Bot is ready!');
     console.log(`Logged in as: ${client.user.tag}`);
-    console.log(`Bot ID: ${client.user.id}`);
     console.log(`Guild ID: ${GUILD_ID}`);
     
     try {
@@ -727,16 +589,6 @@ client.once('ready', async () => {
         
         await registerCommands();
         console.log('Commands registered successfully!');
-        
-        // Initial member count and channel update
-        await updateChannelName();
-        
-        // Update channel name every 5 minutes
-        setInterval(updateChannelName, 300000);
-        
-        // Send member count to backend immediately
-        const memberCount = await getMemberCount();
-        await sendMemberCountToBackend(memberCount);
         
         // Check expired mutes every minute
         setInterval(checkExpiredMutes, 60000);

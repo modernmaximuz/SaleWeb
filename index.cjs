@@ -38,8 +38,116 @@ async function initializePaste() {
     }
 }
 
+// Member counting functions for dashboard
+async function getMemberCount() {
+    try {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) {
+            console.error('[AUTH-BOT] Guild not found');
+            return 0;
+        }
+        
+        // Use cached members to avoid rate limits
+        let memberCount = guild.members.cache.filter(member => !member.user.bot).size;
+        
+        // Only fetch if cache is empty
+        if (guild.members.cache.size < 10) {
+            try {
+                await guild.members.fetch();
+                memberCount = guild.members.cache.filter(member => !member.user.bot).size;
+            } catch (fetchError) {
+                if (fetchError.code === 'GatewayRateLimitError') {
+                    console.log(`[AUTH-BOT] Rate limited, using cached count: ${memberCount}`);
+                    return memberCount;
+                }
+                throw fetchError;
+            }
+        }
+        
+        console.log(`[AUTH-BOT] Member count: ${memberCount}`);
+        return memberCount;
+    } catch (error) {
+        console.error('[AUTH-BOT] Error getting member count:', error);
+        return 0;
+    }
+}
+
+async function sendMemberCountToBackend(memberCount) {
+    try {
+        const stats = {
+            memberCount: memberCount,
+            lastUpdated: new Date().toISOString(),
+            channelName: `ghosts: #${memberCount}`
+        };
+        
+        console.log(`[AUTH-BOT] Sending to backend: memberCount=${memberCount}`);
+        
+        // Simple retry logic
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount < maxRetries) {
+            try {
+                const response = await fetch('https://saleweb.onrender.com/discord/update-stats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(stats)
+                });
+                
+                if (response.ok) {
+                    console.log(`[AUTH-BOT] Successfully sent member count: ${memberCount}`);
+                    return;
+                } else if (response.status === 429) {
+                    retryCount++;
+                    const waitTime = 5000; // 5 second wait
+                    console.log(`[AUTH-BOT] Rate limited, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    continue;
+                } else {
+                    console.error(`[AUTH-BOT] Failed to save member count: ${response.status}`);
+                    return;
+                }
+            } catch (fetchError) {
+                retryCount++;
+                const waitTime = 5000;
+                console.log(`[AUTH-BOT] Fetch error, retry ${retryCount}/${maxRetries} after ${waitTime}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+            }
+        }
+        
+        console.error(`[AUTH-BOT] Failed after ${maxRetries} retries`);
+    } catch (error) {
+        console.error('[AUTH-BOT] Error saving member count:', error);
+    }
+}
+
+async function updateMemberCount() {
+    try {
+        const memberCount = await getMemberCount();
+        await sendMemberCountToBackend(memberCount);
+    } catch (error) {
+        console.error('[AUTH-BOT] Error in update cycle:', error);
+    }
+}
+
+function startMemberCounting() {
+    console.log('[AUTH-BOT] Starting member counting for dashboard');
+    
+    // Update immediately on startup
+    updateMemberCount();
+    
+    // Then update every 5 minutes (300,000ms)
+    setInterval(updateMemberCount, 300000);
+}
+
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
+    
+    // Start member counting for dashboard
+    startMemberCounting();
     
     // Track processed message IDs to prevent duplicates
     const processedMessageIds = new Set();
