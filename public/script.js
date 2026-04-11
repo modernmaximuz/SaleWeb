@@ -380,11 +380,41 @@ window.toggleMobileMenu = function() {
     if (topbar.classList.contains('mobile-open')) {
         topbar.classList.remove('mobile-open');
         toggleBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+        // Close dropdowns when menu closes
+        document.querySelectorAll('.dropdownContent').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
     } else {
         topbar.classList.add('mobile-open');
         toggleBtn.innerHTML = '<i class="fas fa-times"></i> Close';
     }
 };
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const topbar = document.getElementById('topbar');
+    const toggleBtn = document.getElementById('mobileMenuToggle');
+    
+    if (topbar.classList.contains('mobile-open') && 
+        !topbar.contains(e.target) && 
+        !toggleBtn.contains(e.target)) {
+        topbar.classList.remove('mobile-open');
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+    }
+});
+
+// Handle dropdown toggles on mobile
+document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 768) {
+        if (e.target.classList.contains('navBtn') && e.target.id === 'shopToggle') {
+            e.preventDefault();
+            const dropdown = e.target.nextElementSibling;
+            if (dropdown && dropdown.classList.contains('dropdownContent')) {
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+    }
+});
 
 // ===== GLOBAL AUTH CHECK (used by navbar & pages) =====
 window.isLoggedIn = async function () {

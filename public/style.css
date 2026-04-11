@@ -600,6 +600,30 @@ margin-bottom: 14px;
     padding: 0;
 }
 
+@media (max-width: 1024px) {
+    body {
+        padding-top: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 120px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding-top: 116px;
+    }
+}
+
+@media (max-width: 400px) {
+    body {
+        padding-top: 112px;
+    }
+}
+
 @media (max-width: 900px) {
     #navRight {
         width: 100%;
