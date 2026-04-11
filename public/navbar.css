@@ -3,6 +3,11 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    background: #000000;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(120, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 120, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(0, 255, 120, 0.05) 0%, transparent 50%);
 }
 
 /* ==================== MAIN HEADER ==================== */
@@ -11,37 +16,71 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 8px 20px;
-    background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
-    border-bottom: 2px solid #1a1a2e;
+    background: linear-gradient(180deg, #000000 0%, #0a0a0f 50%, #000000 100%);
+    border-bottom: 2px solid #1a0033;
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(138, 43, 226, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     min-height: 60px;
+    backdrop-filter: blur(10px);
 }
 
 /* HAMBURGER MENU */
 #hamburgerToggle {
-    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
-    border: 1px solid #3a3a4a;
-    color: #ff6b6b;
+    background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
+    border: 1px solid #330066;
+    color: #ff0066;
     font-size: 20px;
     padding: 12px;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     width: 48px;
     height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 0 20px rgba(255, 0, 102, 0.2),
+        inset 0 0 20px rgba(138, 43, 226, 0.1);
+}
+
+#hamburgerToggle::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 0, 102, 0.3), transparent);
+    transform: rotate(45deg) translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+#hamburgerToggle:hover::before {
+    transform: rotate(45deg) translateX(100%);
 }
 
 #hamburgerToggle:hover {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-    border-color: #ff6b6b;
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
+    border-color: #ff0066;
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 
+        0 0 30px rgba(255, 0, 102, 0.6),
+        0 0 60px rgba(255, 0, 102, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 102, 0.6), 0 0 60px rgba(255, 0, 102, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.2); }
+    50% { box-shadow: 0 0 40px rgba(255, 0, 102, 0.8), 0 0 80px rgba(255, 0, 102, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.3); }
 }
 
 /* LOGO CONTAINER */
@@ -51,16 +90,45 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 
 .logo {
     max-height: 45px;
-    transition: transform 0.3s ease;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     vertical-align: middle;
+    filter: drop-shadow(0 0 20px rgba(138, 43, 226, 0.3));
+    position: relative;
+}
+
+.logo-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.logo-container:hover::before {
+    opacity: 1;
+    animation: logoGlow 2s ease-in-out infinite;
 }
 
 .logo:hover {
-    transform: scale(1.1);
+    transform: scale(1.15) rotate(2deg);
+    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.6)) drop-shadow(0 0 60px rgba(255, 0, 102, 0.3));
+}
+
+@keyframes logoGlow {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
 }
 
 /* RIGHT SECTION */
@@ -209,12 +277,34 @@ body {
 
 /* ==================== SECONDARY HEADER ==================== */
 #secondaryHeader {
-    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
-    border-bottom: 1px solid #2a2a3a;
+    background: linear-gradient(180deg, #0a001a 0%, #000000 50%, #0a001a 100%);
+    border-bottom: 1px solid #330066;
     padding: 8px 0;
     position: sticky;
     top: 60px;
     z-index: 999;
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.9),
+        0 0 40px rgba(138, 43, 226, 0.1),
+        inset 0 1px 0 rgba(255, 0, 102, 0.1);
+    backdrop-filter: blur(15px);
+    position: relative;
+}
+
+#secondaryHeader::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff0066, transparent);
+    animation: slideLine 3s ease-in-out infinite;
+}
+
+@keyframes slideLine {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
 }
 
 .tabs-container {
@@ -226,20 +316,23 @@ body {
 }
 
 .tabBtn {
-    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
-    border: 1px solid #3a3a4a;
-    color: white;
+    background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
+    border: 1px solid #330066;
+    color: #ffffff;
     padding: 12px 24px;
     border-radius: 20px;
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 8px;
     position: relative;
     overflow: hidden;
+    box-shadow: 
+        0 0 20px rgba(138, 43, 226, 0.2),
+        inset 0 0 20px rgba(255, 0, 102, 0.05);
 }
 
 .tabBtn::before {
@@ -249,19 +342,48 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 0, 102, 0.4), transparent);
+    transition: left 0.6s ease;
+}
+
+.tabBtn::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255, 0, 102, 0.6) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.5s ease;
+    opacity: 0;
 }
 
 .tabBtn:hover::before {
     left: 100%;
 }
 
+.tabBtn:hover::after {
+    width: 100px;
+    height: 100px;
+    opacity: 1;
+}
+
 .tabBtn:hover {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-    border-color: #ff6b6b;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
+    border-color: #ff0066;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+        0 8px 30px rgba(255, 0, 102, 0.4),
+        0 0 50px rgba(255, 0, 102, 0.2),
+        inset 0 0 30px rgba(255, 255, 255, 0.1);
+    animation: tabPulse 1s ease-in-out infinite;
+}
+
+@keyframes tabPulse {
+    0%, 100% { box-shadow: 0 8px 30px rgba(255, 0, 102, 0.4), 0 0 50px rgba(255, 0, 102, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.1); }
+    50% { box-shadow: 0 12px 40px rgba(255, 0, 102, 0.6), 0 0 70px rgba(255, 0, 102, 0.3), inset 0 0 40px rgba(255, 255, 255, 0.15); }
 }
 
 .tabBtn i {
@@ -614,6 +736,140 @@ body {
     }
 }
 
+/* ==================== CUSTOM POPUP SYSTEM ==================== */
+.custom-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: linear-gradient(135deg, #0a001a 0%, #000000 100%);
+    border: 2px solid #330066;
+    border-radius: 20px;
+    padding: 30px;
+    z-index: 10000;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.9),
+        0 0 100px rgba(138, 43, 226, 0.3),
+        inset 0 0 30px rgba(255, 0, 102, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 300px;
+    max-width: 500px;
+    backdrop-filter: blur(20px);
+}
+
+.custom-popup.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-popup::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ff0066, #330066, #ff0066);
+    border-radius: 20px;
+    z-index: -1;
+    animation: borderGlow 2s linear infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.popup-header {
+    color: #ff0066;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(255, 0, 102, 0.5);
+}
+
+.popup-content {
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.popup-btn {
+    background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
+    border: 1px solid #330066;
+    color: #ff0066;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.popup-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 0, 102, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.popup-btn:hover::before {
+    left: 100%;
+}
+
+.popup-btn:hover {
+    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
+    border-color: #ff0066;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 0, 102, 0.4);
+}
+
+.popup-btn.primary {
+    background: linear-gradient(135deg, #ff0066 0%, #cc0052 100%);
+    border-color: #ff0066;
+    color: #ffffff;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* ==================== UTILITY CLASSES ==================== */
 .hidden {
     display: none !important;
@@ -659,18 +915,6 @@ body {
 }
 
 .loginWarn {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(180deg, #2a2030 0%, #1a1625 100%);
-    border: 1px solid rgba(255, 113, 113, 0.45);
-    color: white;
-    padding: 12px 18px;
-    border-radius: 14px;
-    font-weight: 600;
-    z-index: 5000;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-    opacity: 0.98;
-    transition: bottom 0.3s ease;
-    backdrop-filter: blur(6px);
+    /* Replaced by custom popup system */
+    display: none;
 }

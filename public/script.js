@@ -446,6 +446,116 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// ==================== CUSTOM POPUP SYSTEM ====================
+window.showCustomPopup = function(title, message, buttons = []) {
+    // Remove existing popups
+    const existingPopup = document.querySelector('.custom-popup');
+    const existingOverlay = document.querySelector('.popup-overlay');
+    if (existingPopup) existingPopup.remove();
+    if (existingOverlay) existingOverlay.remove();
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    
+    // Create popup
+    const popup = document.createElement('div');
+    popup.className = 'custom-popup';
+    
+    // Create header
+    const header = document.createElement('div');
+    header.className = 'popup-header';
+    header.textContent = title;
+    
+    // Create content
+    const content = document.createElement('div');
+    content.className = 'popup-content';
+    content.textContent = message;
+    
+    // Create buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'popup-buttons';
+    
+    // Add default buttons if none provided
+    if (buttons.length === 0) {
+        buttons = [
+            { text: 'OK', class: 'primary', action: () => {} }
+        ];
+    }
+    
+    // Create buttons
+    buttons.forEach(btn => {
+        const button = document.createElement('button');
+        button.className = `popup-btn ${btn.class || ''}`;
+        button.textContent = btn.text;
+        button.onclick = () => {
+            if (btn.action) btn.action();
+            hideCustomPopup();
+        };
+        buttonsContainer.appendChild(button);
+    });
+    
+    // Assemble popup
+    popup.appendChild(header);
+    popup.appendChild(content);
+    popup.appendChild(buttonsContainer);
+    
+    // Add to page
+    document.body.appendChild(overlay);
+    document.body.appendChild(popup);
+    
+    // Trigger animations
+    setTimeout(() => {
+        overlay.classList.add('active');
+        popup.classList.add('active');
+    }, 10);
+    
+    // Close on overlay click
+    overlay.onclick = hideCustomPopup;
+    
+    // Close on Escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            hideCustomPopup();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+};
+
+window.hideCustomPopup = function() {
+    const popup = document.querySelector('.custom-popup');
+    const overlay = document.querySelector('.popup-overlay');
+    
+    if (popup) {
+        popup.classList.remove('active');
+        setTimeout(() => popup.remove(), 400);
+    }
+    
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 300);
+    }
+};
+
+// Replace browser notifications with custom popups
+window.showNotification = function(message, type = 'info') {
+    const titles = {
+        'info': 'Information',
+        'success': 'Success',
+        'warning': 'Warning',
+        'error': 'Error'
+    };
+    
+    const buttons = type === 'error' ? [
+        { text: 'OK', class: 'primary', action: () => {} }
+    ] : [
+        { text: 'Got it', class: 'primary', action: () => {} }
+    ];
+    
+    showCustomPopup(titles[type] || 'Notification', message, buttons);
+};
+
 // ===== GLOBAL AUTH CHECK (used by navbar & pages) =====
 window.isLoggedIn = async function () {
     // Check Firebase
