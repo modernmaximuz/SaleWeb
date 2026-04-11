@@ -145,7 +145,6 @@ client.on("ready", async () => {
                     messages = JSON.parse(data.content || "[]");
                     if (!Array.isArray(messages)) messages = [];
                 } catch (error) {
-                    console.log('[DEBUG] Invalid JSON in paste, using empty array');
                     messages = [];
                 }
                 const now = Date.now();
