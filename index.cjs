@@ -452,11 +452,24 @@ app.get("/dashboard/stats", async (req, res) => {
             }
         });
         
+        // Get proof count (actual uploaded proofs)
+        const proofsParsed = await readPasteContent("TK7bewK1");
+        let proofCount = 0;
+        if (proofsParsed.ok) {
+            try {
+                const proofs = JSON.parse(proofsParsed.content || "[]");
+                proofCount = Array.isArray(proofs) ? proofs.length : 0;
+            } catch (error) {
+                console.error('Failed to parse proofs content:', error);
+                proofCount = 0;
+            }
+        }
+        
         // Get Discord member count (will be updated by Discord bot)
         const discordMembers = await getDiscordMemberCount();
         
         res.json({
-            successCount: discordMembers || 0, // Success Count = Active Users (Discord members)
+            successCount: proofCount, // Success Count = Actual uploaded proofs
             discordMembers: discordMembers || 0,
             totalRestocks: totalItemsRestocked,
             totalRestockEntries: restocks.length

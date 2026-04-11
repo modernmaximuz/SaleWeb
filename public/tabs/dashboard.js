@@ -100,20 +100,15 @@ function updateDiscordInfo(discord, backendStats) {
         console.log(`[DASHBOARD] No Discord data available, using 0`);
     }
     
-    // Update Discord members count
+    // Update Discord members count only
     const discordMembersEl = document.getElementById('discordMembers');
     if (discordMembersEl) {
         discordMembersEl.textContent = memberCount;
     }
     
-    // Update success count to match Discord members
-    const successCountEl = document.getElementById('successCount');
-    if (successCountEl) {
-        successCountEl.textContent = memberCount;
-    }
+    // Success count is now handled by updateStatistics function from backend (actual proof count)
     
     console.log(`[DASHBOARD] Final Discord members: ${memberCount}`);
-    console.log(`[DASHBOARD] Final success count: ${memberCount}`);
 }
 
 // Format number with commas
