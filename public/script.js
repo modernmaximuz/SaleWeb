@@ -416,7 +416,33 @@ window.handleSidebarLogout = async function() {
 
 // Handle dropdown toggles
 document.addEventListener('click', function(e) {
-    // Shop dropdown toggle
+    // New compact navigation dropdown toggle
+    if (e.target.id === 'shopNavToggle' || e.target.closest('#shopNavToggle')) {
+        e.preventDefault();
+        const dropdown = document.getElementById('shopNavMenu');
+        const dropdownContainer = e.target.closest('.nav-dropdown');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.nav-dropdown').forEach(d => {
+            if (d !== dropdownContainer) {
+                d.classList.remove('open');
+            }
+        });
+        
+        // Toggle current dropdown
+        if (dropdownContainer) {
+            dropdownContainer.classList.toggle('open');
+        }
+    }
+    
+    // Close dropdowns when clicking outside
+    if (!e.target.closest('.nav-dropdown')) {
+        document.querySelectorAll('.nav-dropdown').forEach(dropdown => {
+            dropdown.classList.remove('open');
+        });
+    }
+    
+    // Legacy shop dropdown toggle (keep for compatibility)
     if (e.target.id === 'shopToggle' || e.target.closest('#shopToggle')) {
         e.preventDefault();
         const dropdown = document.getElementById('shopMenu');
@@ -425,7 +451,7 @@ document.addEventListener('click', function(e) {
         }
     }
     
-    // Close dropdowns when clicking outside
+    // Close legacy dropdowns when clicking outside
     if (!e.target.closest('.dropdown')) {
         document.querySelectorAll('.dropdownContent').forEach(dropdown => {
             dropdown.style.display = 'none';

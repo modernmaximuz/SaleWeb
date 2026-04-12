@@ -61,28 +61,36 @@
     </div>
 </div>
 
-<!-- SECONDARY HEADER WITH TABS -->
-<div id="secondaryHeader">
-    <div class="tabs-container">
-        <button class="tabBtn" onclick="requireLogin(event, '/restocks', this)">
-            <i class="fas fa-sync"></i> Restocks
-        </button>
-        <button class="tabBtn" onclick="requireLogin(event, '/tabs/proofs', this)">
-            <i class="fas fa-certificate"></i> Proofs
-        </button>
-        <div class="dropdown">
-            <button class="tabBtn" id="shopToggle">Shop <i class="fas fa-chevron-down"></i></button>
-            <div class="dropdownContent" id="shopMenu">
+<!-- COMPACT NAVIGATION BAR -->
+<div id="compactNav">
+    <div class="nav-items">
+        <a href="/restocks" class="nav-item" onclick="requireLogin(event, '/restocks', this)">
+            <i class="fas fa-sync"></i>
+            <span>Restocks</span>
+        </a>
+        <a href="/tabs/proofs" class="nav-item" onclick="requireLogin(event, '/tabs/proofs', this)">
+            <i class="fas fa-certificate"></i>
+            <span>Proofs</span>
+        </a>
+        <div class="nav-dropdown">
+            <button class="nav-item dropdown-toggle" id="shopNavToggle">
+                <i class="fas fa-store"></i>
+                <span>Shop</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="nav-dropdown-menu" id="shopNavMenu">
                 <a href="/shop/adoptme" onclick="requireLogin(event, '/shop/adoptme', this)">Adopt Me</a>
                 <a href="/shop/mm2" onclick="requireLogin(event, '/shop/mm2', this)">Murder Mystery</a>
             </div>
         </div>
-        <button class="tabBtn" onclick="requireLogin(event, '/support', this)">
-            <i class="fas fa-headset"></i> Support
-        </button>
-        <button class="tabBtn" onclick="requireLogin(event, '/tabs/orders', this)">
-            <i class="fas fa-shopping-bag"></i> Orders
-        </button>
+        <a href="/support" class="nav-item" onclick="requireLogin(event, '/support', this)">
+            <i class="fas fa-headset"></i>
+            <span>Support</span>
+        </a>
+        <a href="/tabs/orders" class="nav-item" onclick="requireLogin(event, '/tabs/orders', this)">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Orders</span>
+        </a>
     </div>
 </div>
 
