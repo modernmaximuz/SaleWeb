@@ -416,6 +416,8 @@ body.video-bg::before {
     z-index: 998;
     backdrop-filter: blur(8px);
     min-height: 40px;
+    overflow: hidden;
+    width: 100%;
 }
 
 .nav-items {
@@ -425,7 +427,9 @@ body.video-bg::before {
     gap: 2px;
     padding: 0 10px;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
+    width: 100%;
+    flex-wrap: nowrap;
 }
 
 .nav-item {

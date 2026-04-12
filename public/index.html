@@ -34,6 +34,17 @@
 
     <!-- RIGHT SECTION -->
     <div id="headerRight">
+        <button id="loginToggle" onclick="if(typeof window.openLoginModal === 'function') window.openLoginModal()">Login</button>
+        <div id="profileBox" class="hidden">
+            <div id="profileMain">
+                <div class="avatar"></div>
+                <span id="profileName">User</span>
+            </div>
+            <div id="profileDropdown" class="hidden">
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </div>
+        
         <div id="cartIcon">
             <i class="fas fa-shopping-cart" id="cartImg"></i>
             <span id="cartCount">0</span>
@@ -47,17 +58,6 @@
             </div>
         </div>
         <script src="/cart.js"></script>
-        
-        <button id="loginToggle" onclick="if(typeof window.openLoginModal === 'function') window.openLoginModal()">Login</button>
-        <div id="profileBox" class="hidden">
-            <div id="profileMain">
-                <div class="avatar"></div>
-                <span id="profileName">User</span>
-            </div>
-            <div id="profileDropdown" class="hidden">
-                <button id="logoutBtn">Logout</button>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -112,13 +112,13 @@
         </div>
         <div class="menu-section">
             <h4>Social Links</h4>
-            <a href="https://facebook.com" target="_blank">
+            <a href="https://facebook.com" target="_blank" onclick="toggleSidebar()">
                 <i class="fab fa-facebook"></i> Facebook
             </a>
-            <a href="https://tiktok.com" target="_blank">
+            <a href="https://tiktok.com" target="_blank" onclick="toggleSidebar()">
                 <i class="fab fa-tiktok"></i> TikTok
             </a>
-            <a href="https://discord.com" target="_blank">
+            <a href="https://discord.com" target="_blank" onclick="toggleSidebar()">
                 <i class="fab fa-discord"></i> Discord
             </a>
         </div>
