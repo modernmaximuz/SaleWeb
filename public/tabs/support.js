@@ -59,12 +59,25 @@ async function initChat() {
                     const token = await firebaseUser.getIdToken();
                     const headers = { Authorization: `Bearer ${token}` };
                     
-                    // Set currentUser from Firebase immediately for admin users
+                    // Load admin profile to get configured displayName and avatar
+                    let configuredProfile = null;
+                    try {
+                        const profileRes = await fetch('/admin/profile', { headers });
+                        if (profileRes.ok) {
+                            configuredProfile = await profileRes.json();
+                            console.log('Loaded admin profile:', configuredProfile);
+                        }
+                    } catch (profileError) {
+                        console.error('Failed to load admin profile:', profileError);
+                    }
+                    
+                    // Set currentUser from Firebase with configured profile data
                     currentUser = {
                         id: firebaseUser.uid,
-                        username: firebaseUser.displayName || firebaseUser.email,
+                        username: configuredProfile?.displayName || firebaseUser.displayName || firebaseUser.email,
                         email: firebaseUser.email,
-                        displayName: firebaseUser.displayName,
+                        displayName: configuredProfile?.displayName || firebaseUser.displayName,
+                        avatar: configuredProfile?.avatar || null,
                         type: "admin",
                         isAdmin: true
                     };

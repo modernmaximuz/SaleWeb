@@ -68,7 +68,13 @@ async function sendToDiscord(messageData) {
         // Construct proper avatar URL
         let avatarUrl = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
         if (messageData.avatar && messageData.avatar !== 'default') {
-            avatarUrl = `https://cdn.discordapp.com/avatars/${messageData.userId}/${messageData.avatar}.png`;
+            // Check if it's already a full URL (for Firebase users with custom avatar)
+            if (messageData.avatar.startsWith('http://') || messageData.avatar.startsWith('https://')) {
+                avatarUrl = messageData.avatar;
+            } else {
+                // Discord user avatar hash
+                avatarUrl = `https://cdn.discordapp.com/avatars/${messageData.userId}/${messageData.avatar}.png`;
+            }
         }
 
         console.log('Support bot sending to webhook:', { 

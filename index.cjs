@@ -1482,7 +1482,13 @@ app.post('/chat/webhook', async (req, res) => {
         // Construct proper avatar URL
         let avatarUrl = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
         if (avatar && avatar !== 'default') {
-            avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png`;
+            // Check if it's already a full URL (for Firebase users with custom avatar)
+            if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+                avatarUrl = avatar;
+            } else {
+                // Discord user avatar hash
+                avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png`;
+            }
         }
 
         console.log('Sending to Discord webhook:', { 
