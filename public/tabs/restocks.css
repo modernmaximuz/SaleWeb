@@ -1,24 +1,24 @@
-/* Modern Restocks Page Design */
+/* Modern Restocks Page Design - Hades Theme */
 :root {
-    --primary-color: #4c8dff;
-    --primary-dark: #3a6bc7;
-    --primary-light: #5b9aff;
-    --secondary-color: #ff6b6b;
+    --primary-color: #8B0000;
+    --primary-dark: #5a0000;
+    --primary-light: #b30000;
+    --secondary-color: #FF4500;
     --success-color: #4caf50;
-    --warning-color: #ff9800;
-    --bg-primary: #0f0f13;
-    --bg-secondary: #1a1a25;
-    --bg-tertiary: #2a2a3a;
+    --warning-color: #FF8C00;
+    --bg-primary: #000000;
+    --bg-secondary: #1a0000;
+    --bg-tertiary: #2a0a0a;
     --text-primary: #ffffff;
-    --text-secondary: #b8bcc8;
+    --text-secondary: #ff6b6b;
     --text-muted: #888;
-    --border-color: #3a3a4a;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --border-color: #8B0000;
+    --shadow-sm: 0 2px 8px rgba(139, 0, 0, 0.2);
+    --shadow-md: 0 4px 20px rgba(139, 0, 0, 0.3);
+    --shadow-lg: 0 8px 40px rgba(139, 0, 0, 0.4);
+    --shadow-xl: 0 20px 60px rgba(139, 0, 0, 0.5);
     --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    --gradient-secondary: linear-gradient(135deg, var(--secondary-color) 0%, #ff5252 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--secondary-color) 0%, #FF6347 100%);
     --gradient-bg: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
 }
 

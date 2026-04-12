@@ -3,27 +3,27 @@
     max-width: 1200px;
     margin: 20px auto;
     height: calc(100vh - 120px);
-    background: linear-gradient(180deg, #1a1a25 0%, #14141c 100%);
-    border: 1px solid #2a2a3a;
+    background: linear-gradient(180deg, #1a0000 0%, #0a0000 100%);
+    border: 1px solid #8B0000;
     border-radius: 16px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 20px 60px rgba(139, 0, 0, 0.4);
 }
 
 /* Chat Header */
 #chatHeader {
-    background: linear-gradient(180deg, #2a2a3a 0%, #1a1a25 100%);
+    background: linear-gradient(180deg, #2a0a0a 0%, #1a0000 100%);
     padding: 16px 20px;
-    border-bottom: 1px solid #3a3a4a;
+    border-bottom: 1px solid #8B0000;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 #chatHeader h1 {
-    color: #ffffff;
+    color: #ff6b6b;
     font-size: 24px;
     font-weight: 700;
     margin: 0;

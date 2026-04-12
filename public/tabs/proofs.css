@@ -3,7 +3,7 @@
     margin-top: 100px;
     padding: 20px;
     min-height: calc(100vh - 100px);
-    background: #0f0f13;
+    background: #000000;
 }
 
 .container {
@@ -12,7 +12,7 @@
 }
 
 h1 {
-    color: #eaeaea;
+    color: #ff6b6b;
     text-align: center;
     margin-bottom: 30px;
     font-size: 2rem;
@@ -20,16 +20,16 @@ h1 {
 }
 
 .proof-form, .proofs-list {
-    background: #1a1a25;
-    border: 1px solid #2a2a3a;
+    background: #1a0000;
+    border: 1px solid #8B0000;
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
 }
 
 .proof-form h2, .proofs-list h2 {
-    color: #eaeaea;
+    color: #ff6b6b;
     margin-bottom: 20px;
     font-size: 1.3rem;
     font-weight: 500;
