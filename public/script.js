@@ -216,7 +216,7 @@ function openProfileConfigModal() {
     const modal = document.getElementById("profileConfigModal");
     if (modal) {
         modal.classList.remove("hidden");
-        modal.style.display = "block";
+        modal.style.display = "flex";
         modal.style.visibility = "visible";
     }
 }
@@ -244,15 +244,20 @@ async function loadProfileData() {
 function updateAvatarPreview() {
     const avatarUrl = document.getElementById("avatarUrl").value.trim();
     const previewImg = document.getElementById("avatarPreviewImg");
-    
+
     if (avatarUrl) {
         previewImg.src = avatarUrl;
         previewImg.onerror = () => {
-            previewImg.src = "/images/default-avatar.png";
+            previewImg.src = "/images/hades.gif";
         };
     } else {
-        previewImg.src = "/images/default-avatar.png";
+        previewImg.src = "/images/hades.gif";
     }
+}
+
+function resetAvatar() {
+    document.getElementById("avatarUrl").value = "";
+    updateAvatarPreview();
 }
 
 async function saveProfile() {
@@ -272,10 +277,18 @@ async function saveProfile() {
         }
 
         // Update profile directly in Firebase Auth
-        await user.updateProfile({
-            displayName: displayName,
-            photoURL: avatarUrl || null
-        });
+        const updateData = {
+            displayName: displayName
+        };
+
+        // Only set photoURL if avatarUrl is provided, otherwise clear it
+        if (avatarUrl) {
+            updateData.photoURL = avatarUrl;
+        } else {
+            updateData.photoURL = null;
+        }
+
+        await user.updateProfile(updateData);
 
         // Reload user to get updated data
         await user.reload();
@@ -287,11 +300,15 @@ async function saveProfile() {
             document.getElementById("profileName").textContent = displayName;
         }
 
-        // Update avatar if URL is provided
+        // Update avatar display - prioritize custom avatar, otherwise use default
         const avatar = document.querySelector(".avatar");
-        if (avatar && avatarUrl) {
-            avatar.style.backgroundImage = `url(${avatarUrl})`;
-            avatar.style.backgroundSize = "cover";
+        if (avatar) {
+            if (user.photoURL) {
+                avatar.style.backgroundImage = `url(${user.photoURL})`;
+                avatar.style.backgroundSize = "cover";
+            } else {
+                avatar.style.backgroundImage = "";
+            }
         }
 
         alert('Profile saved successfully!');

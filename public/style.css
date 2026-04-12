@@ -451,6 +451,24 @@ background: linear-gradient(135deg, #5b9aff 0%, #4a7ad6 100%);
 transform: translateY(-1px);
 }
 
+.reset-avatar-btn {
+background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+color: white;
+border: none;
+border-radius: 8px;
+padding: 8px 16px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.2s ease;
+margin-top: 12px;
+width: 100%;
+}
+
+.reset-avatar-btn:hover {
+background: linear-gradient(135deg, #ff7b7b 0%, #ff6a6a 100%);
+transform: translateY(-1px);
+}
+
 .upload-options {
 display: flex;
 align-items: center;

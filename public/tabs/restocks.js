@@ -450,15 +450,20 @@ async function loadProfileData() {
 function updateAvatarPreview() {
     const avatarUrl = document.getElementById('avatarUrl').value.trim();
     const previewImg = document.getElementById('avatarPreviewImg');
-    
+
     if (avatarUrl) {
         previewImg.src = avatarUrl;
         previewImg.onerror = () => {
-            previewImg.src = '/images/default-avatar.png';
+            previewImg.src = '/images/hades.gif';
         };
     } else {
-        previewImg.src = '/images/default-avatar.png';
+        previewImg.src = '/images/hades.gif';
     }
+}
+
+function resetAvatar() {
+    document.getElementById('avatarUrl').value = '';
+    updateAvatarPreview();
 }
 
 async function saveProfile() {
