@@ -343,7 +343,7 @@ body.video-bg::before {
     border-bottom: 1px solid #8B0000;
     padding: 0;
     position: sticky;
-    top: 60px;
+    top: 56px;
     z-index: 999;
     box-shadow: 
         0 1px 3px rgba(0, 0, 0, 0.8),
