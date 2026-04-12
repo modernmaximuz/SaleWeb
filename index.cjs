@@ -1217,11 +1217,15 @@ app.post('/chat/message', async (req, res) => {
                 const token = authHeader.split("Bearer ")[1];
                 try {
                     const decoded = await admin.auth().verifyIdToken(token);
+                    
+                    // Load Firebase user profile to get configured displayName and avatar
+                    const firebaseUser = await admin.auth().getUser(decoded.uid);
+                    
                     user = {
                         id: decoded.uid,
-                        username: "Admin",
+                        username: firebaseUser.displayName || decoded.email || "Admin",
                         email: decoded.email,
-                        avatar: "admin"
+                        avatar: firebaseUser.photoURL || "admin"
                     };
                     isAdmin = true;
                 } catch {
@@ -2247,10 +2251,14 @@ app.get("/me", async (req, res) => {
         try {
             const decoded = await admin.auth().verifyIdToken(token);
             if (!user) {
+                // Load Firebase user profile to get configured displayName and avatar
+                const firebaseUser = await admin.auth().getUser(decoded.uid);
+                
                 user = {
                     id: decoded.uid,
-                    username: decoded.email,
+                    username: firebaseUser.displayName || decoded.email,
                     email: decoded.email,
+                    avatar: firebaseUser.photoURL || null,
                     type: "admin"
                 };
             }

@@ -66,6 +66,8 @@ async function initChat() {
                         if (profileRes.ok) {
                             configuredProfile = await profileRes.json();
                             console.log('Loaded admin profile:', configuredProfile);
+                        } else {
+                            console.error('Failed to load admin profile, status:', profileRes.status);
                         }
                     } catch (profileError) {
                         console.error('Failed to load admin profile:', profileError);
@@ -83,6 +85,7 @@ async function initChat() {
                     };
                     isAdmin = true;
                     console.log('Firebase admin user set:', currentUser);
+                    console.log('Username set to:', currentUser.username, 'from configuredProfile?.displayName:', configuredProfile?.displayName, 'firebaseUser.displayName:', firebaseUser.displayName);
                     
                     // Try to get user info from server
                     try {
