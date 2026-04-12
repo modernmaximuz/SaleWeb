@@ -9,134 +9,172 @@
     <link rel="stylesheet" href="/tabs/restocks.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="video-bg">
+<!-- VIDEO BACKGROUND -->
+<div class="video-background">
+    <video autoplay muted loop playsinline>
+        <source src="/images/background.mp4" type="video/mp4">
+        <!-- Fallback to GIF if video doesn't load -->
+        <img src="/images/background.gif" alt="Background">
+    </video>
+</div>
 
-<div id="topbar">
-    <a href="/">
-        <img src="/images/logo.png" class="logo">
-    </a>
-    
-<div id="navCenter">
-    <button class="navBtn" class="active">Restocks</button>
+<!-- MAIN HEADER -->
+<div id="mainHeader">
+    <!-- HAMBURGER MENU -->
+    <button id="hamburgerToggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
-    <div class="dropdown">
-        <button class="navBtn" id="shopToggle">Shop &#9662;</button>
-        <div class="dropdownContent" id="shopMenu">
-            <a href="/shop/adoptme" onclick="requireLogin(event, '/shop/adoptme', this)">Adopt Me</a>
-            <a href="/shop/mm2" onclick="requireLogin(event, '/shop/mm2', this)">Murder Mystery</a>
-        </div>
+    <!-- CENTER LOGO -->
+    <div class="logo-container">
+        <a href="/">
+            <img src="/images/logo.png" class="logo">
+        </a>
     </div>
 
-    <button class="navBtn" onclick="requireLogin(event, '/tabs/proofs', this)">Proofs</button>
-    <button class="navBtn" onclick="requireLogin(event, '/support', this)">Support</button>
-    <button class="navBtn" onclick="requireLogin(event, '/tabs/orders', this)">Orders</button>
-</div>
-
-<div id="navRight">
-    <button id="loginToggle">Login</button>
-<div id="cartIcon">
-    <img src="/images/cart.png" id="cartImg">
-    <span id="cartCount">0</span>
-</div>
-<div id="cartPopup" class="hidden">
-    <div id="cartBox">
-        <h2>Your Cart</h2>
-        <div id="cartItems"></div>
-
-        <div id="cartTotal">Total: &#8369;0</div>
-
-        <button id="finalizeOrder">Finalize Order</button>
-    </div>
-</div>
-    <div id="profileBox" class="hidden">
-        <div id="profileMain">
-            <div class="avatar"></div>
-            <span id="profileName">User</span>
-        </div>
-        <div id="profileDropdown" class="hidden">
-            <button id="logoutBtn">Logout</button>
-        </div>
-    </div>
-</div>
-</div>
-
-</div>
-
-<!-- Welcome Section -->
-<div class="welcome-section">
-    <div class="welcome-content">
-        <h1><i class="fas fa-fire"></i> Latest Restocks</h1>
-        <p>Stay updated with the newest items and exclusive drops</p>
-        <div class="welcome-stats">
-            <div class="welcome-stat">
-                <i class="fas fa-boxes"></i>
-                <span>Total Restocks</span>
+    <!-- RIGHT SECTION -->
+    <div id="headerRight">
+        <button id="loginToggle" onclick="if(typeof window.openLoginModal === 'function') window.openLoginModal()">Login</button>
+        <div id="profileBox" class="hidden">
+            <div id="profileMain">
+                <div class="avatar"></div>
+                <span id="profileName">User</span>
             </div>
-            <div class="welcome-stat">
-                <i class="fas fa-plus-circle"></i>
-                <span>Items Added</span>
-            </div>
-            <div class="welcome-stat">
-                <i class="fas fa-clock"></i>
-                <span>Real-time Updates</span>
+            <div id="profileDropdown" class="hidden">
+                <button id="logoutBtn">Logout</button>
             </div>
         </div>
-    </div>
-    <div id="adminControls" class="hidden">
-        <button id="addRestockBtn" class="hero-btn primary">
-            <i class="fas fa-plus"></i>
-            Add Restock
-        </button>
-        <button id="profileConfigBtn" class="hero-btn secondary">
-            <i class="fas fa-user-cog"></i>
-            Configure Profile
-        </button>
-        <button id="cleanRestocksBtn" class="hero-btn danger" onclick="cleanInvalidRestocks()">
-            <i class="fas fa-trash"></i>
-            Clean Invalid
-        </button>
+        
+        <div id="cartIcon">
+            <i class="fas fa-shopping-cart" id="cartImg"></i>
+            <span id="cartCount">0</span>
+        </div>
+        <div id="cartPopup" class="hidden">
+            <div id="cartBox">
+                <h2>Your Cart</h2>
+                <div id="cartItems"></div>
+                <div id="cartTotal">Total: ₱0</div>
+                <button id="finalizeOrder">Finalize Order</button>
+            </div>
+        </div>
+        <script src="/cart.js"></script>
     </div>
 </div>
 
-<!-- Stats Header -->
-<div class="stats-header">
-    <h2><i class="fas fa-chart-bar"></i> Restock Statistics</h2>
-    <p>Live statistics from your restock operations</p>
+<!-- COMPACT NAVIGATION BAR -->
+<div id="compactNav">
+    <div class="nav-items">
+        <a href="/restocks" class="nav-item active" onclick="requireLogin(event, '/restocks', this)">
+            <i class="fas fa-sync"></i>
+            <span>Restocks</span>
+        </a>
+        <a href="/tabs/proofs" class="nav-item" onclick="requireLogin(event, '/tabs/proofs', this)">
+            <i class="fas fa-certificate"></i>
+            <span>Proofs</span>
+        </a>
+        <div class="nav-dropdown">
+            <button class="nav-item dropdown-toggle" id="shopNavToggle">
+                <i class="fas fa-store"></i>
+                <span>Marketplace</span>
+                <i class="fas fa-chevron-down dropdown-chevron"></i>
+            </button>
+            <div class="nav-dropdown-menu" id="shopNavMenu">
+                <a href="/shop/adoptme" onclick="requireLogin(event, '/shop/adoptme', this)">Adopt Me</a>
+                <a href="/shop/mm2" onclick="requireLogin(event, '/shop/mm2', this)">Murder Mystery</a>
+            </div>
+        </div>
+        <a href="/support" class="nav-item" onclick="requireLogin(event, '/support', this)">
+            <i class="fas fa-headset"></i>
+            <span>Support</span>
+        </a>
+        <a href="/tabs/orders" class="nav-item" onclick="requireLogin(event, '/tabs/orders', this)">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Orders</span>
+        </a>
+    </div>
 </div>
 
-<!-- Stats Row -->
-<div class="stats-row">
-    <div class="stat-card">
-        <div class="stat-icon success">
-            <i class="fas fa-boxes"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Total Restocks</div>
-            <div class="stat-value" id="totalRestocks">0</div>
-            <div class="stat-description">Overall restocks of all items</div>
-        </div>
+<!-- SLIDE OUT SIDEBAR -->
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <button id="closeSidebar" onclick="toggleSidebar()">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3>Menu</h3>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon primary">
-            <i class="fas fa-plus-circle"></i>
+    <div class="sidebar-content">
+        <div class="menu-section">
+            <h4>Navigation</h4>
+            <a href="/" onclick="toggleSidebar()">Home</a>
+            <a href="/redeem" onclick="toggleSidebar()">Redeem Code</a>
+            <a href="#" onclick="openProfileConfig(); toggleSidebar()">Configure Profile</a>
+            <a href="/events" onclick="toggleSidebar()">Events</a>
+            <a href="/credits" onclick="toggleSidebar()">Credits</a>
         </div>
-        <div class="stat-content">
-            <div class="stat-label">Items Added</div>
-            <div class="stat-value" id="totalItems">0</div>
-            <div class="stat-description">Total items across all restocks</div>
+        <div class="menu-section">
+            <h4>Social Links</h4>
+            <a href="https://facebook.com" target="_blank" onclick="toggleSidebar()">
+                <i class="fab fa-facebook"></i> Facebook
+            </a>
+            <a href="https://tiktok.com" target="_blank" onclick="toggleSidebar()">
+                <i class="fab fa-tiktok"></i> TikTok
+            </a>
+            <a href="https://discord.com" target="_blank" onclick="toggleSidebar()">
+                <i class="fab fa-discord"></i> Discord
+            </a>
         </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon warning">
-            <i class="fas fa-clock"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Last Update</div>
-            <div class="stat-value" id="lastUpdate">Never</div>
-            <div class="stat-description">System last refreshed</div>
+        <div class="menu-section">
+            <button id="sidebarLogout" onclick="handleSidebarLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
     </div>
 </div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                <i class="fas fa-fire"></i>
+                Latest Restocks
+            </h1>
+            <p class="hero-subtitle">Stay updated with the newest items and exclusive drops</p>
+        </div>
+        <div id="adminControls" class="hidden">
+            <button id="addRestockBtn" class="hero-btn primary">
+                <i class="fas fa-plus"></i>
+                Add Restock
+            </button>
+            <button id="profileConfigBtn" class="hero-btn secondary">
+                <i class="fas fa-user-cog"></i>
+                Configure Profile
+            </button>
+            <button id="cleanRestocksBtn" class="hero-btn danger" onclick="cleanInvalidRestocks()">
+                <i class="fas fa-trash"></i>
+                Clean Invalid
+            </button>
+        </div>
+    </div>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <span class="stat-number" id="totalRestocks">0</span>
+            <span class="stat-label">Total Restocks</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="totalItems">0</span>
+            <span class="stat-label">Items Added</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="lastUpdate">Never</span>
+            <span class="stat-label">Last Update</span>
+        </div>
+    </div>
+</section>
 
 <!-- Main Content -->
 <main class="main-content">

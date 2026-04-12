@@ -5,86 +5,135 @@
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/navbar.css">
     <link rel="stylesheet" href="/tabs/orders.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="video-bg">
+<!-- VIDEO BACKGROUND -->
+<div class="video-background">
+    <video autoplay muted loop playsinline>
+        <source src="/images/background.mp4" type="video/mp4">
+        <!-- Fallback to GIF if video doesn't load -->
+        <img src="/images/background.gif" alt="Background">
+    </video>
+</div>
 
-<div id="topbar">
-    <a href="/">
-        <img src="/images/logo.png" class="logo">
-    </a>
-    
-<div id="navCenter">
-    <button class="navBtn" onclick="requireLogin(event, '/restocks', this)">Restocks</button>
+<!-- MAIN HEADER -->
+<div id="mainHeader">
+    <!-- HAMBURGER MENU -->
+    <button id="hamburgerToggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
-    <div class="dropdown">
-        <button class="navBtn" id="shopToggle">Shop ▾</button>
-        <div class="dropdownContent" id="shopMenu">
-            <a href="/shop/adoptme" onclick="requireLogin(event, '/shop/adoptme', this)">Adopt Me</a>
-            <a href="/shop/mm2" onclick="requireLogin(event, '/shop/mm2', this)">Murder Mystery</a>
-        </div>
+    <!-- CENTER LOGO -->
+    <div class="logo-container">
+        <a href="/">
+            <img src="/images/logo.png" class="logo">
+        </a>
     </div>
 
-    <button class="navBtn" onclick="requireLogin(event, '/tabs/proofs', this)">Proofs</button>
-    <button class="navBtn" onclick="requireLogin(event, '/support', this)">Support</button>
-    <button class="navBtn" class="active">Orders</button>
-</div>
-
-<div id="navRight">
-    <button id="loginToggle">Login</button>
-<div id="cartIcon">
-    <img src="/images/cart.png" id="cartImg">
-    <span id="cartCount">0</span>
-</div>
-<div id="cartPopup" class="hidden">
-    <div id="cartBox">
-        <h2>Your Cart</h2>
-        <div id="cartItems"></div>
-
-        <div id="cartTotal">Total: ₱0</div>
-
-        <button id="finalizeOrder">Finalize Order</button>
-    </div>
-</div>
-    <div id="profileBox" class="hidden">
-        <div id="profileMain">
-            <div class="avatar"></div>
-            <span id="profileName">User</span>
-        </div>
-        <div id="profileDropdown" class="hidden">
-            <button id="logoutBtn">Logout</button>
-        </div>
-    </div>
-</div>
-
-</div>
-
-<!-- Welcome Section -->
-<div class="welcome-section">
-    <div class="welcome-content">
-        <h1><i class="fas fa-shopping-bag"></i> Public Orders</h1>
-        <p>Track and manage all customer orders in real-time</p>
-        <div class="welcome-stats">
-            <div class="welcome-stat">
-                <i class="fas fa-clock"></i>
-                <span>Waiting Orders</span>
+    <!-- RIGHT SECTION -->
+    <div id="headerRight">
+        <button id="loginToggle" onclick="if(typeof window.openLoginModal === 'function') window.openLoginModal()">Login</button>
+        <div id="profileBox" class="hidden">
+            <div id="profileMain">
+                <div class="avatar"></div>
+                <span id="profileName">User</span>
             </div>
-            <div class="welcome-stat">
-                <i class="fas fa-check-circle"></i>
-                <span>Accepted Orders</span>
-            </div>
-            <div class="welcome-stat">
-                <i class="fas fa-flag-checkered"></i>
-                <span>Final Results</span>
+            <div id="profileDropdown" class="hidden">
+                <button id="logoutBtn">Logout</button>
             </div>
         </div>
+        
+        <div id="cartIcon">
+            <i class="fas fa-shopping-cart" id="cartImg"></i>
+            <span id="cartCount">0</span>
+        </div>
+        <div id="cartPopup" class="hidden">
+            <div id="cartBox">
+                <h2>Your Cart</h2>
+                <div id="cartItems"></div>
+                <div id="cartTotal">Total: ₱0</div>
+                <button id="finalizeOrder">Finalize Order</button>
+            </div>
+        </div>
+        <script src="/cart.js"></script>
     </div>
 </div>
 
-<!-- Stats Header -->
-<div class="stats-header">
-    <h2><i class="fas fa-chart-bar"></i> Order Statistics</h2>
-    <p>Live statistics from your order operations</p>
+<!-- COMPACT NAVIGATION BAR -->
+<div id="compactNav">
+    <div class="nav-items">
+        <a href="/restocks" class="nav-item" onclick="requireLogin(event, '/restocks', this)">
+            <i class="fas fa-sync"></i>
+            <span>Restocks</span>
+        </a>
+        <a href="/tabs/proofs" class="nav-item" onclick="requireLogin(event, '/tabs/proofs', this)">
+            <i class="fas fa-certificate"></i>
+            <span>Proofs</span>
+        </a>
+        <div class="nav-dropdown">
+            <button class="nav-item dropdown-toggle" id="shopNavToggle">
+                <i class="fas fa-store"></i>
+                <span>Marketplace</span>
+                <i class="fas fa-chevron-down dropdown-chevron"></i>
+            </button>
+            <div class="nav-dropdown-menu" id="shopNavMenu">
+                <a href="/shop/adoptme" onclick="requireLogin(event, '/shop/adoptme', this)">Adopt Me</a>
+                <a href="/shop/mm2" onclick="requireLogin(event, '/shop/mm2', this)">Murder Mystery</a>
+            </div>
+        </div>
+        <a href="/support" class="nav-item" onclick="requireLogin(event, '/support', this)">
+            <i class="fas fa-headset"></i>
+            <span>Support</span>
+        </a>
+        <a href="/tabs/orders" class="nav-item active" onclick="requireLogin(event, '/tabs/orders', this)">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Orders</span>
+        </a>
+    </div>
 </div>
+
+<!-- SLIDE OUT SIDEBAR -->
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <button id="closeSidebar" onclick="toggleSidebar()">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3>Menu</h3>
+    </div>
+    <div class="sidebar-content">
+        <div class="menu-section">
+            <h4>Navigation</h4>
+            <a href="/" onclick="toggleSidebar()">Home</a>
+            <a href="/redeem" onclick="toggleSidebar()">Redeem Code</a>
+            <a href="#" onclick="openProfileConfig(); toggleSidebar()">Configure Profile</a>
+            <a href="/events" onclick="toggleSidebar()">Events</a>
+            <a href="/credits" onclick="toggleSidebar()">Credits</a>
+        </div>
+        <div class="menu-section">
+            <h4>Social Links</h4>
+            <a href="https://facebook.com" target="_blank" onclick="toggleSidebar()">
+                <i class="fab fa-facebook"></i> Facebook
+            </a>
+            <a href="https://tiktok.com" target="_blank" onclick="toggleSidebar()">
+                <i class="fab fa-tiktok"></i> TikTok
+            </a>
+            <a href="https://discord.com" target="_blank" onclick="toggleSidebar()">
+                <i class="fab fa-discord"></i> Discord
+            </a>
+        </div>
+        <div class="menu-section">
+            <button id="sidebarLogout" onclick="handleSidebarLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+<h1 style="text-align:center">Public Orders</h1>
 
 <section class="ordersSection">
     <h2>Waiting Orders</h2>
