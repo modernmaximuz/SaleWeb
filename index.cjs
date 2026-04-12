@@ -1438,6 +1438,52 @@ app.post('/chat/typing', (req, res) => {
     }
 });
 
+// Webhook to send chat messages to Discord
+app.post('/chat/webhook', async (req, res) => {
+    try {
+        const { text, userId, username, avatar, replyTo } = req.body;
+        
+        if (!text || !username) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const webhookUrl = process.env.SUPPORT_WEBHOOK_URL;
+        if (!webhookUrl) {
+            console.error('SUPPORT_WEBHOOK_URL not configured');
+            return res.status(500).json({ error: 'Webhook not configured' });
+        }
+
+        let content = '';
+        
+        // Format reply with ping and original message
+        if (replyTo) {
+            content = `<@${userId}> ${replyTo.username} said:\n"${replyTo.text}"\n\n${text}`;
+        } else {
+            content = text;
+        }
+
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: content,
+                username: username,
+                avatar_url: avatar || 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true'
+            })
+        });
+
+        if (response.ok) {
+            res.json({ success: true });
+        } else {
+            console.error('Failed to send to Discord:', response.status);
+            res.status(500).json({ error: 'Failed to send to Discord' });
+        }
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Restock System
 const RESTOCK_PASTE_ID = "1J0ghD9n";
 const RESTOCK_TRACKING_PASTE_ID = "1J0ghD9n"; // Use the same paste ID as requested

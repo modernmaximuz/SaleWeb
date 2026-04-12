@@ -367,6 +367,28 @@ async function sendMessage() {
             input.value = '';
             cancelReply();
             updateSendButton();
+            
+            // Send to Discord webhook
+            try {
+                const avatar = currentUser.avatar || 'default';
+                await fetch('/chat/webhook', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: filterBadWords(text),
+                        userId: currentUser.id,
+                        username: currentUser.username,
+                        avatar: avatar,
+                        replyTo: replyToMessage ? {
+                            username: replyToMessage.username,
+                            text: replyToMessage.text
+                        } : null
+                    })
+                });
+            } catch (webhookError) {
+                console.error('Failed to send to Discord webhook:', webhookError);
+                // Don't alert user for webhook failures, chat still works
+            }
         } else {
             throw new Error(data.error || 'Failed to send message');
         }
