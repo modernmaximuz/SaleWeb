@@ -108,36 +108,19 @@ async function updateMemberCount() {
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
     
-    // Set bot presence to online with delay to ensure fully ready
-    setTimeout(() => {
-        try {
-            // Try setting status to dnd first to test if status changes work
-            client.user.setStatus('dnd');
-            console.log('Bot status set to dnd (test)');
-            
-            // Then set to online after a delay
-            setTimeout(() => {
-                try {
-                    client.user.setStatus('online');
-                    console.log('Bot status set to online');
-                } catch (onlineError) {
-                    console.error('Error setting bot status to online:', onlineError);
-                }
-            }, 2000);
-            
-            // Set activity
-            setTimeout(() => {
-                try {
-                    client.user.setActivity('Support Chat', { type: 'WATCHING' });
-                    console.log('Bot activity set to Watching Support Chat');
-                } catch (activityError) {
-                    console.error('Error setting bot activity:', activityError);
-                }
-            }, 500);
-        } catch (error) {
-            console.error('Error setting bot status:', error);
-        }
-    }, 1000);
+    // Set presence immediately on ready
+    try {
+        client.user.setPresence({
+            status: 'online',
+            activities: [{
+                name: 'Support Chat',
+                type: 'WATCHING'
+            }]
+        });
+        console.log('Bot presence set to online with activity');
+    } catch (error) {
+        console.error('Error setting bot presence:', error);
+    }
     
     // Update member count from channel name immediately
     updateMemberCount();
