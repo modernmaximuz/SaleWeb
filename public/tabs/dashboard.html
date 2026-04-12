@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - Statistics</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/navbar.css">
@@ -66,9 +66,20 @@
     <!-- Welcome Section -->
     <div class="welcome-section">
         <div class="welcome-content">
-            <h1><i class="fas fa-home"></i> Welcome to Your Dashboard</h1>
-            <p>Track your business performance, monitor inventory, and manage orders all in one place</p>
-            <div class="welcome-stats">
+            <h1 class="animate-fade-in"><i class="fas fa-home"></i> Welcome to Your Dashboard</h1>
+            <p class="animate-slide-up">Track your business performance, monitor inventory, and manage orders all in one place</p>
+            <div class="welcome-cta animate-slide-up-delay">
+                <button class="cta-button primary" onclick="location.href='/restocks'">
+                    <i class="fas fa-boxes"></i> View Restocks
+                </button>
+                <button class="cta-button secondary" onclick="location.href='/shop/adoptme'">
+                    <i class="fas fa-shopping-bag"></i> Browse Shop
+                </button>
+                <button class="cta-button tertiary" onclick="location.href='/support'">
+                    <i class="fas fa-headset"></i> Get Support
+                </button>
+            </div>
+            <div class="welcome-stats animate-fade-in-delay">
                 <div class="welcome-stat">
                     <i class="fas fa-chart-line"></i>
                     <span>Real-time Analytics</span>
@@ -83,15 +94,62 @@
                 </div>
             </div>
         </div>
-        <div class="welcome-image">
+        <div class="welcome-image animate-pulse">
             <i class="fas fa-tachometer-alt"></i>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+        <h2 class="animate-fade-in"><i class="fas fa-bolt"></i> Quick Actions</h2>
+        <div class="quick-actions-grid">
+            <div class="quick-action-card" onclick="location.href='/restocks'">
+                <div class="quick-action-icon restocks">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <h3>View Restocks</h3>
+                <p>Check latest inventory updates</p>
+                <div class="quick-action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+            <div class="quick-action-card" onclick="location.href='/shop/adoptme'">
+                <div class="quick-action-icon adoptme">
+                    <i class="fas fa-paw"></i>
+                </div>
+                <h3>Adopt Me Shop</h3>
+                <p>Browse Adopt Me items</p>
+                <div class="quick-action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+            <div class="quick-action-card" onclick="location.href='/shop/mm2'">
+                <div class="quick-action-icon mm2">
+                    <i class="fas fa-skull"></i>
+                </div>
+                <h3>MM2 Shop</h3>
+                <p>Browse Murder Mystery items</p>
+                <div class="quick-action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+            <div class="quick-action-card" onclick="location.href='/tabs/orders'">
+                <div class="quick-action-icon orders">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3>My Orders</h3>
+                <p>Track your purchases</p>
+                <div class="quick-action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Stats Grid - One Row Layout -->
     <div class="stats-header">
-        <h2><i class="fas fa-chart-bar"></i> Key Metrics</h2>
-        <p>Live statistics from your shop operations</p>
+        <h2 class="animate-fade-in"><i class="fas fa-chart-bar"></i> Key Metrics</h2>
+        <p class="animate-slide-up">Live statistics from your shop operations</p>
     </div>
 
     <div class="stats-row">

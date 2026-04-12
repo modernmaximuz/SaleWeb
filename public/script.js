@@ -374,7 +374,7 @@ async function handleImageUpload(event) {
         const formData = new FormData();
         formData.append('image', file);
         
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=bdcb671a7075bed44f862ba62f369966&expiration=600`, {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=bdcb671a7075bed44f862ba62f369966`, {
             method: 'POST',
             body: formData
         });
