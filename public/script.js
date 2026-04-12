@@ -804,6 +804,16 @@ async function redeemCode() {
             }
             if (codeInput) codeInput.value = '';
 
+            // Store discount percentage in localStorage
+            if (result.discountPercentage !== null && result.discountPercentage !== undefined) {
+                localStorage.setItem('discountPercentage', result.discountPercentage);
+                localStorage.setItem('discountCode', code);
+                // Trigger cart update to apply discount
+                if (typeof updateCartDisplay === 'function') {
+                    updateCartDisplay();
+                }
+            }
+
             // Close popup after 2 seconds on success
             setTimeout(() => {
                 closeRedeemPopup();

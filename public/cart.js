@@ -192,7 +192,30 @@ function renderCartPopup() {
         `;
     });
 
-    totalEl.innerText = `Total: ₱${formatPeso(total)}`;
+    // Apply discount if available
+    const discountPercentage = parseFloat(localStorage.getItem('discountPercentage')) || 0;
+    const discountCode = localStorage.getItem('discountCode') || '';
+    let discountAmount = 0;
+    let finalTotal = total;
+
+    if (discountPercentage > 0) {
+        discountAmount = total * (discountPercentage / 100);
+        finalTotal = total - discountAmount;
+    }
+
+    // Build total text with discount info
+    let totalText = `Subtotal: ₱${formatPeso(total)}`;
+    if (discountPercentage > 0) {
+        totalText += `<br><span class="discount-info">Discount (${discountPercentage}%): -₱${formatPeso(discountAmount)}</span>`;
+        totalText += `<br><strong>Total: ₱${formatPeso(finalTotal)}</strong>`;
+        if (discountCode) {
+            totalText += `<br><span class="discount-code">Code: ${discountCode}</span>`;
+        }
+    } else {
+        totalText = `Total: ₱${formatPeso(total)}`;
+    }
+
+    totalEl.innerHTML = totalText;
 }
 
 window.removeCartItemAndRefresh = function (name) {
@@ -214,10 +237,18 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
         return;
     }
 
+    // Get discount information
+    const discountPercentage = parseFloat(localStorage.getItem('discountPercentage')) || 0;
+    const discountCode = localStorage.getItem('discountCode') || '';
+
     const finalizeRes = await fetch("/orders/finalize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: cart })
+        body: JSON.stringify({
+            items: cart,
+            discountPercentage: discountPercentage || null,
+            discountCode: discountCode || null
+        })
     });
 
     if (!finalizeRes.ok) {
@@ -230,6 +261,11 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
     await fetch("/cart", { method: "DELETE" }).catch(() => {});
     document.dispatchEvent(new CustomEvent("cartUpdated"));
     renderCartIcon();
+
+    // Clear discount from localStorage after successful order
+    localStorage.removeItem('discountPercentage');
+    localStorage.removeItem('discountCode');
+
     alert("Order placed!");
 
     location.href = "/tabs/orders"; // now THIS is correct usage

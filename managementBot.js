@@ -485,10 +485,25 @@ async function handleCreateCode(interaction) {
     const code = interaction.options.getString('code');
     const expirationDate = interaction.options.getString('expirationdate');
     const maxUses = interaction.options.getString('howmanyusercanuse');
+    const discountPercentage = interaction.options.getInteger('discountpercentage');
 
     if (!code) {
         return interaction.reply({
             content: "❌ Please specify a code!",
+            ephemeral: true
+        });
+    }
+
+    if (discountPercentage === null || discountPercentage === undefined) {
+        return interaction.reply({
+            content: "❌ Please specify a discount percentage (0-100)!",
+            ephemeral: true
+        });
+    }
+
+    if (discountPercentage < 0 || discountPercentage > 100) {
+        return interaction.reply({
+            content: "❌ Discount percentage must be between 0 and 100!",
             ephemeral: true
         });
     }
@@ -525,6 +540,7 @@ async function handleCreateCode(interaction) {
             code: code,
             expirationDate: expirationDate || null,
             maxUses: maxUses || 1,
+            discountPercentage: discountPercentage,
             usedBy: [],
             createdAt: new Date().toISOString(),
             createdBy: interaction.user.id
@@ -556,7 +572,7 @@ async function handleCreateCode(interaction) {
         const usesText = maxUses === 'inf' ? 'Unlimited uses' : `Max uses: ${maxUses}`;
 
         return interaction.reply({
-            content: `✅ **Code created successfully!**\n\n**Code:** \`${code}\`\n${expirationText}\n${usesText}`,
+            content: `✅ **Code created successfully!**\n\n**Code:** \`${code}\`\n**Discount:** ${discountPercentage}%\n${expirationText}\n${usesText}`,
             ephemeral: true
         });
 
@@ -683,6 +699,12 @@ async function registerCommands() {
                     description: 'Max uses (1, 3, 5, inf)',
                     type: 3, // STRING
                     required: false
+                },
+                {
+                    name: 'discountpercentage',
+                    description: 'Discount percentage (0-100)',
+                    type: 4, // INTEGER
+                    required: true
                 }
             ]
         }
@@ -691,7 +713,7 @@ async function registerCommands() {
     await client.application.commands.set(commands, GUILD_ID);
 }
 
-
+// ... rest of the code remains the same ...
 // Bot events
 client.once('ready', async () => {
     console.log('Management Bot is ready!');

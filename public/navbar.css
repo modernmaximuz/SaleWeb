@@ -912,6 +912,19 @@ body.video-bg::before {
     box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
 }
 
+/* Discount info styling */
+.discount-info {
+    color: #90EE90;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.discount-code {
+    color: #FF4500;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 /* ==================== MOBILE RESPONSIVE ==================== */
 @media (max-width: 768px) {
     #mainHeader {

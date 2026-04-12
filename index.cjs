@@ -2482,7 +2482,7 @@ app.post("/redeem-code", async (req, res) => {
         res.json({
             success: true,
             message: "Code redeemed successfully!",
-            discount: codeData.discount || null
+            discountPercentage: codeData.discountPercentage || null
         });
 
     } catch (error) {
