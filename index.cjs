@@ -111,10 +111,21 @@ client.once("ready", () => {
     // Set bot presence to online with delay to ensure fully ready
     setTimeout(() => {
         try {
-            client.user.setStatus('online');
-            console.log('Bot status set to online');
+            // Try setting status to dnd first to test if status changes work
+            client.user.setStatus('dnd');
+            console.log('Bot status set to dnd (test)');
             
-            // Then set activity
+            // Then set to online after a delay
+            setTimeout(() => {
+                try {
+                    client.user.setStatus('online');
+                    console.log('Bot status set to online');
+                } catch (onlineError) {
+                    console.error('Error setting bot status to online:', onlineError);
+                }
+            }, 2000);
+            
+            // Set activity
             setTimeout(() => {
                 try {
                     client.user.setActivity('Support Chat', { type: 'WATCHING' });
