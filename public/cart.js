@@ -10,17 +10,10 @@ function applyCartAccessByLoginType() {
     const icon = document.getElementById("cartIcon");
     const popupEl = document.getElementById("cartPopup");
 
-    cartDisabledForEmailLogin = isEmailLoginActive();
+    cartDisabledForEmailLogin = false; // Always enable cart
 
-    if (cartDisabledForEmailLogin) {
-        cartCache = [];
-        cartReady = true;
-        if (icon) icon.style.display = "none";
-        if (popupEl) popupEl.classList.add("hidden");
-        return;
-    }
-
-    if (icon) icon.style.display = "";
+    if (icon) icon.style.display = "flex";
+    if (popupEl) popupEl.classList.remove("hidden");
 }
 
 function getCart() {
