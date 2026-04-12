@@ -62,8 +62,9 @@ async function initChat() {
                     // Set currentUser from Firebase immediately for admin users
                     currentUser = {
                         id: firebaseUser.uid,
-                        username: firebaseUser.email,
+                        username: firebaseUser.displayName || firebaseUser.email,
                         email: firebaseUser.email,
+                        displayName: firebaseUser.displayName,
                         type: "admin",
                         isAdmin: true
                     };
@@ -309,7 +310,7 @@ function createMessageElement(message) {
         </div>
         <div class="message-content">
             <div class="message-header">
-                <span class="message-author">${message.isAdmin ? 'Admin' : message.username}</span>
+                <span class="message-author">${message.isAdmin ? `${message.username} | Staff` : message.username}</span>
                 <span class="message-time">${formatTime(message.timestamp)}</span>
                 ${canDeleteOwnMessage ? `<button class="delete-message-btn" onclick="deleteOwnMessage('${message.id}')">×</button>` : ''}
                 ${message.replyTo ? `<span class="reply-indicator">Replying to ${message.replyTo.username}</span>` : ''}
