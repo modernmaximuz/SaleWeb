@@ -583,6 +583,16 @@ body.video-bg::before {
     filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.6));
 }
 
+.dropdown-chevron {
+    font-size: 9px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+.nav-dropdown.open .dropdown-chevron {
+    transform: rotate(180deg);
+}
+
 .nav-dropdown-menu {
     opacity: 0;
     visibility: hidden;
@@ -595,7 +605,7 @@ body.video-bg::before {
     border-radius: 8px;
     padding: 4px 0;
     min-width: 120px;
-    z-index: 1000;
+    z-index: 2000;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
     margin-top: 2px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
