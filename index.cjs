@@ -1790,19 +1790,15 @@ app.get('/admin/profile', verifyToken, async (req, res) => {
         const decoded = req.user;
         const adminId = decoded.uid;
 
-        const parsed = await readPasteContent(ADMIN_PROFILE_PASTE_ID);
-        if (!parsed.ok) {
-            return res.json({ displayName: decoded.email || 'Admin', avatar: null });
-        }
+        // Get user data directly from Firebase Auth
+        const user = await admin.auth().getUser(adminId);
 
-        const profiles = parseOrdersContent(parsed.content);
-        const profile = profiles.find(p => p.adminId === adminId);
+        const profile = {
+            displayName: user.displayName || user.email || 'Admin',
+            avatar: user.photoURL || null
+        };
 
-        if (profile) {
-            res.json(profile);
-        } else {
-            res.json({ displayName: decoded.email || 'Admin', avatar: null });
-        }
+        res.json(profile);
     } catch (error) {
         console.error('Failed to load admin profile:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -1868,35 +1864,28 @@ app.put('/admin/profile', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Display name is required' });
         }
 
-        // Load existing profiles
-        const parsed = await readPasteContent(ADMIN_PROFILE_PASTE_ID);
-        const profiles = parsed.ok ? parseOrdersContent(parsed.content) : [];
+        // Update Firebase Auth user profile directly
+        const updateData = {
+            displayName: displayName.trim()
+        };
 
-        // Find or create profile
-        let profileIndex = profiles.findIndex(p => p.adminId === adminId);
+        if (avatar && avatar.trim()) {
+            updateData.photoURL = avatar.trim();
+        }
+
+        await admin.auth().updateUser(adminId, updateData);
+
+        // Return the updated profile
         const profile = {
-            adminId,
             displayName: displayName.trim(),
             avatar: avatar || null,
             updatedAt: new Date().toISOString()
         };
 
-        if (profileIndex >= 0) {
-            profiles[profileIndex] = profile;
-        } else {
-            profiles.push(profile);
-        }
-
-        // Save profiles
-        const writeRes = await writePasteContent(ADMIN_PROFILE_PASTE_ID, JSON.stringify(profiles, null, 2));
-        if (!writeRes.ok) {
-            return res.status(500).json({ error: 'Failed to save profile' });
-        }
-
         res.json({ success: true, profile });
     } catch (error) {
         console.error('Failed to update admin profile:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Failed to save profile to Firebase: ' + error.message });
     }
 });
 

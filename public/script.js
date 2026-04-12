@@ -28,9 +28,15 @@ function showProfile(user, type) {
             avatar.style.backgroundSize = "cover";
         }
     } else {
-        profileName.textContent = user.email;
+        // For Firebase users, use displayName if available, otherwise email
+        profileName.textContent = user.displayName || user.email;
         if (avatar) {
-            avatar.style.backgroundImage = "";
+            if (user.photoURL) {
+                avatar.style.backgroundImage = `url(${user.photoURL})`;
+                avatar.style.backgroundSize = "cover";
+            } else {
+                avatar.style.backgroundImage = "";
+            }
         }
     }
 
@@ -221,19 +227,15 @@ function closeProfileConfigModal() {
 
 async function loadProfileData() {
     try {
-        const token = await firebase.auth().currentUser.getIdToken();
-        const res = await fetch("/admin/profile", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        
-        if (res.ok) {
-            const profile = await res.json();
-            document.getElementById("displayName").value = profile.displayName || '';
-            document.getElementById("avatarUrl").value = profile.avatar || '';
-            updateAvatarPreview();
-        }
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        // Reload user to get latest profile data from Firebase
+        await user.reload();
+
+        document.getElementById("displayName").value = user.displayName || user.email || '';
+        document.getElementById("avatarUrl").value = user.photoURL || '';
+        updateAvatarPreview();
     } catch (error) {
         console.error('Failed to load profile:', error);
     }
@@ -256,36 +258,46 @@ function updateAvatarPreview() {
 async function saveProfile() {
     const displayName = document.getElementById("displayName").value.trim();
     const avatarUrl = document.getElementById("avatarUrl").value.trim();
-    
+
     if (!displayName) {
         alert('Display name is required.');
         return;
     }
-    
+
     try {
-        const token = await firebase.auth().currentUser.getIdToken();
-        const res = await fetch("/admin/profile", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ displayName, avatar: avatarUrl })
-        });
-        
-        if (res.ok) {
-            closeProfileConfigModal();
-            // Update profile display if needed
-            if (document.getElementById("profileName")) {
-                document.getElementById("profileName").textContent = displayName;
-            }
-        } else {
-            const error = await res.json();
-            alert('Failed to save profile: ' + (error.error || 'Unknown error'));
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert('You must be logged in to save your profile.');
+            return;
         }
+
+        // Update profile directly in Firebase Auth
+        await user.updateProfile({
+            displayName: displayName,
+            photoURL: avatarUrl || null
+        });
+
+        // Reload user to get updated data
+        await user.reload();
+
+        closeProfileConfigModal();
+
+        // Update profile display
+        if (document.getElementById("profileName")) {
+            document.getElementById("profileName").textContent = displayName;
+        }
+
+        // Update avatar if URL is provided
+        const avatar = document.querySelector(".avatar");
+        if (avatar && avatarUrl) {
+            avatar.style.backgroundImage = `url(${avatarUrl})`;
+            avatar.style.backgroundSize = "cover";
+        }
+
+        alert('Profile saved successfully!');
     } catch (error) {
         console.error('Failed to save profile:', error);
-        alert('Failed to save profile. Please try again.');
+        alert('Failed to save profile: ' + error.message);
     }
 }
 
