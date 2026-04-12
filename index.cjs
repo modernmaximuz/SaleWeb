@@ -2399,3 +2399,95 @@ app.get("/logout-discord", (req, res) => {
     res.redirect("/");
 });
 
+// Redeem code endpoint
+const REDEEM_CODES_PASTE_ID = "mRHpxq8D";
+
+app.post("/redeem-code", async (req, res) => {
+    try {
+        const { code, ip, hardwareId } = req.body;
+        
+        if (!code || !ip || !hardwareId) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+        
+        // Load codes from Pastefy
+        const codesData = await readPasteContent(REDEEM_CODES_PASTE_ID);
+        if (!codesData.ok) {
+            return res.status(500).json({ error: "Failed to load codes" });
+        }
+        
+        let codes = [];
+        try {
+            codes = JSON.parse(codesData.content || "[]");
+            if (!Array.isArray(codes)) codes = [];
+        } catch (error) {
+            codes = [];
+        }
+        
+        // Find the code
+        const codeIndex = codes.findIndex(c => c.code.toLowerCase() === code.toLowerCase());
+        
+        if (codeIndex === -1) {
+            return res.status(404).json({ error: "Invalid code" });
+        }
+        
+        const codeData = codes[codeIndex];
+        
+        // Check expiration
+        if (codeData.expirationDate) {
+            const expiration = new Date(codeData.expirationDate);
+            const now = new Date();
+            if (now > expiration) {
+                return res.status(400).json({ error: "Code has expired" });
+            }
+        }
+        
+        // Check usage limits
+        const maxUses = codeData.maxUses === 'inf' ? Infinity : parseInt(codeData.maxUses);
+        
+        if (codeData.usedBy && codeData.usedBy.length >= maxUses) {
+            return res.status(400).json({ error: "Code has reached maximum uses" });
+        }
+        
+        // Check if already used by this IP or hardware ID
+        if (codeData.usedBy) {
+            const alreadyUsedByIP = codeData.usedBy.some(u => u.ip === ip);
+            const alreadyUsedByHardware = codeData.usedBy.some(u => u.hardwareId === hardwareId);
+            
+            if (alreadyUsedByIP || alreadyUsedByHardware) {
+                return res.status(400).json({ error: "This code can only be used once per device/IP" });
+            }
+        }
+        
+        // Initialize usedBy array if it doesn't exist
+        if (!codeData.usedBy) {
+            codeData.usedBy = [];
+        }
+        
+        // Add this usage
+        codeData.usedBy.push({
+            ip: ip,
+            hardwareId: hardwareId,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Save updated codes
+        codes[codeIndex] = codeData;
+        const writeRes = await writePasteContent(REDEEM_CODES_PASTE_ID, JSON.stringify(codes, null, 2));
+        
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: "Failed to update code usage" });
+        }
+        
+        res.json({
+            success: true,
+            message: "Code redeemed successfully!",
+            discount: codeData.discount || null
+        });
+
+    } catch (error) {
+        console.error("Redeem code error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+

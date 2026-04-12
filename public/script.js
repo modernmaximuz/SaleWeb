@@ -667,3 +667,180 @@ window.isLoggedIn = async function () {
     const user = await res.json();
     return !!user;
 };
+
+// ===== REDEEM CODE POPUP FUNCTIONS =====
+let userIP = 'Loading...';
+let hardwareId = '';
+
+// Generate a hardware ID based on browser fingerprint
+async function generateHardwareId() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const txt = 'hardware-id';
+    ctx.textBaseline = "top";
+    ctx.font = "14px 'Arial'";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(125,1,62,20);
+    ctx.fillStyle = "#069";
+    ctx.fillText(txt, 2, 15);
+    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+    ctx.fillText(txt, 4, 17);
+
+    const canvasFingerprint = canvas.toDataURL();
+    const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const language = navigator.language;
+    const platform = navigator.platform;
+
+    const combined = `${canvasFingerprint}-${screenInfo}-${timezone}-${language}-${platform}`;
+
+    // Use Web Crypto API for browser compatibility
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(combined);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex.substring(0, 32);
+    } catch (error) {
+        // Fallback to base64 if crypto.subtle is not available
+        return btoa(combined).substring(0, 32);
+    }
+}
+
+// Get user IP address
+async function getUserIP() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        userIP = data.ip;
+        const userIPEl = document.getElementById('userIP');
+        if (userIPEl) userIPEl.textContent = userIP;
+    } catch (error) {
+        console.error('Failed to get IP:', error);
+        userIP = 'Unknown';
+        const userIPEl = document.getElementById('userIP');
+        if (userIPEl) userIPEl.textContent = userIP;
+    }
+}
+
+// Open redeem popup
+async function openRedeemPopup() {
+    const popup = document.getElementById('redeemPopup');
+    if (popup) {
+        popup.classList.remove('hidden');
+        getUserIP();
+        hardwareId = await generateHardwareId();
+    }
+}
+
+// Close redeem popup
+function closeRedeemPopup() {
+    const popup = document.getElementById('redeemPopup');
+    if (popup) {
+        popup.classList.add('hidden');
+        const codeInput = document.getElementById('redeemCodeInput');
+        const messageEl = document.getElementById('redeemMessage');
+        if (codeInput) codeInput.value = '';
+        if (messageEl) {
+            messageEl.className = 'redeem-message';
+            messageEl.textContent = '';
+        }
+    }
+}
+
+// Redeem code
+async function redeemCode() {
+    const codeInput = document.getElementById('redeemCodeInput');
+    const redeemBtn = document.getElementById('redeemBtn');
+    const messageEl = document.getElementById('redeemMessage');
+
+    if (!codeInput) return;
+
+    const code = codeInput.value.trim();
+
+    if (!code) {
+        if (messageEl) {
+            messageEl.textContent = 'Please enter a code';
+            messageEl.className = 'redeem-message error';
+        }
+        return;
+    }
+
+    if (redeemBtn) redeemBtn.disabled = true;
+    if (messageEl) {
+        messageEl.textContent = 'Validating code...';
+        messageEl.className = 'redeem-message';
+    }
+
+    try {
+        const headers = {};
+
+        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+            const token = await firebase.auth().currentUser.getIdToken();
+            headers.Authorization = `Bearer ${token}`;
+        }
+
+        const response = await fetch('/redeem-code', {
+            method: 'POST',
+            headers: {
+                ...headers,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code,
+                ip: userIP,
+                hardwareId: hardwareId
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            if (messageEl) {
+                messageEl.textContent = result.message || 'Code redeemed successfully!';
+                messageEl.className = 'redeem-message success';
+            }
+            if (codeInput) codeInput.value = '';
+
+            // Close popup after 2 seconds on success
+            setTimeout(() => {
+                closeRedeemPopup();
+            }, 2000);
+        } else {
+            if (messageEl) {
+                messageEl.textContent = result.error || 'Failed to redeem code';
+                messageEl.className = 'redeem-message error';
+            }
+        }
+    } catch (error) {
+        console.error('Redeem error:', error);
+        if (messageEl) {
+            messageEl.textContent = 'An error occurred. Please try again.';
+            messageEl.className = 'redeem-message error';
+        }
+    } finally {
+        if (redeemBtn) redeemBtn.disabled = false;
+    }
+}
+
+// Make functions globally accessible
+window.openRedeemPopup = openRedeemPopup;
+window.closeRedeemPopup = closeRedeemPopup;
+window.redeemCode = redeemCode;
+
+// Close popup on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeRedeemPopup();
+    }
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (e) => {
+    const popup = document.getElementById('redeemPopup');
+    if (popup && e.target.id === 'redeemPopup') {
+        closeRedeemPopup();
+    }
+});

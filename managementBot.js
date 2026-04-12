@@ -445,33 +445,128 @@ async function handleNickname(interaction) {
             ephemeral: true
         });
     }
-    
+
     const user = interaction.options.getUser('user');
     const nickname = interaction.options.getString('nickname');
-    
+
     if (!user) {
         return interaction.reply({
             content: "❌ Please specify a user to change nickname!",
             ephemeral: true
         });
     }
-    
+
     const guild = interaction.guild;
     const member = await guild.members.fetch(user.id);
-    
+
     if (!member) {
         return interaction.reply({
             content: "❌ User not found in this server!",
             ephemeral: true
         });
     }
-    
+
     await member.setNickname(nickname);
-    
+
     return interaction.reply({
         content: `✅ **${user.username}**'s nickname changed to **${nickname}**`,
         ephemeral: true
     });
+}
+
+async function handleCreateCode(interaction) {
+    if (!hasAdminRole(interaction.member)) {
+        return interaction.reply({
+            content: "❌ You don't have permission to use this command!",
+            ephemeral: true
+        });
+    }
+
+    const code = interaction.options.getString('code');
+    const expirationDate = interaction.options.getString('expirationdate');
+    const maxUses = interaction.options.getString('howmanyusercanuse');
+
+    if (!code) {
+        return interaction.reply({
+            content: "❌ Please specify a code!",
+            ephemeral: true
+        });
+    }
+
+    try {
+        // Load existing codes from Pastefy
+        const REDEEM_CODES_PASTE_ID = "mRHpxq8D";
+        const response = await fetch(`${BASE}/paste/${REDEEM_CODES_PASTE_ID}`, {
+            headers: { Authorization: `Bearer ${API_KEY}` }
+        });
+
+        let codes = [];
+        if (response.ok) {
+            const data = await response.json();
+            try {
+                codes = JSON.parse(data.content || "[]");
+                if (!Array.isArray(codes)) codes = [];
+            } catch (error) {
+                codes = [];
+            }
+        }
+
+        // Check if code already exists
+        const existingCode = codes.find(c => c.code.toLowerCase() === code.toLowerCase());
+        if (existingCode) {
+            return interaction.reply({
+                content: "❌ This code already exists!",
+                ephemeral: true
+            });
+        }
+
+        // Create new code object
+        const newCode = {
+            code: code,
+            expirationDate: expirationDate || null,
+            maxUses: maxUses || 1,
+            usedBy: [],
+            createdAt: new Date().toISOString(),
+            createdBy: interaction.user.id
+        };
+
+        // Add to codes array
+        codes.push(newCode);
+
+        // Save to Pastefy
+        const writeResponse = await fetch(`${BASE}/paste/${REDEEM_CODES_PASTE_ID}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                content: JSON.stringify(codes, null, 2)
+            })
+        });
+
+        if (!writeResponse.ok) {
+            return interaction.reply({
+                content: "❌ Failed to save code to Pastefy!",
+                ephemeral: true
+            });
+        }
+
+        const expirationText = expirationDate ? `Expires: ${expirationDate}` : 'No expiration';
+        const usesText = maxUses === 'inf' ? 'Unlimited uses' : `Max uses: ${maxUses}`;
+
+        return interaction.reply({
+            content: `✅ **Code created successfully!**\n\n**Code:** \`${code}\`\n${expirationText}\n${usesText}`,
+            ephemeral: true
+        });
+
+    } catch (error) {
+        console.error('Error creating code:', error);
+        return interaction.reply({
+            content: "❌ Failed to create code. Please try again.",
+            ephemeral: true
+        });
+    }
 }
 
 // Register slash commands
@@ -566,6 +661,30 @@ async function registerCommands() {
                     required: true
                 }
             ]
+        },
+        {
+            name: 'createcode',
+            description: 'Create a redeem code for the website',
+            options: [
+                {
+                    name: 'code',
+                    description: 'The code string',
+                    type: 3, // STRING
+                    required: true
+                },
+                {
+                    name: 'expirationdate',
+                    description: 'Expiration date (e.g., 04/13/2026)',
+                    type: 3, // STRING
+                    required: false
+                },
+                {
+                    name: 'howmanyusercanuse',
+                    description: 'Max uses (1, 3, 5, inf)',
+                    type: 3, // STRING
+                    required: false
+                }
+            ]
         }
     ];
     
@@ -616,7 +735,7 @@ process.on('uncaughtException', (error) => {
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
-    
+
     switch (interaction.commandName) {
         case 'mute':
             await handleMute(interaction);
@@ -632,6 +751,9 @@ client.on('interactionCreate', async (interaction) => {
             break;
         case 'nickname':
             await handleNickname(interaction);
+            break;
+        case 'createcode':
+            await handleCreateCode(interaction);
             break;
     }
 });

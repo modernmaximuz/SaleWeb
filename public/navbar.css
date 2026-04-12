@@ -276,6 +276,42 @@ body.video-bg::before {
     box-shadow: 0 8px 25px rgba(76, 141, 255, 0.3);
 }
 
+/* REDEEM CODE BUTTON */
+#redeemCodeBtn {
+    background: linear-gradient(135deg, rgba(26, 0, 0, 0.8) 0%, rgba(15, 0, 0, 0.7) 100%);
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 20px;
+}
+
+#redeemCodeBtn:hover {
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(255, 69, 0, 0.4) 100%);
+    border-color: rgba(255, 69, 0, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 0, 0, 0.3);
+    color: #ff4500;
+}
+
+#redeemCodeBtn i {
+    filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.3));
+    transition: all 0.3s ease;
+}
+
+#redeemCodeBtn:hover i {
+    filter: drop-shadow(0 0 12px rgba(255, 69, 0, 0.6));
+    transform: scale(1.1);
+}
+
 /* PROFILE BOX */
 #profileBox {
     display: flex;

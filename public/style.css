@@ -772,3 +772,202 @@ margin-bottom: 14px;
         padding: 16px;
     }
 }
+
+/* Redeem Code Popup */
+.redeem-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.redeem-popup.hidden {
+    display: none;
+}
+
+.redeem-popup-content {
+    background: linear-gradient(135deg, rgba(26, 0, 0, 0.95) 0%, rgba(15, 0, 0, 0.98) 100%);
+    border: 2px solid rgba(139, 0, 0, 0.6);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.redeem-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(139, 0, 0, 0.3);
+}
+
+.redeem-popup-header h2 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.redeem-popup-header h2 i {
+    color: #FF4500;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: #b0b0b0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+}
+
+.close-btn:hover {
+    color: #FF4500;
+    transform: rotate(90deg);
+}
+
+.redeem-popup-body {
+    color: #ffffff;
+}
+
+.warning-message {
+    background: rgba(255, 69, 0, 0.1);
+    border: 1px solid rgba(255, 69, 0, 0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.warning-message i {
+    color: #FF4500;
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+}
+
+.warning-message p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #ffcccb;
+    line-height: 1.5;
+}
+
+.warning-message span {
+    color: #FF4500;
+    font-weight: 600;
+}
+
+.redeem-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.redeem-form input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1rem;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.redeem-form input::placeholder {
+    color: #666;
+}
+
+.redeem-form input:focus {
+    border-color: #FF4500;
+    box-shadow: 0 0 15px rgba(255, 69, 0, 0.2);
+}
+
+.redeem-form button {
+    background: linear-gradient(135deg, #FF4500 0%, #8B0000 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 1rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+}
+
+.redeem-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 69, 0, 0.5);
+}
+
+.redeem-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.redeem-message {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.redeem-message.success {
+    display: block;
+    background: rgba(0, 128, 0, 0.2);
+    border: 1px solid rgba(0, 128, 0, 0.4);
+    color: #90EE90;
+}
+
+.redeem-message.error {
+    display: block;
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid rgba(255, 0, 0, 0.4);
+    color: #ff6b6b;
+}
+
+/* Responsive design for popup */
+@media (max-width: 768px) {
+    .redeem-popup-content {
+        max-width: 90%;
+        padding: 1.5rem;
+    }
+
+    .redeem-popup-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .warning-message p {
+        font-size: 0.85rem;
+    }
+}

@@ -35,6 +35,9 @@
     <!-- RIGHT SECTION -->
     <div id="headerRight">
         <button id="loginToggle" onclick="if(typeof window.openLoginModal === 'function') window.openLoginModal()">Login</button>
+        <button id="redeemCodeBtn" onclick="openRedeemPopup()">
+            <i class="fas fa-gift"></i>
+        </button>
         <div id="profileBox" class="hidden">
             <div id="profileMain">
                 <div class="avatar"></div>
@@ -44,7 +47,7 @@
                 <button id="logoutBtn">Logout</button>
             </div>
         </div>
-        
+
         <div id="cartIcon">
             <i class="fas fa-shopping-cart" id="cartImg"></i>
             <span id="cartCount">0</span>
@@ -106,7 +109,7 @@
         <div class="menu-section">
             <h4>Navigation</h4>
             <a href="/" onclick="toggleSidebar()">Home</a>
-            <a href="/redeem" onclick="toggleSidebar()">Redeem Code</a>
+            <a href="#" onclick="openRedeemPopup(); toggleSidebar()">Redeem Code</a>
             <a href="#" onclick="openProfileConfig(); toggleSidebar()">Configure Profile</a>
             <a href="/events" onclick="toggleSidebar()">Events</a>
             <a href="/credits" onclick="toggleSidebar()">Credits</a>
@@ -171,6 +174,29 @@
                 <div class="stat-value" id="totalRestocks">0</div>
                 <div class="stat-description">Overall restocks of all items</div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Redeem Code Popup -->
+<div id="redeemPopup" class="redeem-popup hidden">
+    <div class="redeem-popup-content">
+        <div class="redeem-popup-header">
+            <h2><i class="fas fa-gift"></i> Redeem Code</h2>
+            <button class="close-btn" onclick="closeRedeemPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="redeem-popup-body">
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>This code can only be used once by your IP: <span id="userIP">Loading...</span></p>
+            </div>
+            <div class="redeem-form">
+                <input type="text" id="redeemCodeInput" placeholder="Enter your code" maxlength="50">
+                <button id="redeemBtn" onclick="redeemCode()">Redeem</button>
+            </div>
+            <div id="redeemMessage" class="redeem-message"></div>
         </div>
     </div>
 </div>
