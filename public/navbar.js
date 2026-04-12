@@ -73,12 +73,9 @@ window.addEventListener("load", () => {
     const shopMenu = document.getElementById("shopMenu");
     const topbar = document.getElementById("topbar");
 
-    shopToggle?.addEventListener("click", async (e) => {
+    shopToggle?.addEventListener("click", (e) => {
         e.stopPropagation();
-        const ok = await window.requireLogin(e, null, shopToggle);
-        if (ok) {
-            shopMenu.style.display = shopMenu.style.display === "block" ? "none" : "block";
-        }
+        shopMenu.style.display = shopMenu.style.display === "block" ? "none" : "block";
     });
 
     document.addEventListener("click", () => {
