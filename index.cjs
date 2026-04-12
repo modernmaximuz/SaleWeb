@@ -1273,8 +1273,11 @@ app.post('/chat/message', async (req, res) => {
 
         messages.push(message);
 
-        // Save messages
-        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify(messages, null, 2));
+        // Save messages with proper structure
+        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify({
+            messages: messages,
+            lastReset: chatData.lastReset || getNextResetTime().getTime()
+        }, null, 2));
         if (!writeRes.ok) {
             return res.status(500).json({ error: 'Failed to save message' });
         }
@@ -1303,7 +1306,8 @@ app.delete('/chat/message/:messageId', verifyToken, async (req, res) => {
             return res.status(500).json({ error: 'Failed to load chat messages' });
         }
 
-        const messages = parseOrdersContent(parsed.content);
+        const chatData = JSON.parse(parsed.content || '{}');
+        const messages = chatData.messages || [];
         const messageIndex = messages.findIndex(m => m.id === messageId);
 
         if (messageIndex === -1) {
@@ -1313,8 +1317,11 @@ app.delete('/chat/message/:messageId', verifyToken, async (req, res) => {
         // Remove message
         messages.splice(messageIndex, 1);
 
-        // Save messages
-        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify(messages, null, 2));
+        // Save messages with proper structure
+        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify({
+            messages: messages,
+            lastReset: chatData.lastReset || getNextResetTime().getTime()
+        }, null, 2));
         if (!writeRes.ok) {
             return res.status(500).json({ error: 'Failed to save messages' });
         }
@@ -1379,13 +1386,17 @@ app.post('/chat/delete-user-messages', verifyToken, async (req, res) => {
             return res.status(500).json({ error: 'Failed to load chat messages' });
         }
 
-        const messages = parseOrdersContent(parsed.content);
+        const chatData = JSON.parse(parsed.content || '{}');
+        const messages = chatData.messages || [];
         
         // Filter out user's messages
         const filteredMessages = messages.filter(m => m.userId !== userId);
 
-        // Save messages
-        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify(filteredMessages, null, 2));
+        // Save messages with proper structure
+        const writeRes = await writePasteContent(CHAT_PASTE_ID, JSON.stringify({
+            messages: filteredMessages,
+            lastReset: chatData.lastReset || getNextResetTime().getTime()
+        }, null, 2));
         if (!writeRes.ok) {
             return res.status(500).json({ error: 'Failed to save messages' });
         }
@@ -1444,12 +1455,13 @@ app.post('/chat/webhook', async (req, res) => {
         const { text, userId, username, avatar, replyTo } = req.body;
         
         if (!text || !username) {
+            console.error('Missing required fields:', { text: !!text, username: !!username });
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         const webhookUrl = process.env.SUPPORT_WEBHOOK_URL;
         if (!webhookUrl) {
-            console.error('SUPPORT_WEBHOOK_URL not configured');
+            console.error('SUPPORT_WEBHOOK_URL not configured in environment variables');
             return res.status(500).json({ error: 'Webhook not configured' });
         }
 
@@ -1462,25 +1474,43 @@ app.post('/chat/webhook', async (req, res) => {
             content = text;
         }
 
+        // Validate content length (Discord limit is 2000 characters)
+        if (content.length > 2000) {
+            content = content.substring(0, 1997) + '...';
+        }
+
+        console.log('Sending to Discord webhook:', { 
+            username, 
+            hasReply: !!replyTo, 
+            contentLength: content.length,
+            webhookUrl: webhookUrl.substring(0, 30) + '...'
+        });
+
+        const payload = {
+            content: content,
+            username: username,
+            avatar_url: avatar || 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true'
+        };
+
+        console.log('Webhook payload:', JSON.stringify(payload, null, 2));
+
         const response = await fetch(webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                content: content,
-                username: username,
-                avatar_url: avatar || 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true'
-            })
+            body: JSON.stringify(payload)
         });
 
         if (response.ok) {
+            console.log('Successfully sent to Discord webhook');
             res.json({ success: true });
         } else {
-            console.error('Failed to send to Discord:', response.status);
-            res.status(500).json({ error: 'Failed to send to Discord' });
+            const errorText = await response.text();
+            console.error('Failed to send to Discord:', response.status, errorText);
+            res.status(500).json({ error: 'Failed to send to Discord', details: errorText });
         }
     } catch (error) {
         console.error('Webhook error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 

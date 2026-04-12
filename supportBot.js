@@ -60,19 +60,37 @@ async function sendToDiscord(messageData) {
             content = messageData.text;
         }
 
-        await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                content: content,
-                username: messageData.username,
-                avatar_url: messageData.avatar
-            })
+        // Validate content length (Discord limit is 2000 characters)
+        if (content.length > 2000) {
+            content = content.substring(0, 1997) + '...';
+        }
+
+        console.log('Support bot sending to webhook:', { 
+            username: messageData.username, 
+            hasReply: !!messageData.replyTo,
+            contentLength: content.length 
         });
 
-        console.log('Message sent to Discord:', messageData.username);
+        const payload = {
+            content: content,
+            username: messageData.username,
+            avatar_url: messageData.avatar
+        };
+
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            console.log('Message sent to Discord:', messageData.username);
+        } else {
+            const errorText = await response.text();
+            console.error('Failed to send to Discord from support bot:', response.status, errorText);
+        }
     } catch (error) {
-        console.error('Error sending to Discord:', error);
+        console.error('Error sending to Discord from support bot:', error);
     }
 }
 
