@@ -426,7 +426,6 @@ body.video-bg::before {
     gap: 2px;
     padding: 0 10px;
     max-width: 100%;
-    overflow: hidden;
     width: 100%;
     flex-wrap: nowrap;
 }
@@ -593,28 +592,24 @@ body.video-bg::before {
 }
 
 .nav-dropdown-menu {
-    opacity: 0;
-    visibility: hidden;
+    display: none;
     position: absolute;
     top: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%);
     background: linear-gradient(180deg, rgba(26, 0, 0, 0.95) 0%, rgba(15, 0, 0, 0.9) 100%);
     border: 1px solid rgba(139, 0, 0, 0.5);
     border-radius: 8px;
     padding: 4px 0;
     min-width: 120px;
-    z-index: 2000;
+    z-index: 9999;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
     margin-top: 2px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(8px);
 }
 
 .nav-dropdown.open .nav-dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    display: block;
 }
 
 .nav-dropdown-menu a {

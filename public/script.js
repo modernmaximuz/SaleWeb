@@ -424,29 +424,30 @@ document.addEventListener('click', function(e) {
     // New compact navigation dropdown toggle
     if (e.target.id === 'shopNavToggle' || e.target.closest('#shopNavToggle')) {
         e.preventDefault();
+        e.stopPropagation();
         const dropdown = document.getElementById('shopNavMenu');
         const dropdownContainer = e.target.closest('.nav-dropdown');
-        
+
         // Close all other dropdowns
         document.querySelectorAll('.nav-dropdown').forEach(d => {
             if (d !== dropdownContainer) {
                 d.classList.remove('open');
             }
         });
-        
+
         // Toggle current dropdown
         if (dropdownContainer) {
             dropdownContainer.classList.toggle('open');
         }
     }
-    
+
     // Close dropdowns when clicking outside
     if (!e.target.closest('.nav-dropdown')) {
         document.querySelectorAll('.nav-dropdown').forEach(dropdown => {
             dropdown.classList.remove('open');
         });
     }
-    
+
     // Legacy shop dropdown toggle (keep for compatibility)
     if (e.target.id === 'shopToggle' || e.target.closest('#shopToggle')) {
         e.preventDefault();
@@ -455,11 +456,26 @@ document.addEventListener('click', function(e) {
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
     }
-    
+
     // Close legacy dropdowns when clicking outside
     if (!e.target.closest('.dropdown')) {
         document.querySelectorAll('.dropdownContent').forEach(dropdown => {
             dropdown.style.display = 'none';
+        });
+    }
+});
+
+// Dedicated dropdown handler for reliability
+document.addEventListener('DOMContentLoaded', function() {
+    const shopToggle = document.getElementById('shopNavToggle');
+    if (shopToggle) {
+        shopToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropdownContainer = this.closest('.nav-dropdown');
+            if (dropdownContainer) {
+                dropdownContainer.classList.toggle('open');
+            }
         });
     }
 });
