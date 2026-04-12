@@ -354,16 +354,6 @@ body.video-bg::before {
     margin-top: -1px;
 }
 
-#secondaryHeader::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #FF4500, transparent);
-    animation: hadesSlideLine 3s ease-in-out infinite;
-}
 
 @keyframes hadesSlideLine {
     0%, 100% { transform: translateX(-100%); }
