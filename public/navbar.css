@@ -351,7 +351,7 @@ body.video-bg::before {
         inset 0 1px 0 rgba(255, 69, 0, 0.1);
     backdrop-filter: blur(5px);
     position: relative;
-    margin-top: -1px;
+    margin-top: -2px;
 }
 
 
