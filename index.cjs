@@ -204,6 +204,112 @@ client.once("ready", () => {
     }, 5000); // Check every 5 seconds
 });
 
+// Support chat message handling
+const SUPPORT_CHANNEL_ID = process.env.SUPPORT_CHANNEL_ID;
+const messageReferences = new Map();
+
+// Handle Discord messages for support chat
+client.on('messageCreate', async (message) => {
+    // Ignore bot messages
+    if (message.author.bot) return;
+    
+    // Only process messages in the support channel
+    if (message.channelId !== SUPPORT_CHANNEL_ID) return;
+
+    try {
+        // Read current chat messages
+        const parsed = await readPasteContent(CHAT_PASTE_ID);
+        if (!parsed.ok) {
+            console.error('Failed to read chat messages for Discord sync');
+            return;
+        }
+
+        const chatData = JSON.parse(parsed.content || '{}');
+        const messages = chatData.messages || [];
+
+        // Check if this is a reply to a message
+        if (message.reference && message.reference.messageId) {
+            try {
+                const referencedMessage = await message.channel.messages.fetch(message.reference.messageId);
+                
+                // Check if the referenced message was forwarded from the website
+                if (messageReferences.has(referencedMessage.id)) {
+                    const originalMessage = messageReferences.get(referencedMessage.id);
+                    
+                    // Format as reply with ping
+                    const replyData = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        userId: originalMessage.userId,
+                        username: message.author.username,
+                        avatar: message.author.avatar,
+                        text: message.content,
+                        replyTo: {
+                            username: originalMessage.username,
+                            text: originalMessage.text
+                        },
+                        timestamp: Date.now(),
+                        isAdmin: message.member.roles.cache.some(role => 
+                            ['1491763556209786950', '1492197702807851049'].includes(role.id)
+                        )
+                    };
+
+                    messages.push(replyData);
+                    console.log('Discord reply forwarded to website:', message.author.username);
+
+                    // Save to pastefy
+                    await writePasteContent(CHAT_PASTE_ID, JSON.stringify({
+                        messages: messages,
+                        lastReset: chatData.lastReset || getNextResetTime().getTime()
+                    }, null, 2));
+
+                    // Broadcast to connected clients
+                    broadcastToClients({
+                        type: 'new_message',
+                        message: replyData
+                    });
+
+                    return;
+                }
+            } catch (error) {
+                console.error('Error handling Discord reply:', error);
+            }
+        }
+
+        // Regular message - forward to website
+        const newMessage = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            userId: message.author.id,
+            username: message.author.username,
+            avatar: message.author.avatar,
+            text: message.content,
+            timestamp: Date.now(),
+            isAdmin: message.member.roles.cache.some(role => 
+                ['1491763556209786950', '1492197702807851049'].includes(role.id)
+            )
+        };
+
+        // Store message reference for replies
+        messageReferences.set(message.id, newMessage);
+
+        messages.push(newMessage);
+        console.log('Discord message forwarded to website:', message.author.username);
+
+        // Save to pastefy
+        await writePasteContent(CHAT_PASTE_ID, JSON.stringify({
+            messages: messages,
+            lastReset: chatData.lastReset || getNextResetTime().getTime()
+        }, null, 2));
+
+        // Broadcast to connected clients
+        broadcastToClients({
+            type: 'new_message',
+            message: newMessage
+        });
+    } catch (error) {
+        console.error('Error forwarding Discord message to website:', error);
+    }
+});
+
 client.login(process.env.DISCORD_BOT_TOKEN);
 
 const fetch = (...args) =>
