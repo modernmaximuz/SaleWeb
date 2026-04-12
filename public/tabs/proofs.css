@@ -3,7 +3,7 @@
     margin-top: 100px;
     padding: 20px;
     min-height: calc(100vh - 100px);
-    background: #000000;
+    background: transparent;
 }
 
 .container {

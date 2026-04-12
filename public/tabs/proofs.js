@@ -5,11 +5,21 @@ let isAdmin = false;
 
 // Check if user is admin
 async function checkAdminStatus() {
+    console.log('Checking admin status...');
+    
     // Check for Firebase admin user first
     try {
-        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
-            console.log('Firebase user detected:', firebase.auth().currentUser.email);
-            return true; // Firebase users are admins
+        if (window.firebase && firebase.auth) {
+            const user = firebase.auth().currentUser;
+            console.log('Firebase auth available, current user:', user);
+            if (user) {
+                console.log('Firebase user detected:', user.email);
+                return true; // Firebase users are admins
+            } else {
+                console.log('No Firebase user currently logged in');
+            }
+        } else {
+            console.log('Firebase auth not available');
         }
     } catch (error) {
         console.error("Firebase admin check failed:", error);
@@ -22,6 +32,8 @@ async function checkAdminStatus() {
             const user = await res.json();
             console.log('Discord user detected, admin status:', user.isAdmin);
             return !!user.isAdmin;
+        } else {
+            console.log('Discord user check failed with status:', res.status);
         }
     } catch (error) {
         console.error("Failed to check Discord admin status:", error);
@@ -167,14 +179,20 @@ function handleImagePreview(e) {
 }
 
 async function uploadProof() {
+    console.log('Upload proof called, isAdmin:', isAdmin);
+    
     // Check admin permissions
     if (!isAdmin) {
+        console.error('Upload failed: Not an admin');
         showError('Only administrators can upload proofs');
         return;
     }
 
     const transactionId = document.getElementById('transactionId').value.trim();
     const imageFile = document.getElementById('proofImage').files[0];
+    
+    console.log('Transaction ID:', transactionId);
+    console.log('Image file:', imageFile);
     
     if (!transactionId) {
         showError('Please enter a transaction ID');
@@ -197,7 +215,9 @@ async function uploadProof() {
 
     try {
         // Upload image to imgbb
+        console.log('Starting image upload to imgbb...');
         const imageUrl = await uploadToImgbb(imageFile);
+        console.log('Image uploaded successfully, URL:', imageUrl);
         
         // Create proof entry with improved data
         const proof = {
@@ -218,6 +238,7 @@ async function uploadProof() {
             })
         };
         
+        console.log('Saving proof:', proof);
         // Save proof
         await saveProof(proof);
         
@@ -245,7 +266,9 @@ async function uploadProof() {
 async function uploadToImgbb(file) {
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('key', 'YOUR_IMGBB_API_KEY_HERE'); // Replace with your actual imgbb API key
+    formData.append('key', 'bdcb671a7075bed44f862ba62f369966');
+    
+    console.log('Uploading to imgbb...');
     
     try {
         const response = await fetch('https://api.imgbb.com/1/upload', {
@@ -253,9 +276,21 @@ async function uploadToImgbb(file) {
             body: formData
         });
         
-        if (!response.ok) throw new Error('Failed to upload image');
+        console.log('Imgbb response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Imgbb error response:', errorText);
+            throw new Error('Failed to upload image: ' + errorText);
+        }
         
         const result = await response.json();
+        console.log('Imgbb result:', result);
+        
+        if (!result.success) {
+            throw new Error('Imgbb upload failed: ' + (result.error?.message || 'Unknown error'));
+        }
+        
         return result.data.url;
     } catch (error) {
         console.error('Error uploading to imgbb:', error);
