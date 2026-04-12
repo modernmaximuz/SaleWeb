@@ -446,6 +446,23 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// Ensure video loops properly
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.querySelector('.video-background video');
+    if (video) {
+        // Force loop behavior
+        video.addEventListener('ended', function() {
+            video.currentTime = 0;
+            video.play();
+        });
+        
+        // Ensure video plays
+        video.play().catch(function(error) {
+            console.log('Video autoplay failed:', error);
+        });
+    }
+});
+
 // ==================== CUSTOM POPUP SYSTEM ====================
 window.showCustomPopup = function(title, message, buttons = []) {
     // Remove existing popups

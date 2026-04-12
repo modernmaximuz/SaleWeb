@@ -18,6 +18,51 @@ body {
     overflow-x: hidden;
 }
 
+/* ==================== VIDEO BACKGROUND ==================== */
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    opacity: 0.3;
+}
+
+/* Alternative: Use video background instead of GIF */
+body.video-bg {
+    background: none;
+}
+
+body.video-bg::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 69, 0, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(184, 134, 11, 0.02) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(25, 0, 25, 0.95) 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+
 /* Mobile-specific background fixes */
 @media (max-width: 768px) {
     body {
@@ -296,14 +341,13 @@ body {
 #secondaryHeader {
     background: linear-gradient(180deg, rgba(10, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.95) 50%, rgba(10, 0, 0, 0.98) 100%);
     border-bottom: 1px solid #8B0000;
-    padding: 8px 0;
+    padding: 6px 0;
     position: sticky;
     top: 60px;
     z-index: 999;
     box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.8),
-        0 0 40px rgba(139, 0, 0, 0.2),
-        0 0 60px rgba(255, 69, 0, 0.1),
+        0 2px 10px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(139, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 69, 0, 0.1);
     backdrop-filter: blur(5px);
     position: relative;
@@ -337,7 +381,7 @@ body {
     background: linear-gradient(135deg, #1a0000 0%, #0d0000 100%);
     border: 1px solid #8B0000;
     color: #ffffff;
-    padding: 12px 24px;
+    padding: 8px 20px;
     border-radius: 20px;
     cursor: pointer;
     font-weight: 600;
