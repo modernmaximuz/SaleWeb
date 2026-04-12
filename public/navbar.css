@@ -227,14 +227,15 @@ body.video-bg::before {
 }
 
 #cartImg {
-    width: 24px;
-    height: 24px;
-    filter: brightness(0) invert(1) sepia(1) saturate(2) hue-rotate(-50deg);
+    font-size: 24px;
+    color: #ffffff;
     transition: all 0.3s ease;
 }
 
 #cartIcon:hover #cartImg {
-    filter: brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(-50deg) drop-shadow(0 0 8px rgba(255, 69, 0, 0.6));
+    color: #ff4500;
+    filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.6));
+    transform: scale(1.1);
 }
 
 #cartCount {
@@ -424,7 +425,7 @@ body.video-bg::before {
     gap: 2px;
     padding: 0 10px;
     max-width: 100%;
-    overflow-x: auto;
+    overflow-x: hidden;
 }
 
 .nav-item {
@@ -772,7 +773,6 @@ body.video-bg::before {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
 }
 
 .overlay.active {
