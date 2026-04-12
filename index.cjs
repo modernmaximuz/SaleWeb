@@ -108,6 +108,15 @@ async function updateMemberCount() {
 client.once("ready", () => {
     console.log(`${client.user.tag} is online!`);
     
+    // Set bot presence to online
+    client.user.setPresence({
+        status: 'online',
+        activities: [{
+            name: 'Support Chat',
+            type: 'WATCHING'
+        }]
+    });
+    
     // Update member count from channel name immediately
     updateMemberCount();
     
@@ -202,18 +211,6 @@ client.once("ready", () => {
             isProcessing = false;
         }
     }, 5000); // Check every 5 seconds
-});
-
-// Set bot presence to online when ready
-client.once('ready', () => {
-    console.log('Discord bot is ready!');
-    client.user.setPresence({
-        status: 'online',
-        activities: [{
-            name: 'Support Chat',
-            type: 'WATCHING'
-        }]
-    });
 });
 
 // Support chat message handling
