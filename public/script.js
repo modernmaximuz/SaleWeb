@@ -207,7 +207,12 @@ document.addEventListener("click", () => {
 // ------------------ PROFILE CONFIGURATION ------------------
 function openProfileConfigModal() {
     loadProfileData();
-    document.getElementById("profileConfigModal").classList.remove("hidden");
+    const modal = document.getElementById("profileConfigModal");
+    if (modal) {
+        modal.classList.remove("hidden");
+        modal.style.display = "block";
+        modal.style.visibility = "visible";
+    }
 }
 
 function closeProfileConfigModal() {

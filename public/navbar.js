@@ -24,7 +24,7 @@ window.requireLogin = async function(e, goTo, btn) {
         }
 
         if (!ok) {
-            // Shake the button
+            // Shake button
             if (btn) {
                 btn.classList.add("shake");
                 setTimeout(() => btn.classList.remove("shake"), 400);
@@ -59,11 +59,8 @@ window.requireLogin = async function(e, goTo, btn) {
             return false;
         }
 
-        // For Firebase authenticated users going to protected tabs, we need to handle the token
-        if (goTo && hasFirebaseAuth && (goTo.includes('/tabs/') || goTo.includes('/shop/') || goTo === '/support')) {
-            // Navigate directly - the tab will check Firebase auth state on load
-            window.location.href = goTo;
-        } else if (goTo) {
+        // Always navigate if authenticated and goTo is provided
+        if (goTo) {
             window.location.href = goTo;
         }
         return true;
