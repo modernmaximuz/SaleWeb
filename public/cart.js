@@ -13,7 +13,7 @@ function applyCartAccessByLoginType() {
     cartDisabledForEmailLogin = false; // Always enable cart
 
     if (icon) icon.style.display = "flex";
-    if (popupEl) popupEl.classList.remove("hidden");
+    // Keep cart popup hidden by default - don't remove hidden class
 }
 
 function getCart() {
