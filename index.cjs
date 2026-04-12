@@ -1479,6 +1479,12 @@ app.post('/chat/webhook', async (req, res) => {
             content = content.substring(0, 1997) + '...';
         }
 
+        // Construct proper avatar URL
+        let avatarUrl = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+        if (avatar && avatar !== 'default') {
+            avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png`;
+        }
+
         console.log('Sending to Discord webhook:', { 
             username, 
             hasReply: !!replyTo, 
@@ -1489,7 +1495,7 @@ app.post('/chat/webhook', async (req, res) => {
         const payload = {
             content: content,
             username: username,
-            avatar_url: avatar || 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true'
+            avatar_url: avatarUrl
         };
 
         console.log('Webhook payload:', JSON.stringify(payload, null, 2));

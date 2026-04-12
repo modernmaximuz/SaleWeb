@@ -65,6 +65,12 @@ async function sendToDiscord(messageData) {
             content = content.substring(0, 1997) + '...';
         }
 
+        // Construct proper avatar URL
+        let avatarUrl = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+        if (messageData.avatar && messageData.avatar !== 'default') {
+            avatarUrl = `https://cdn.discordapp.com/avatars/${messageData.userId}/${messageData.avatar}.png`;
+        }
+
         console.log('Support bot sending to webhook:', { 
             username: messageData.username, 
             hasReply: !!messageData.replyTo,
@@ -74,7 +80,7 @@ async function sendToDiscord(messageData) {
         const payload = {
             content: content,
             username: messageData.username,
-            avatar_url: messageData.avatar
+            avatar_url: avatarUrl
         };
 
         const response = await fetch(WEBHOOK_URL, {
