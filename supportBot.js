@@ -1,5 +1,26 @@
 const { Client, GatewayIntentBits, Message } = require("discord.js");
+const fs = require('fs');
+const path = require('path');
 const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+// Load environment variables from .env file
+function loadEnv() {
+    const envPath = path.join(__dirname, '.env');
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        envContent.split('\n').forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#')) {
+                const [key, ...valueParts] = trimmed.split('=');
+                if (key && valueParts.length > 0) {
+                    process.env[key.trim()] = valueParts.join('=').trim();
+                }
+            }
+        });
+    }
+}
+
+loadEnv();
 
 // Configuration
 const SUPPORT_BOT_TOKEN = process.env.SUPPORT_BOT_TOKEN;

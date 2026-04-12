@@ -1952,6 +1952,8 @@ app.put('/admin/profile', verifyToken, async (req, res) => {
         const adminId = decoded.uid;
         const { displayName, avatar } = req.body;
 
+        console.log('Updating admin profile:', { adminId, displayName, avatar });
+
         if (!displayName || !displayName.trim()) {
             return res.status(400).json({ error: 'Display name is required' });
         }
@@ -1965,7 +1967,9 @@ app.put('/admin/profile', verifyToken, async (req, res) => {
             updateData.photoURL = avatar.trim();
         }
 
+        console.log('Updating Firebase Auth user with:', updateData);
         await admin.auth().updateUser(adminId, updateData);
+        console.log('Firebase Auth user updated successfully');
 
         // Return the updated profile
         const profile = {
