@@ -271,70 +271,129 @@ body.video-bg::before {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
-    border: 1px solid #3a3a4a;
+    background: linear-gradient(135deg, rgba(26, 0, 0, 0.8) 0%, rgba(15, 0, 0, 0.7) 100%);
+    border: 1px solid rgba(139, 0, 0, 0.4);
     border-radius: 12px;
     padding: 8px 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+}
+
+#profileBox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.2), transparent);
+    transition: left 0.6s ease;
+    z-index: -1;
 }
 
 #profileBox:hover {
-    background: linear-gradient(135deg, #4c8dff 0%, #6fa5ff 100%);
-    border-color: #7eb0ff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(76, 141, 255, 0.3);
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(255, 69, 0, 0.4) 100%);
+    border-color: rgba(255, 69, 0, 0.6);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(139, 0, 0, 0.4);
+}
+
+#profileBox:hover::before {
+    left: 100%;
 }
 
 #profileMain {
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative;
+    z-index: 1;
 }
 
 .avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.8) 0%, rgba(255, 69, 0, 0.6) 100%);
     background-size: cover;
     background-position: center;
-    border: 2px solid #3a3a4a;
+    border: 2px solid rgba(139, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.avatar::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, rgba(255, 69, 0, 0.8) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#profileBox:hover .avatar {
+    transform: scale(1.1) rotate(5deg);
+    border-color: rgba(255, 69, 0, 0.8);
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+}
+
+#profileBox:hover .avatar::after {
+    opacity: 1;
+    transform: scale(1.2);
 }
 
 #profileName {
-    color: white;
+    color: #ffffff;
     font-weight: 600;
     font-size: 14px;
+    text-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+#profileBox:hover #profileName {
+    text-shadow: 0 0 15px rgba(255, 69, 0, 0.6);
+    transform: translateX(2px);
 }
 
 #profileDropdown {
     position: absolute;
     top: 100%;
     right: 0;
-    background: linear-gradient(180deg, #1c1c29 0%, #14141d 100%);
-    border: 1px solid #31314a;
+    background: linear-gradient(180deg, rgba(26, 0, 0, 0.9) 0%, rgba(15, 0, 0, 0.8) 100%);
+    border: 1px solid rgba(139, 0, 0, 0.5);
     border-radius: 12px;
     padding: 8px;
     margin-top: 8px;
     min-width: 150px;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
 }
 
 #profileDropdown button {
     width: 100%;
     background: transparent;
     border: none;
-    color: white;
+    color: #ffffff;
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    text-align: left;
 }
 
 #profileDropdown button:hover {
-    background: linear-gradient(135deg, #4c8dff 0%, #679fff 100%);
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(255, 69, 0, 0.3) 100%);
+    color: #ffffff;
 }
 
 /* ==================== COMPACT NAVIGATION BAR ==================== */
@@ -363,37 +422,87 @@ body.video-bg::before {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 8px 16px;
     background: transparent;
     border: none;
     color: #b0b0b0;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     min-width: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.3), transparent);
+    transition: left 0.5s ease;
+    z-index: -1;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(139, 0, 0, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.4s ease;
+    opacity: 0;
+    z-index: -1;
 }
 
 .nav-item i {
-    font-size: 11px;
+    font-size: 12px;
     opacity: 0.8;
+    transition: all 0.3s ease;
+    transform: scale(1);
 }
 
 .nav-item span {
-    font-size: 11px;
+    font-size: 13px;
+    transition: all 0.3s ease;
 }
 
 .nav-item:hover {
     background: rgba(139, 0, 0, 0.2);
     color: #ffffff;
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.2);
+}
+
+.nav-item:hover::before {
+    left: 100%;
+}
+
+.nav-item:hover::after {
+    width: 60px;
+    height: 60px;
+    opacity: 1;
 }
 
 .nav-item:hover i {
     opacity: 1;
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.5));
+}
+
+.nav-item:active {
+    transform: translateY(-1px) scale(0.98);
+    transition: all 0.1s ease;
 }
 
 /* Dropdown styles */
@@ -405,37 +514,68 @@ body.video-bg::before {
     background: transparent !important;
     border: none !important;
     color: #b0b0b0 !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
     font-weight: 500 !important;
     border-radius: 6px !important;
     cursor: pointer !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.dropdown-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.3), transparent);
+    transition: left 0.5s ease;
+    z-index: -1;
 }
 
 .dropdown-toggle:hover {
     background: rgba(139, 0, 0, 0.2) !important;
     color: #ffffff !important;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.2);
+}
+
+.dropdown-toggle:hover::before {
+    left: 100%;
 }
 
 .dropdown-toggle i:last-child {
     font-size: 9px;
-    transition: transform 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
 }
 
 .nav-dropdown.open .dropdown-toggle i:last-child {
-    transform: rotate(180deg);
+    transform: rotate(180deg) scale(1.1);
+    color: #ffffff;
+}
+
+.dropdown-toggle i {
+    transition: all 0.3s ease;
+}
+
+.dropdown-toggle:hover i {
+    filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.6));
 }
 
 .nav-dropdown-menu {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
     position: absolute;
     top: 100%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-10px);
     background: linear-gradient(180deg, rgba(26, 0, 0, 0.95) 0%, rgba(15, 0, 0, 0.9) 100%);
     border: 1px solid rgba(139, 0, 0, 0.5);
     border-radius: 8px;
@@ -444,10 +584,14 @@ body.video-bg::before {
     z-index: 1000;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
     margin-top: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
 }
 
 .nav-dropdown.open .nav-dropdown-menu {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
 
 .nav-dropdown-menu a {
@@ -457,13 +601,33 @@ body.video-bg::before {
     text-decoration: none;
     font-size: 11px;
     font-weight: 400;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-dropdown-menu a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.2), transparent);
+    transition: left 0.4s ease;
+    z-index: -1;
 }
 
 .nav-dropdown-menu a:hover {
     background: rgba(139, 0, 0, 0.3);
     color: #ffffff;
+    transform: translateX(3px);
+    padding-left: 16px;
+}
+
+.nav-dropdown-menu a:hover::before {
+    left: 100%;
 }
 
 /* ==================== SIDEBAR ==================== */
