@@ -204,6 +204,18 @@ client.once("ready", () => {
     }, 5000); // Check every 5 seconds
 });
 
+// Set bot presence to online when ready
+client.once('ready', () => {
+    console.log('Discord bot is ready!');
+    client.user.setPresence({
+        status: 'online',
+        activities: [{
+            name: 'Support Chat',
+            type: 'WATCHING'
+        }]
+    });
+});
+
 // Support chat message handling
 const SUPPORT_CHANNEL_ID = process.env.SUPPORT_CHANNEL_ID;
 const messageReferences = new Map();
@@ -1334,6 +1346,8 @@ app.post('/chat/message', async (req, res) => {
                         avatar: firebaseUser.photoURL || "admin"
                     };
                     isAdmin = true;
+                    
+                    console.log('Firebase user avatar:', user.avatar, 'from photoURL:', firebaseUser.photoURL);
                 } catch {
                     return res.status(401).json({ error: 'Authentication required' });
                 }
