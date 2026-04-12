@@ -135,7 +135,7 @@ body {
     background: #0b0b0d;
     color: #eaeaea;
     min-height: 100vh;
-    padding-top: 96px;
+    padding-top: 0;
 }
 
 /* Containers */
@@ -585,25 +585,25 @@ margin-bottom: 14px;
 
 @media (max-width: 1024px) {
     body {
-        padding-top: 80px;
+        padding-top: 0;
     }
 }
 
 @media (max-width: 768px) {
     body {
-        padding-top: 120px;
+        padding-top: 0;
     }
 }
 
 @media (max-width: 600px) {
     body {
-        padding-top: 116px;
+        padding-top: 0;
     }
 }
 
 @media (max-width: 400px) {
     body {
-        padding-top: 112px;
+        padding-top: 0;
     }
 }
 
