@@ -31,11 +31,15 @@ function showProfile(user, type) {
         // For Firebase users, use displayName if available, otherwise email
         profileName.textContent = user.displayName || user.email;
         if (avatar) {
+            // Clear the CSS gradient background first
+            avatar.style.background = "none";
             if (user.photoURL) {
                 avatar.style.backgroundImage = `url(${user.photoURL})`;
                 avatar.style.backgroundSize = "cover";
             } else {
-                avatar.style.backgroundImage = "";
+                // Use default hades.gif when no custom avatar
+                avatar.style.backgroundImage = `url(/images/hades.gif)`;
+                avatar.style.backgroundSize = "cover";
             }
         }
     }
@@ -303,11 +307,15 @@ async function saveProfile() {
         // Update avatar display - prioritize custom avatar, otherwise use default
         const avatar = document.querySelector(".avatar");
         if (avatar) {
+            // Clear the CSS gradient background first
+            avatar.style.background = "none";
             if (user.photoURL) {
                 avatar.style.backgroundImage = `url(${user.photoURL})`;
                 avatar.style.backgroundSize = "cover";
             } else {
-                avatar.style.backgroundImage = "";
+                // Use default hades.gif
+                avatar.style.backgroundImage = `url(/images/hades.gif)`;
+                avatar.style.backgroundSize = "cover";
             }
         }
 
