@@ -774,6 +774,147 @@ function closeRedeemPopup() {
     }
 }
 
+// Open events popup
+async function openEventsPopup() {
+    const popup = document.getElementById('eventsPopup');
+    if (popup) {
+        popup.classList.remove('hidden');
+        await loadEvents();
+    }
+}
+
+// Close events popup
+function closeEventsPopup() {
+    const popup = document.getElementById('eventsPopup');
+    if (popup) {
+        popup.classList.add('hidden');
+    }
+}
+
+// Load events from backend
+async function loadEvents() {
+    const eventsList = document.getElementById('eventsList');
+    if (!eventsList) return;
+
+    eventsList.innerHTML = '<p class="loading-text">Loading events...</p>';
+
+    try {
+        const response = await fetch('/events');
+        const data = await response.json();
+
+        if (data.events && data.events.length > 0) {
+            eventsList.innerHTML = '';
+            data.events.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'event-item';
+
+                // Parse message for links
+                const parsedMessage = parseLinks(event.message);
+
+                eventItem.innerHTML = `
+                    <div class="event-message">${parsedMessage.text}</div>
+                    ${parsedMessage.link ? `<div class="event-link"><a href="${parsedMessage.link}" target="_blank"><i class="fas fa-external-link-alt"></i> Go to link</a></div>` : ''}
+                    ${event.link ? `<div class="event-link"><a href="${event.link}" target="_blank"><i class="fas fa-external-link-alt"></i> Go to link</a></div>` : ''}
+                `;
+
+                eventsList.appendChild(eventItem);
+            });
+        } else {
+            eventsList.innerHTML = `
+                <div class="no-events">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>No events currently active</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Failed to load events:', error);
+        eventsList.innerHTML = `
+            <div class="no-events">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load events</p>
+            </div>
+        `;
+    }
+}
+
+// Parse links in message text
+function parseLinks(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const links = text.match(urlRegex);
+    let cleanText = text.replace(urlRegex, '[Link]');
+
+    return {
+        text: cleanText,
+        link: links && links.length > 0 ? links[0] : null
+    };
+}
+
+// Close event notification
+function closeEventNotification() {
+    const notification = document.getElementById('eventNotification');
+    if (notification) {
+        notification.classList.add('hidden');
+    }
+}
+
+// Show event notification
+function showEventNotification(event) {
+    const notification = document.getElementById('eventNotification');
+    const messageEl = document.getElementById('notificationMessage');
+
+    if (!notification || !messageEl) return;
+
+    // Set the message (truncate if too long)
+    const parsedMessage = parseLinks(event.message);
+    messageEl.textContent = parsedMessage.text.length > 50 ? parsedMessage.text.substring(0, 50) + '...' : parsedMessage.text;
+
+    // Show the notification
+    notification.classList.remove('hidden');
+
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        closeEventNotification();
+    }, 10000);
+}
+
+// Initialize SSE for event notifications
+function initializeEventSSE() {
+    const eventSource = new EventSource('/chat/events');
+
+    eventSource.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+
+            switch (data.type) {
+                case 'new_event':
+                    showEventNotification(data.event);
+                    break;
+                case 'update_event':
+                    // Optionally refresh events list if popup is open
+                    break;
+                case 'delete_event':
+                    // Optionally refresh events list if popup is open
+                    break;
+            }
+        } catch (error) {
+            console.error('Error parsing SSE event:', error);
+        }
+    };
+
+    eventSource.onerror = function(error) {
+        console.error('SSE error:', error);
+        eventSource.close();
+        // Reconnect after 5 seconds
+        setTimeout(initializeEventSSE, 5000);
+    };
+}
+
+// Initialize SSE when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventSSE();
+});
+
 // Redeem code
 async function redeemCode() {
     const codeInput = document.getElementById('redeemCodeInput');

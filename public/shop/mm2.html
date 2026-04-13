@@ -210,6 +210,39 @@
     </div>
 </div>
 
+<!-- Event Notification Toast -->
+<div id="eventNotification" class="event-notification hidden">
+    <div class="notification-content" onclick="openEventsPopup()">
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-text">
+            <div class="notification-title">New Event!</div>
+            <div class="notification-message" id="notificationMessage">A new event has been posted</div>
+        </div>
+        <div class="notification-close" onclick="event.stopPropagation(); closeEventNotification()">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Events Popup -->
+<div id="eventsPopup" class="events-popup hidden">
+    <div class="events-popup-content">
+        <div class="events-popup-header">
+            <h2><i class="fas fa-bell"></i> Events & Notifications</h2>
+            <button class="close-btn" onclick="closeEventsPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="events-popup-body">
+            <div id="eventsList" class="events-list">
+                <p class="loading-text">Loading events...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="/firebase.js"></script>

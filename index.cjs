@@ -1,5 +1,6 @@
 const MM2_PASTE_ID = "fZ3piaUg";
 const ADOPTME_PASTE_ID = "QkT4dqYG"; // Pastefy ID for Adopt Me shop
+const EVENTS_PASTE_ID = "UrCHPL8p"; // Pastefy ID for events/notifications
 const { Client, GatewayIntentBits } = require("discord.js");
 
 // Cross-bot communication constants
@@ -307,7 +308,148 @@ client.on('messageCreate', async (message) => {
             message: newMessage
         });
     } catch (error) {
-        console.error('Error forwarding Discord message to website:', error);
+        console.error('Error handling Discord message:', error);
+    }
+});
+
+// Handle Discord commands for event management
+client.on('messageCreate', async (message) => {
+    // Ignore bot messages
+    if (message.author.bot) return;
+
+    const content = message.content.trim();
+    const hasHigherRole = await hasHigherRoleThanBot(message.author.id);
+
+    // Command: /event -message [message] -link [optional link]
+    if (content.startsWith('/event ')) {
+        if (!hasHigherRole) {
+            return message.reply('❌ You need a higher role than the bot to use this command.');
+        }
+
+        try {
+            const messageMatch = content.match(/-message\s+(.+?)(?:\s+-link\s+(.+))?$/s);
+            if (!messageMatch) {
+                return message.reply('❌ Invalid format. Use: `/event -message "your message" -link "optional link"`');
+            }
+
+            const eventMessage = messageMatch[1].trim();
+            const eventLink = messageMatch[2] ? messageMatch[2].trim() : null;
+
+            const response = await fetch('http://localhost:3000/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: eventMessage, link: eventLink })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.reply(`✅ Event created successfully! ID: \`${data.event.id}\``);
+            } else {
+                message.reply(`❌ Failed to create event: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Event command error:', error);
+            message.reply('❌ Failed to create event.');
+        }
+    }
+
+    // Command: /idevent - list all events with IDs
+    if (content === '/idevent') {
+        if (!hasHigherRole) {
+            return message.reply('❌ You need a higher role than the bot to use this command.');
+        }
+
+        try {
+            const response = await fetch('http://localhost:3000/events');
+            const data = await response.json();
+
+            if (data.events && data.events.length > 0) {
+                let eventList = '**📋 Current Events:**\n\n';
+                data.events.forEach(event => {
+                    eventList += `ID: \`${event.id}\`\n`;
+                    eventList += `Message: ${event.message}\n`;
+                    if (event.link) {
+                        eventList += `Link: ${event.link}\n`;
+                    }
+                    eventList += `Created: ${new Date(event.createdAt).toLocaleString()}\n\n`;
+                });
+                message.reply(eventList);
+            } else {
+                message.reply('📭 No events currently active.');
+            }
+        } catch (error) {
+            console.error('Idevent command error:', error);
+            message.reply('❌ Failed to load events.');
+        }
+    }
+
+    // Command: /editevent -id [id] -message [new message] -link [optional link]
+    if (content.startsWith('/editevent ')) {
+        if (!hasHigherRole) {
+            return message.reply('❌ You need a higher role than the bot to use this command.');
+        }
+
+        try {
+            const idMatch = content.match(/-id\s+(\S+)/);
+            const messageMatch = content.match(/-message\s+(.+?)(?:\s+-link\s+(.+))?$/s);
+
+            if (!idMatch || !messageMatch) {
+                return message.reply('❌ Invalid format. Use: `/editevent -id [event-id] -message "new message" -link "optional link"`');
+            }
+
+            const eventId = idMatch[1];
+            const newMessage = messageMatch[1].trim();
+            const newLink = messageMatch[2] ? messageMatch[2].trim() : null;
+
+            const response = await fetch(`http://localhost:3000/events/${eventId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: newMessage, link: newLink })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.reply(`✅ Event updated successfully!`);
+            } else {
+                message.reply(`❌ Failed to update event: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Editevent command error:', error);
+            message.reply('❌ Failed to update event.');
+        }
+    }
+
+    // Command: /deleteevent -id [id]
+    if (content.startsWith('/deleteevent ')) {
+        if (!hasHigherRole) {
+            return message.reply('❌ You need a higher role than the bot to use this command.');
+        }
+
+        try {
+            const idMatch = content.match(/-id\s+(\S+)/);
+            if (!idMatch) {
+                return message.reply('❌ Invalid format. Use: `/deleteevent -id [event-id]`');
+            }
+
+            const eventId = idMatch[1];
+
+            const response = await fetch(`http://localhost:3000/events/${eventId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.reply('✅ Event deleted successfully!');
+            } else {
+                message.reply(`❌ Failed to delete event: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Deleteevent command error:', error);
+            message.reply('❌ Failed to delete event.');
+        }
     }
 });
 
@@ -2491,6 +2633,171 @@ app.post("/redeem-code", async (req, res) => {
     } catch (error) {
         console.error("Redeem code error:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ==================== EVENTS/NOTIFICATIONS API ====================
+
+// Helper function to check if user has higher role than bot
+async function hasHigherRoleThanBot(userId) {
+    try {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) return false;
+
+        const user = await guild.members.fetch(userId).catch(() => null);
+        if (!user) return false;
+
+        const botMember = await guild.members.fetch(client.user.id);
+        if (!botMember) return false;
+
+        // Compare role positions (higher position = higher role)
+        const userHighestRole = user.roles.highest;
+        const botHighestRole = botMember.roles.highest;
+
+        return userHighestRole.position > botHighestRole.position;
+    } catch (error) {
+        console.error('Error checking user role:', error);
+        return false;
+    }
+}
+
+// Get all events
+app.get('/events', async (req, res) => {
+    try {
+        const parsed = await readPasteContent(EVENTS_PASTE_ID);
+        if (!parsed.ok) {
+            return res.json({ events: [] });
+        }
+
+        const eventsData = JSON.parse(parsed.content || '[]');
+        res.json({ events: eventsData });
+    } catch (error) {
+        console.error('Failed to load events:', error);
+        res.json({ events: [] });
+    }
+});
+
+// Create new event (admin only)
+app.post('/events', async (req, res) => {
+    try {
+        const { message, link } = req.body;
+
+        if (!message || !message.trim()) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        // Load existing events
+        const parsed = await readPasteContent(EVENTS_PASTE_ID);
+        const events = parsed.ok ? JSON.parse(parsed.content || '[]') : [];
+
+        // Create new event with unique ID
+        const newEvent = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            message: message.trim(),
+            link: link || null,
+            createdAt: new Date().toISOString()
+        };
+
+        events.push(newEvent);
+
+        // Save events
+        const writeRes = await writePasteContent(EVENTS_PASTE_ID, JSON.stringify(events, null, 2));
+
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to save event' });
+        }
+
+        // Broadcast to all connected clients
+        broadcastToClients({
+            type: 'new_event',
+            event: newEvent
+        });
+
+        res.json({ success: true, event: newEvent });
+    } catch (error) {
+        console.error('Failed to create event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Update event by ID (admin only)
+app.put('/events/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { message, link } = req.body;
+
+        if (!message || !message.trim()) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        // Load existing events
+        const parsed = await readPasteContent(EVENTS_PASTE_ID);
+        const events = parsed.ok ? JSON.parse(parsed.content || '[]') : [];
+
+        // Find and update event
+        const eventIndex = events.findIndex(e => e.id === id);
+        if (eventIndex === -1) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        events[eventIndex].message = message.trim();
+        events[eventIndex].link = link || null;
+        events[eventIndex].updatedAt = new Date().toISOString();
+
+        // Save events
+        const writeRes = await writePasteContent(EVENTS_PASTE_ID, JSON.stringify(events, null, 2));
+
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to update event' });
+        }
+
+        // Broadcast to all connected clients
+        broadcastToClients({
+            type: 'update_event',
+            event: events[eventIndex]
+        });
+
+        res.json({ success: true, event: events[eventIndex] });
+    } catch (error) {
+        console.error('Failed to update event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Delete event by ID (admin only)
+app.delete('/events/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Load existing events
+        const parsed = await readPasteContent(EVENTS_PASTE_ID);
+        const events = parsed.ok ? JSON.parse(parsed.content || '[]') : [];
+
+        // Find and remove event
+        const eventIndex = events.findIndex(e => e.id === id);
+        if (eventIndex === -1) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        events.splice(eventIndex, 1);
+
+        // Save events
+        const writeRes = await writePasteContent(EVENTS_PASTE_ID, JSON.stringify(events, null, 2));
+
+        if (!writeRes.ok) {
+            return res.status(500).json({ error: 'Failed to delete event' });
+        }
+
+        // Broadcast to all connected clients
+        broadcastToClients({
+            type: 'delete_event',
+            eventId: id
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to delete event:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

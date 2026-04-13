@@ -320,6 +320,22 @@
 <!-- Toast Notifications Container -->
 <div id="toastContainer" class="toast-container"></div>
 
+<!-- Event Notification Toast -->
+<div id="eventNotification" class="event-notification hidden">
+    <div class="notification-content" onclick="openEventsPopup()">
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-text">
+            <div class="notification-title">New Event!</div>
+            <div class="notification-message" id="notificationMessage">A new event has been posted</div>
+        </div>
+        <div class="notification-close" onclick="event.stopPropagation(); closeEventNotification()">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="/firebase.js"></script>

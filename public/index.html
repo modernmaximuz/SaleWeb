@@ -108,7 +108,7 @@
             <a href="/" onclick="toggleSidebar()">Home</a>
             <a href="#" onclick="openRedeemPopup(); toggleSidebar()">Redeem Code</a>
             <a href="#" onclick="openProfileConfig(); toggleSidebar()">Configure Profile</a>
-            <a href="/events" onclick="toggleSidebar()">Events</a>
+            <a href="#" onclick="openEventsPopup(); toggleSidebar()">Events</a>
             <a href="/credits" onclick="toggleSidebar()">Credits</a>
         </div>
         <div class="menu-section">
@@ -211,6 +211,39 @@
                 <button id="redeemBtn" onclick="redeemCode()">Redeem</button>
             </div>
             <div id="redeemMessage" class="redeem-message"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Events Popup -->
+<div id="eventsPopup" class="events-popup hidden">
+    <div class="events-popup-content">
+        <div class="events-popup-header">
+            <h2><i class="fas fa-bell"></i> Events & Notifications</h2>
+            <button class="close-btn" onclick="closeEventsPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="events-popup-body">
+            <div id="eventsList" class="events-list">
+                <p class="loading-text">Loading events...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Notification Toast -->
+<div id="eventNotification" class="event-notification hidden">
+    <div class="notification-content" onclick="openEventsPopup()">
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-text">
+            <div class="notification-title">New Event!</div>
+            <div class="notification-message" id="notificationMessage">A new event has been posted</div>
+        </div>
+        <div class="notification-close" onclick="event.stopPropagation(); closeEventNotification()">
+            <i class="fas fa-times"></i>
         </div>
     </div>
 </div>
