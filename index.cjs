@@ -1389,6 +1389,8 @@ app.post('/chat/message', async (req, res) => {
             replyTo: replyTo || null
         };
 
+        console.log('Creating message with avatar:', message.avatar, 'for user:', user.username);
+
         messages.push(message);
 
         // Save messages with proper structure

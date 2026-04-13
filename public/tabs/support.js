@@ -315,6 +315,8 @@ function createMessageElement(message) {
     }
     
     let avatar;
+    console.log('Rendering message - avatar field:', message.avatar, 'isAdmin:', message.isAdmin, 'userId:', message.userId);
+
     if (message.isAdmin) {
         avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
     } else if (message.avatar === 'admin') {
@@ -322,12 +324,15 @@ function createMessageElement(message) {
     } else if (message.avatar && (message.avatar.startsWith('http://') || message.avatar.startsWith('https://'))) {
         // Custom avatar URL from Configure Profile
         avatar = message.avatar;
+        console.log('Using custom avatar URL:', avatar);
     } else if (message.avatar) {
         // Discord avatar hash
         avatar = `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`;
+        console.log('Using Discord avatar:', avatar);
     } else {
         // Default avatar
         avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+        console.log('Using default avatar');
     }
     
     // Check if user can delete their own message (within 10 seconds)
