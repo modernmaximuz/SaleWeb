@@ -32,8 +32,8 @@ const commands = [
                 required: true
             },
             {
-                name: 'link',
-                description: 'Optional link for the event',
+                name: 'url',
+                description: 'Optional link URL for the event',
                 type: 3, // STRING
                 required: false
             }
@@ -60,8 +60,8 @@ const commands = [
                 required: true
             },
             {
-                name: 'link',
-                description: 'Optional new link for the event',
+                name: 'url',
+                description: 'Optional new link URL for the event',
                 type: 3, // STRING
                 required: false
             }
@@ -412,16 +412,20 @@ client.on('interactionCreate', async (interaction) => {
         }
 
         const message = interaction.options.getString('message');
-        const link = interaction.options.getString('link') || null;
+        const url = interaction.options.getString('url') || null;
 
         try {
             const response = await fetch(`${API_URL}/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, link })
+                body: JSON.stringify({ message, link: url })
             });
 
-            const data = await response.json();
+            const responseText = await response.text();
+            console.log('API Response status:', response.status);
+            console.log('API Response body:', responseText);
+
+            const data = JSON.parse(responseText);
 
             if (data.success) {
                 interaction.reply({ content: `✅ Event created successfully! ID: \`${data.event.id}\``, flags: 64 });
@@ -430,7 +434,7 @@ client.on('interactionCreate', async (interaction) => {
             }
         } catch (error) {
             console.error('Event command error:', error);
-            interaction.reply({ content: '❌ Failed to create event.', flags: 64 });
+            interaction.reply({ content: '❌ Failed to create event. Check server logs for details.', flags: 64 });
         }
     }
 
@@ -472,13 +476,13 @@ client.on('interactionCreate', async (interaction) => {
 
         const id = interaction.options.getString('id');
         const message = interaction.options.getString('message');
-        const link = interaction.options.getString('link') || null;
+        const url = interaction.options.getString('url') || null;
 
         try {
             const response = await fetch(`${API_URL}/events/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, link })
+                body: JSON.stringify({ message, link: url })
             });
 
             const data = await response.json();
@@ -2768,7 +2772,21 @@ app.post('/events', async (req, res) => {
 
         // Load existing events
         const parsed = await readPasteContent(EVENTS_PASTE_ID);
-        const events = parsed.ok ? JSON.parse(parsed.content || '[]') : [];
+
+        if (!parsed.ok) {
+            console.error('Failed to read Pastefy content:', parsed);
+            return res.status(500).json({ error: 'Failed to load events from storage' });
+        }
+
+        console.log('Pastefy content:', parsed.content);
+
+        let events = [];
+        try {
+            events = JSON.parse(parsed.content || '[]');
+        } catch (parseError) {
+            console.error('Failed to parse events JSON:', parseError);
+            events = []; // Start with empty array if parsing fails
+        }
 
         // Create new event with unique ID
         const newEvent = {
@@ -2784,6 +2802,7 @@ app.post('/events', async (req, res) => {
         const writeRes = await writePasteContent(EVENTS_PASTE_ID, JSON.stringify(events, null, 2));
 
         if (!writeRes.ok) {
+            console.error('Failed to write to Pastefy:', writeRes);
             return res.status(500).json({ error: 'Failed to save event' });
         }
 
