@@ -10,14 +10,76 @@ const BASE = "https://pastefy.app/api/v2";
 const API_KEY = process.env.API_KEY;
 const GUILD_ID = process.env.GUILD_ID;
 
-const client = new Client({ 
+const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
-    ] 
+    ]
 });
+
+// Slash command definitions
+const commands = [
+    {
+        name: 'event',
+        description: 'Create a new event/notification',
+        options: [
+            {
+                name: 'message',
+                description: 'The event message',
+                type: 3, // STRING
+                required: true
+            },
+            {
+                name: 'link',
+                description: 'Optional link for the event',
+                type: 3, // STRING
+                required: false
+            }
+        ]
+    },
+    {
+        name: 'idevent',
+        description: 'List all events with their IDs'
+    },
+    {
+        name: 'editevent',
+        description: 'Edit an existing event',
+        options: [
+            {
+                name: 'id',
+                description: 'The event ID to edit',
+                type: 3, // STRING
+                required: true
+            },
+            {
+                name: 'message',
+                description: 'The new event message',
+                type: 3, // STRING
+                required: true
+            },
+            {
+                name: 'link',
+                description: 'Optional new link for the event',
+                type: 3, // STRING
+                required: false
+            }
+        ]
+    },
+    {
+        name: 'deleteevent',
+        description: 'Delete an event',
+        options: [
+            {
+                name: 'id',
+                description: 'The event ID to delete',
+                type: 3, // STRING
+                required: true
+            }
+        ]
+    }
+];
 
 async function initializePaste() {
     try {
@@ -313,64 +375,69 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Handle Discord commands for event management
-client.on('messageCreate', async (message) => {
-    // Ignore bot messages
-    if (message.author.bot) return;
 
-    const content = message.content.trim();
-    console.log('Discord message received:', content);
+client.login(process.env.DISCORD_BOT_TOKEN);
 
-    // Test command to verify bot is working
-    if (content === '/test') {
-        return message.reply('✅ Bot is working! API URL:', API_URL);
-    }
+// Register slash commands when bot is ready
+client.once('ready', async () => {
+    console.log('Bot is ready!');
 
-    const hasHigherRole = await hasHigherRoleThanBot(message.author.id);
-    console.log('User has higher role than bot:', hasHigherRole);
-
-    // Command: /event -message [message] -link [optional link]
-    if (content.startsWith('/event ')) {
-        console.log('Processing /event command');
-        if (!hasHigherRole) {
-            console.log('User lacks required role');
-            return message.reply('❌ You need a higher role than the bot to use this command.');
+    try {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) {
+            console.log('Guild not found, cannot register commands');
+            return;
         }
 
+        // Register commands to the guild
+        await guild.commands.set(commands);
+        console.log('Slash commands registered successfully!');
+    } catch (error) {
+        console.error('Error registering slash commands:', error);
+    }
+});
+
+// Handle slash command interactions
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) return;
+
+    const hasHigherRole = await hasHigherRoleThanBot(interaction.user.id);
+
+    const { commandName } = interaction;
+
+    // /event command
+    if (commandName === 'event') {
+        if (!hasHigherRole) {
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
+        }
+
+        const message = interaction.options.getString('message');
+        const link = interaction.options.getString('link') || null;
+
         try {
-            const messageMatch = content.match(/-message\s+(.+?)(?:\s+-link\s+(.+))?$/s);
-            if (!messageMatch) {
-                return message.reply('❌ Invalid format. Use: `/event -message "your message" -link "optional link"`');
-            }
-
-            const eventMessage = messageMatch[1].trim();
-            const eventLink = messageMatch[2] ? messageMatch[2].trim() : null;
-
             const response = await fetch(`${API_URL}/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: eventMessage, link: eventLink })
+                body: JSON.stringify({ message, link })
             });
-
-            console.log('Event command response:', response.status, await response.clone().text());
 
             const data = await response.json();
 
             if (data.success) {
-                message.reply(`✅ Event created successfully! ID: \`${data.event.id}\``);
+                interaction.reply({ content: `✅ Event created successfully! ID: \`${data.event.id}\``, ephemeral: true });
             } else {
-                message.reply(`❌ Failed to create event: ${data.error}`);
+                interaction.reply({ content: `❌ Failed to create event: ${data.error}`, ephemeral: true });
             }
         } catch (error) {
             console.error('Event command error:', error);
-            message.reply('❌ Failed to create event.');
+            interaction.reply({ content: '❌ Failed to create event.', ephemeral: true });
         }
     }
 
-    // Command: /idevent - list all events with IDs
-    if (content === '/idevent') {
+    // /idevent command
+    if (commandName === 'idevent') {
         if (!hasHigherRole) {
-            return message.reply('❌ You need a higher role than the bot to use this command.');
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
         }
 
         try {
@@ -387,86 +454,72 @@ client.on('messageCreate', async (message) => {
                     }
                     eventList += `Created: ${new Date(event.createdAt).toLocaleString()}\n\n`;
                 });
-                message.reply(eventList);
+                interaction.reply({ content: eventList, ephemeral: true });
             } else {
-                message.reply('📭 No events currently active.');
+                interaction.reply({ content: '📭 No events currently active.', ephemeral: true });
             }
         } catch (error) {
             console.error('Idevent command error:', error);
-            message.reply('❌ Failed to load events.');
+            interaction.reply({ content: '❌ Failed to load events.', ephemeral: true });
         }
     }
 
-    // Command: /editevent -id [id] -message [new message] -link [optional link]
-    if (content.startsWith('/editevent ')) {
+    // /editevent command
+    if (commandName === 'editevent') {
         if (!hasHigherRole) {
-            return message.reply('❌ You need a higher role than the bot to use this command.');
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
         }
 
+        const id = interaction.options.getString('id');
+        const message = interaction.options.getString('message');
+        const link = interaction.options.getString('link') || null;
+
         try {
-            const idMatch = content.match(/-id\s+(\S+)/);
-            const messageMatch = content.match(/-message\s+(.+?)(?:\s+-link\s+(.+))?$/s);
-
-            if (!idMatch || !messageMatch) {
-                return message.reply('❌ Invalid format. Use: `/editevent -id [event-id] -message "new message" -link "optional link"`');
-            }
-
-            const eventId = idMatch[1];
-            const newMessage = messageMatch[1].trim();
-            const newLink = messageMatch[2] ? messageMatch[2].trim() : null;
-
-            const response = await fetch(`${API_URL}/events/${eventId}`, {
+            const response = await fetch(`${API_URL}/events/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: newMessage, link: newLink })
+                body: JSON.stringify({ message, link })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                message.reply(`✅ Event updated successfully!`);
+                interaction.reply({ content: '✅ Event updated successfully!', ephemeral: true });
             } else {
-                message.reply(`❌ Failed to update event: ${data.error}`);
+                interaction.reply({ content: `❌ Failed to update event: ${data.error}`, ephemeral: true });
             }
         } catch (error) {
             console.error('Editevent command error:', error);
-            message.reply('❌ Failed to update event.');
+            interaction.reply({ content: '❌ Failed to update event.', ephemeral: true });
         }
     }
 
-    // Command: /deleteevent -id [id]
-    if (content.startsWith('/deleteevent ')) {
+    // /deleteevent command
+    if (commandName === 'deleteevent') {
         if (!hasHigherRole) {
-            return message.reply('❌ You need a higher role than the bot to use this command.');
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
         }
 
+        const id = interaction.options.getString('id');
+
         try {
-            const idMatch = content.match(/-id\s+(\S+)/);
-            if (!idMatch) {
-                return message.reply('❌ Invalid format. Use: `/deleteevent -id [event-id]`');
-            }
-
-            const eventId = idMatch[1];
-
-            const response = await fetch(`${API_URL}/events/${eventId}`, {
+            const response = await fetch(`${API_URL}/events/${id}`, {
                 method: 'DELETE'
             });
 
             const data = await response.json();
 
             if (data.success) {
-                message.reply('✅ Event deleted successfully!');
+                interaction.reply({ content: '✅ Event deleted successfully!', ephemeral: true });
             } else {
-                message.reply(`❌ Failed to delete event: ${data.error}`);
+                interaction.reply({ content: `❌ Failed to delete event: ${data.error}`, ephemeral: true });
             }
         } catch (error) {
             console.error('Deleteevent command error:', error);
-            message.reply('❌ Failed to delete event.');
+            interaction.reply({ content: '❌ Failed to delete event.', ephemeral: true });
         }
     }
 });
-
-client.login(process.env.DISCORD_BOT_TOKEN);
 
 const fetch = (...args) =>
   import("node-fetch").then(({default: fetch}) => fetch(...args));
