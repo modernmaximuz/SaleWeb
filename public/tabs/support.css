@@ -563,13 +563,21 @@
         margin: 10px;
         height: calc(100vh - 100px);
     }
-    
+
     #chatHeader {
         padding: 12px 16px;
     }
-    
+
     #chatHeader h1 {
-        font-size: 20px;
+        font-size: 16px;
+    }
+
+    #chatStatus {
+        font-size: 12px;
+    }
+
+    #resetTimer {
+        font-size: 11px;
     }
     
     #chatMessages {

@@ -310,6 +310,22 @@ body.video-bg::before {
     overflow: hidden;
 }
 
+@media (max-width: 768px) {
+    #profileBox {
+        padding: 6px 8px;
+        gap: 6px;
+    }
+
+    .avatar {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    #profileName {
+        font-size: 11px !important;
+    }
+}
+
 #profileBox::before {
     content: '';
     position: absolute;
