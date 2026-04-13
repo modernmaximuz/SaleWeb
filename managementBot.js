@@ -483,9 +483,9 @@ async function handleCreateCode(interaction) {
     }
 
     const code = interaction.options.getString('code');
+    const discountPercent = interaction.options.getInteger('discountpercent');
     const expirationDate = interaction.options.getString('expirationdate');
-    const maxUses = interaction.options.getString('howmanyusercanuse');
-    const discountPercentage = interaction.options.getInteger('discountpercentage');
+    const howManyUseCanUse = interaction.options.getString('howmanyusecanuse');
 
     if (!code) {
         return interaction.reply({
@@ -494,14 +494,14 @@ async function handleCreateCode(interaction) {
         });
     }
 
-    if (discountPercentage === null || discountPercentage === undefined) {
+    if (discountPercent === null || discountPercent === undefined) {
         return interaction.reply({
             content: "❌ Please specify a discount percentage (0-100)!",
             ephemeral: true
         });
     }
 
-    if (discountPercentage < 0 || discountPercentage > 100) {
+    if (discountPercent < 0 || discountPercent > 100) {
         return interaction.reply({
             content: "❌ Discount percentage must be between 0 and 100!",
             ephemeral: true
@@ -539,8 +539,8 @@ async function handleCreateCode(interaction) {
         const newCode = {
             code: code,
             expirationDate: expirationDate || null,
-            maxUses: maxUses || 1,
-            discountPercentage: discountPercentage,
+            maxUses: howManyUseCanUse || 1,
+            discountPercentage: discountPercent,
             usedBy: [],
             createdAt: new Date().toISOString(),
             createdBy: interaction.user.id
@@ -569,10 +569,10 @@ async function handleCreateCode(interaction) {
         }
 
         const expirationText = expirationDate ? `Expires: ${expirationDate}` : 'No expiration';
-        const usesText = maxUses === 'inf' ? 'Unlimited uses' : `Max uses: ${maxUses}`;
+        const usesText = howManyUseCanUse === 'inf' ? 'Unlimited uses' : `Max uses: ${howManyUseCanUse}`;
 
         return interaction.reply({
-            content: `✅ **Code created successfully!**\n\n**Code:** \`${code}\`\n**Discount:** ${discountPercentage}%\n${expirationText}\n${usesText}`,
+            content: `✅ **Code created successfully!**\n\n**Code:** \`${code}\`\n**Discount:** ${discountPercent}%\n${expirationText}\n${usesText}`,
             ephemeral: true
         });
 
@@ -689,22 +689,22 @@ async function registerCommands() {
                     required: true
                 },
                 {
+                    name: 'discountpercent',
+                    description: 'Discount percentage (0-100)',
+                    type: 4, // INTEGER
+                    required: true
+                },
+                {
                     name: 'expirationdate',
                     description: 'Expiration date (e.g., 04/13/2026)',
                     type: 3, // STRING
                     required: false
                 },
                 {
-                    name: 'howmanyusercanuse',
+                    name: 'howmanyusecanuse',
                     description: 'Max uses (1, 3, 5, inf)',
                     type: 3, // STRING
                     required: false
-                },
-                {
-                    name: 'discountpercentage',
-                    description: 'Discount percentage (0-100)',
-                    type: 4, // INTEGER
-                    required: true
                 }
             ]
         }
