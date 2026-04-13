@@ -215,6 +215,7 @@ function connectRealTime() {
 function handleRealTimeUpdate(data) {
     switch (data.type) {
         case 'new_message':
+            console.log('Received new message via real-time:', data.message);
             if (!messages.find(m => m.id === data.message.id)) {
                 messages.push(data.message);
                 renderMessages();
