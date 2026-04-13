@@ -1,6 +1,7 @@
 const MM2_PASTE_ID = "fZ3piaUg";
 const ADOPTME_PASTE_ID = "QkT4dqYG"; // Pastefy ID for Adopt Me shop
 const EVENTS_PASTE_ID = "UrCHPL8p"; // Pastefy ID for events/notifications
+const API_URL = process.env.API_URL || 'http://localhost:3000';
 const { Client, GatewayIntentBits } = require("discord.js");
 
 // Cross-bot communication constants
@@ -318,11 +319,21 @@ client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
     const content = message.content.trim();
+    console.log('Discord message received:', content);
+
+    // Test command to verify bot is working
+    if (content === '/test') {
+        return message.reply('✅ Bot is working! API URL:', API_URL);
+    }
+
     const hasHigherRole = await hasHigherRoleThanBot(message.author.id);
+    console.log('User has higher role than bot:', hasHigherRole);
 
     // Command: /event -message [message] -link [optional link]
     if (content.startsWith('/event ')) {
+        console.log('Processing /event command');
         if (!hasHigherRole) {
+            console.log('User lacks required role');
             return message.reply('❌ You need a higher role than the bot to use this command.');
         }
 
@@ -335,11 +346,13 @@ client.on('messageCreate', async (message) => {
             const eventMessage = messageMatch[1].trim();
             const eventLink = messageMatch[2] ? messageMatch[2].trim() : null;
 
-            const response = await fetch('http://localhost:3000/events', {
+            const response = await fetch(`${API_URL}/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: eventMessage, link: eventLink })
             });
+
+            console.log('Event command response:', response.status, await response.clone().text());
 
             const data = await response.json();
 
@@ -361,7 +374,7 @@ client.on('messageCreate', async (message) => {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/events');
+            const response = await fetch(`${API_URL}/events`);
             const data = await response.json();
 
             if (data.events && data.events.length > 0) {
@@ -402,7 +415,7 @@ client.on('messageCreate', async (message) => {
             const newMessage = messageMatch[1].trim();
             const newLink = messageMatch[2] ? messageMatch[2].trim() : null;
 
-            const response = await fetch(`http://localhost:3000/events/${eventId}`, {
+            const response = await fetch(`${API_URL}/events/${eventId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: newMessage, link: newLink })
@@ -435,7 +448,7 @@ client.on('messageCreate', async (message) => {
 
             const eventId = idMatch[1];
 
-            const response = await fetch(`http://localhost:3000/events/${eventId}`, {
+            const response = await fetch(`${API_URL}/events/${eventId}`, {
                 method: 'DELETE'
             });
 
@@ -2642,19 +2655,33 @@ app.post("/redeem-code", async (req, res) => {
 async function hasHigherRoleThanBot(userId) {
     try {
         const guild = client.guilds.cache.get(GUILD_ID);
-        if (!guild) return false;
+        if (!guild) {
+            console.log('Guild not found:', GUILD_ID);
+            return false;
+        }
 
         const user = await guild.members.fetch(userId).catch(() => null);
-        if (!user) return false;
+        if (!user) {
+            console.log('User not found in guild:', userId);
+            return false;
+        }
 
         const botMember = await guild.members.fetch(client.user.id);
-        if (!botMember) return false;
+        if (!botMember) {
+            console.log('Bot member not found');
+            return false;
+        }
 
         // Compare role positions (higher position = higher role)
         const userHighestRole = user.roles.highest;
         const botHighestRole = botMember.roles.highest;
 
-        return userHighestRole.position > botHighestRole.position;
+        console.log('User highest role:', userHighestRole.name, 'Position:', userHighestRole.position);
+        console.log('Bot highest role:', botHighestRole.name, 'Position:', botHighestRole.position);
+
+        const result = userHighestRole.position > botHighestRole.position;
+        console.log('Role comparison result:', result);
+        return result;
     } catch (error) {
         console.error('Error checking user role:', error);
         return false;
