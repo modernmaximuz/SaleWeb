@@ -252,6 +252,29 @@
     </div>
 </div>
 
+<!-- Redeem Code Popup -->
+<div id="redeemPopup" class="redeem-popup hidden">
+    <div class="redeem-popup-content">
+        <div class="redeem-popup-header">
+            <h2><i class="fas fa-gift"></i> Redeem Code</h2>
+            <button class="close-btn" onclick="closeRedeemPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="redeem-popup-body">
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>This code can only be used once by your IP: <span id="userIP">Loading...</span></p>
+            </div>
+            <div class="redeem-form">
+                <input type="text" id="redeemCodeInput" placeholder="Enter your code" maxlength="50">
+                <button id="redeemBtn" onclick="redeemCode()">Redeem</button>
+            </div>
+            <div id="redeemMessage" class="redeem-message"></div>
+        </div>
+    </div>
+</div>
+
 <!-- Loading Overlay -->
 <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-spinner">
