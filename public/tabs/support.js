@@ -65,14 +65,11 @@ async function initChat() {
                         const profileRes = await fetch('/admin/profile', { headers });
                         if (profileRes.ok) {
                             configuredProfile = await profileRes.json();
-                            console.log('Loaded admin profile:', configuredProfile);
-                        } else {
-                            console.error('Failed to load admin profile, status:', profileRes.status);
                         }
                     } catch (profileError) {
                         console.error('Failed to load admin profile:', profileError);
                     }
-                    
+
                     // Set currentUser from Firebase with configured profile data
                     currentUser = {
                         id: firebaseUser.uid,
@@ -84,20 +81,15 @@ async function initChat() {
                         isAdmin: true
                     };
                     isAdmin = true;
-                    console.log('Firebase admin user set:', currentUser);
-                    console.log('Username set to:', currentUser.username, 'from configuredProfile?.displayName:', configuredProfile?.displayName, 'firebaseUser.displayName:', firebaseUser.displayName);
-                    console.log('Avatar set to:', currentUser.avatar, 'from configuredProfile?.avatar:', configuredProfile?.avatar, 'firebaseUser.photoURL:', firebaseUser.photoURL);
                     
                     // Try to get user info from server
                     try {
                         const res = await fetch('/me', { headers });
                         const user = await res.json();
-                        console.log('Server response:', user);
-                        
+
                         if (user) {
                             currentUser = user;
                             isAdmin = !!user.isAdmin;
-                            console.log('User set from server:', currentUser, 'Is admin:', isAdmin);
                         }
                     } catch (serverError) {
                         console.error('Server auth check failed:', serverError);
@@ -130,19 +122,13 @@ async function initChat() {
 // Load existing messages
 async function loadMessages() {
     try {
-        console.log('Loading messages...');
         const res = await fetch('/chat/messages');
         const data = await res.json();
 
-        console.log('Messages loaded:', data);
-
         if (data.messages) {
             messages = data.messages;
-            console.log('Messages array set:', messages.length, 'messages');
-            console.log('Sample message avatar:', messages[0]?.avatar);
             renderMessages();
         } else {
-            console.log('No messages in response');
             messages = [];
         }
         
@@ -216,7 +202,6 @@ function connectRealTime() {
 function handleRealTimeUpdate(data) {
     switch (data.type) {
         case 'new_message':
-            console.log('Received new message via real-time:', data.message);
             if (!messages.find(m => m.id === data.message.id)) {
                 messages.push(data.message);
                 renderMessages();
@@ -317,27 +302,21 @@ function createMessageElement(message) {
     }
     
     let avatar;
-    console.log('Rendering message - avatar field:', message.avatar, 'isAdmin:', message.isAdmin, 'userId:', message.userId);
 
     // Check for custom avatar URL first (for Firebase users with configured profile)
     if (message.avatar && typeof message.avatar === 'string' && (message.avatar.startsWith('http://') || message.avatar.startsWith('https://'))) {
         // Custom avatar URL from Configure Profile
         avatar = message.avatar;
-        console.log('Using custom avatar URL:', avatar);
     } else if (message.isAdmin) {
         avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
-        console.log('Using admin default avatar');
     } else if (message.avatar === 'admin') {
         avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
-        console.log('Using admin string avatar');
     } else if (message.avatar) {
         // Discord avatar hash
         avatar = `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`;
-        console.log('Using Discord avatar:', avatar);
     } else {
         // Default avatar
         avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
-        console.log('Using default avatar');
     }
     
     // Check if user can delete their own message (within 10 seconds)

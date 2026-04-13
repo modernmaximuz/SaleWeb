@@ -258,8 +258,8 @@ body.video-bg::before {
 
 /* LOGIN BUTTON */
 #loginToggle {
-    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
-    border: 1px solid #3a3a4a;
+    background: linear-gradient(135deg, rgba(26, 0, 0, 0.8) 0%, rgba(15, 0, 0, 0.7) 100%);
+    border: 1px solid rgba(139, 0, 0, 0.4);
     color: white;
     padding: 10px 20px;
     border-radius: 12px;
@@ -267,13 +267,31 @@ body.video-bg::before {
     font-weight: 600;
     font-size: 14px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#loginToggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.3), transparent);
+    transition: left 0.5s ease;
+    z-index: -1;
 }
 
 #loginToggle:hover {
-    background: linear-gradient(135deg, #4c8dff 0%, #6fa5ff 100%);
-    border-color: #7eb0ff;
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.6) 0%, rgba(255, 69, 0, 0.4) 100%);
+    border-color: rgba(255, 69, 0, 0.6);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(76, 141, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(139, 0, 0, 0.3);
+}
+
+#loginToggle:hover::before {
+    left: 100%;
 }
 
 /* PROFILE BOX */
