@@ -1336,7 +1336,7 @@ app.post('/chat/message', async (req, res) => {
                     };
                     isAdmin = true;
                     
-                    console.log('Firebase user avatar:', user.avatar, 'from photoURL:', firebaseUser.photoURL);
+                    console.log('Firebase user avatar:', user.avatar, 'from photoURL:', firebaseUser.photoURL, 'displayName:', firebaseUser.displayName);
                 } catch {
                     return res.status(401).json({ error: 'Authentication required' });
                 }

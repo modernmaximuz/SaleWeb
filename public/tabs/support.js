@@ -79,13 +79,14 @@ async function initChat() {
                         username: configuredProfile?.displayName || firebaseUser.displayName || firebaseUser.email,
                         email: firebaseUser.email,
                         displayName: configuredProfile?.displayName || firebaseUser.displayName,
-                        avatar: configuredProfile?.avatar || null,
+                        avatar: configuredProfile?.avatar || firebaseUser.photoURL || null,
                         type: "admin",
                         isAdmin: true
                     };
                     isAdmin = true;
                     console.log('Firebase admin user set:', currentUser);
                     console.log('Username set to:', currentUser.username, 'from configuredProfile?.displayName:', configuredProfile?.displayName, 'firebaseUser.displayName:', firebaseUser.displayName);
+                    console.log('Avatar set to:', currentUser.avatar, 'from configuredProfile?.avatar:', configuredProfile?.avatar, 'firebaseUser.photoURL:', firebaseUser.photoURL);
                     
                     // Try to get user info from server
                     try {

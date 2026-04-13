@@ -280,22 +280,32 @@ async function saveProfile() {
             return;
         }
 
-        // Update profile directly in Firebase Auth
-        const updateData = {
-            displayName: displayName
-        };
+        const token = await user.getIdToken();
 
-        // Only set photoURL if avatarUrl is provided, otherwise clear it
-        if (avatarUrl) {
-            updateData.photoURL = avatarUrl;
-        } else {
-            updateData.photoURL = null;
+        // Use backend endpoint to update profile for consistency
+        const response = await fetch('/admin/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                displayName: displayName,
+                avatar: avatarUrl || null
+            })
+        });
+
+        console.log('Profile update request sent:', { displayName, avatar: avatarUrl || null });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to save profile');
         }
 
-        await user.updateProfile(updateData);
-
-        // Reload user to get updated data
+        // Reload user to get updated data from Firebase Auth
         await user.reload();
+
+        console.log('User reloaded. photoURL:', user.photoURL, 'displayName:', user.displayName);
 
         closeProfileConfigModal();
 
