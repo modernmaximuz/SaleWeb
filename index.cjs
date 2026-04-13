@@ -1345,9 +1345,14 @@ app.post('/chat/message', async (req, res) => {
             }
         }
 
-        const { text, replyTo } = req.body;
+        const { text, replyTo, avatar } = req.body;
         if (!text || !text.trim()) {
             return res.status(400).json({ error: 'Message text is required' });
+        }
+
+        // Use avatar from request body if provided (for Firebase users with custom profile)
+        if (avatar && isAdmin) {
+            user.avatar = avatar;
         }
 
         // Apply rate limiting (except for admins)

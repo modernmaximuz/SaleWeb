@@ -1,5 +1,5 @@
 const CHAT_PASTE_ID = "lBybg0MJ";
-let currentUser = null;
+window.currentUser = null;
 let isAdmin = false;
 let messages = [];
 let mutedUsers = new Set();
@@ -387,7 +387,8 @@ async function sendMessage() {
             headers,
             body: JSON.stringify({ 
                 text: filterBadWords(text),
-                replyTo: replyToMessage?.id || null
+                replyTo: replyToMessage?.id || null,
+                avatar: currentUser.avatar || null
             })
         });
         

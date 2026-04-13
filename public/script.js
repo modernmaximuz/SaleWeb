@@ -307,6 +307,26 @@ async function saveProfile() {
 
         console.log('User reloaded. photoURL:', user.photoURL, 'displayName:', user.displayName);
 
+        // Reload admin profile from backend to update support.js currentUser
+        try {
+            const profileRes = await fetch('/admin/profile', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (profileRes.ok) {
+                const profileData = await profileRes.json();
+                console.log('Reloaded admin profile after save:', profileData);
+                // Update global currentUser if support.js has it loaded
+                if (typeof window.currentUser !== 'undefined') {
+                    window.currentUser.avatar = profileData.avatar;
+                    window.currentUser.displayName = profileData.displayName;
+                    window.currentUser.username = profileData.displayName;
+                    console.log('Updated window.currentUser with new profile data');
+                }
+            }
+        } catch (profileError) {
+            console.error('Failed to reload admin profile after save:', profileError);
+        }
+
         closeProfileConfigModal();
 
         // Update profile display
