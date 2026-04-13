@@ -6,6 +6,106 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Welcome Banner */
+.welcome-banner {
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(26, 0, 0, 0.95) 50%, rgba(0, 0, 0, 0.98) 100%);
+    border: 2px solid #8B0000;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 10px 40px rgba(139, 0, 0, 0.4),
+        0 0 60px rgba(255, 69, 0, 0.2),
+        inset 0 1px 0 rgba(255, 69, 0, 0.1);
+    animation: welcomeSlideIn 0.8s ease-out;
+    backdrop-filter: blur(10px);
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 69, 0, 0.15) 0%, rgba(139, 0, 0, 0.1) 50%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+.welcome-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-icon {
+    font-size: 3rem;
+    color: #FF4500;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
+}
+
+.welcome-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+    text-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+    letter-spacing: 1px;
+}
+
+.welcome-content p {
+    font-size: 1.2rem;
+    color: #b0b0b0;
+    margin-bottom: 0;
+    opacity: 0.9;
+}
+
+@keyframes welcomeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* Mobile responsive for welcome banner */
+@media (max-width: 768px) {
+    .welcome-banner {
+        padding: 2rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .welcome-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .welcome-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .welcome-content p {
+        font-size: 1rem;
+    }
+}
+
 /* Welcome Section */
 .welcome-section {
     background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(26, 0, 0, 0.95) 50%, rgba(0, 0, 0, 0.98) 100%);
