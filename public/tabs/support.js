@@ -313,8 +313,21 @@ function createMessageElement(message) {
         div.classList.add('muted');
     }
     
-    const avatar = message.isAdmin ? 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true' : 
-                   (message.avatar === 'admin' ? 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true' : `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`);
+    let avatar;
+    if (message.isAdmin) {
+        avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+    } else if (message.avatar === 'admin') {
+        avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+    } else if (message.avatar && (message.avatar.startsWith('http://') || message.avatar.startsWith('https://'))) {
+        // Custom avatar URL from Configure Profile
+        avatar = message.avatar;
+    } else if (message.avatar) {
+        // Discord avatar hash
+        avatar = `https://cdn.discordapp.com/avatars/${message.userId}/${message.avatar}.png`;
+    } else {
+        // Default avatar
+        avatar = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+    }
     
     // Check if user can delete their own message (within 10 seconds)
     const timeSinceMessage = Date.now() - message.timestamp;
@@ -453,7 +466,14 @@ function showUserActions(userId, username, avatar, isAdminUser) {
     const muteBtn = modal.querySelector('.muteBtn');
     const unmuteBtn = modal.querySelector('.unmuteBtn');
     
-    modalAvatar.src = `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png`;
+    // Handle custom avatar URLs vs Discord avatar hashes
+    if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+        modalAvatar.src = avatar;
+    } else if (avatar) {
+        modalAvatar.src = `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png`;
+    } else {
+        modalAvatar.src = 'https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true';
+    }
     modalUserName.textContent = username;
     modalUserStatus.textContent = mutedUsers.has(userId) ? 'Muted' : 'Active';
     
