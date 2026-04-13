@@ -1,8 +1,8 @@
 const MM2_PASTE_ID = "fZ3piaUg";
 const ADOPTME_PASTE_ID = "QkT4dqYG"; // Pastefy ID for Adopt Me shop
 const EVENTS_PASTE_ID = "UrCHPL8p"; // Pastefy ID for events/notifications
-const API_URL = process.env.API_URL || 'http://localhost:3000';
-const { Client, GatewayIntentBits } = require("discord.js");
+const API_URL = process.env.API_URL || 'https://saleweb-blvc.onrender.com';
+const { Client, GatewayIntentBits, REST, Routes } = require("discord.js");
 
 // Cross-bot communication constants
 const BOT_COMMUNICATION_PASTE_ID = "Jk84rCKt";
@@ -408,7 +408,7 @@ client.on('interactionCreate', async (interaction) => {
     // /event command
     if (commandName === 'event') {
         if (!hasHigherRole) {
-            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', flags: 64 });
         }
 
         const message = interaction.options.getString('message');
@@ -424,20 +424,20 @@ client.on('interactionCreate', async (interaction) => {
             const data = await response.json();
 
             if (data.success) {
-                interaction.reply({ content: `✅ Event created successfully! ID: \`${data.event.id}\``, ephemeral: true });
+                interaction.reply({ content: `✅ Event created successfully! ID: \`${data.event.id}\``, flags: 64 });
             } else {
-                interaction.reply({ content: `❌ Failed to create event: ${data.error}`, ephemeral: true });
+                interaction.reply({ content: `❌ Failed to create event: ${data.error}`, flags: 64 });
             }
         } catch (error) {
             console.error('Event command error:', error);
-            interaction.reply({ content: '❌ Failed to create event.', ephemeral: true });
+            interaction.reply({ content: '❌ Failed to create event.', flags: 64 });
         }
     }
 
     // /idevent command
     if (commandName === 'idevent') {
         if (!hasHigherRole) {
-            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', flags: 64 });
         }
 
         try {
@@ -454,20 +454,20 @@ client.on('interactionCreate', async (interaction) => {
                     }
                     eventList += `Created: ${new Date(event.createdAt).toLocaleString()}\n\n`;
                 });
-                interaction.reply({ content: eventList, ephemeral: true });
+                interaction.reply({ content: eventList, flags: 64 });
             } else {
-                interaction.reply({ content: '📭 No events currently active.', ephemeral: true });
+                interaction.reply({ content: '📭 No events currently active.', flags: 64 });
             }
         } catch (error) {
             console.error('Idevent command error:', error);
-            interaction.reply({ content: '❌ Failed to load events.', ephemeral: true });
+            interaction.reply({ content: '❌ Failed to load events.', flags: 64 });
         }
     }
 
     // /editevent command
     if (commandName === 'editevent') {
         if (!hasHigherRole) {
-            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', flags: 64 });
         }
 
         const id = interaction.options.getString('id');
@@ -484,20 +484,20 @@ client.on('interactionCreate', async (interaction) => {
             const data = await response.json();
 
             if (data.success) {
-                interaction.reply({ content: '✅ Event updated successfully!', ephemeral: true });
+                interaction.reply({ content: '✅ Event updated successfully!', flags: 64 });
             } else {
-                interaction.reply({ content: `❌ Failed to update event: ${data.error}`, ephemeral: true });
+                interaction.reply({ content: `❌ Failed to update event: ${data.error}`, flags: 64 });
             }
         } catch (error) {
             console.error('Editevent command error:', error);
-            interaction.reply({ content: '❌ Failed to update event.', ephemeral: true });
+            interaction.reply({ content: '❌ Failed to update event.', flags: 64 });
         }
     }
 
     // /deleteevent command
     if (commandName === 'deleteevent') {
         if (!hasHigherRole) {
-            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', ephemeral: true });
+            return interaction.reply({ content: '❌ You need a higher role than the bot to use this command.', flags: 64 });
         }
 
         const id = interaction.options.getString('id');
@@ -510,13 +510,13 @@ client.on('interactionCreate', async (interaction) => {
             const data = await response.json();
 
             if (data.success) {
-                interaction.reply({ content: '✅ Event deleted successfully!', ephemeral: true });
+                interaction.reply({ content: '✅ Event deleted successfully!', flags: 64 });
             } else {
-                interaction.reply({ content: `❌ Failed to delete event: ${data.error}`, ephemeral: true });
+                interaction.reply({ content: `❌ Failed to delete event: ${data.error}`, flags: 64 });
             }
         } catch (error) {
             console.error('Deleteevent command error:', error);
-            interaction.reply({ content: '❌ Failed to delete event.', ephemeral: true });
+            interaction.reply({ content: '❌ Failed to delete event.', flags: 64 });
         }
     }
 });
