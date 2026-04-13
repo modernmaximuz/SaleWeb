@@ -133,12 +133,13 @@ async function loadMessages() {
         console.log('Loading messages...');
         const res = await fetch('/chat/messages');
         const data = await res.json();
-        
+
         console.log('Messages loaded:', data);
-        
+
         if (data.messages) {
             messages = data.messages;
             console.log('Messages array set:', messages.length, 'messages');
+            console.log('Sample message avatar:', messages[0]?.avatar);
             renderMessages();
         } else {
             console.log('No messages in response');
@@ -342,7 +343,7 @@ function createMessageElement(message) {
     
     div.innerHTML = `
         <div class="message-avatar" onclick="showUserActions('${message.userId}', '${message.username}', '${message.avatar}', ${message.isAdmin})">
-            <img src="${avatar}" alt="${message.username}" onerror="this.src='https://github.com/modernmaximuz/SaleWeb/blob/main/public/images/hades.gif?raw=true'">
+            <img src="${avatar}" alt="${message.username}">
         </div>
         <div class="message-content">
             <div class="message-header">
