@@ -803,6 +803,24 @@ body.video-bg::before {
     box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
 }
 
+/* Disabled menu items for non-logged-in users */
+.menu-section a.requires-login,
+.menu-section button.requires-login {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+    position: relative;
+}
+
+.menu-section a.requires-login::after,
+.menu-section button.requires-login::after {
+    content: '🔒';
+    position: absolute;
+    right: 12px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
 /* ==================== OVERLAY ==================== */
 .overlay {
     position: fixed;

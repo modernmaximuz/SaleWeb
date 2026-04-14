@@ -480,6 +480,34 @@ window.handleSidebarLogout = async function() {
     }
 };
 
+// Function to update sidebar items based on login status
+async function updateSidebarAuthState() {
+    const isLoggedIn = await window.isLoggedIn();
+    const loginRequiredItems = document.querySelectorAll('.requires-login');
+    const logoutButton = document.getElementById('sidebarLogout');
+
+    loginRequiredItems.forEach(item => {
+        if (isLoggedIn) {
+            item.classList.remove('requires-login');
+            item.style.opacity = '1';
+            item.style.pointerEvents = 'auto';
+            item.style.cursor = 'pointer';
+        } else {
+            item.classList.add('requires-login');
+        }
+    });
+
+    // Hide logout button if not logged in
+    if (logoutButton) {
+        logoutButton.style.display = isLoggedIn ? 'flex' : 'none';
+    }
+}
+
+// Update sidebar auth state on page load and auth change
+document.addEventListener('DOMContentLoaded', updateSidebarAuthState);
+
+firebase.auth().onAuthStateChanged(updateSidebarAuthState);
+
 // Handle dropdown toggles
 document.addEventListener('click', function(e) {
     // New compact navigation dropdown toggle
