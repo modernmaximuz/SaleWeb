@@ -76,6 +76,30 @@
     </div>
 </div>
 
+<!-- CENTERED CART ORDERS POPUP -->
+<div id="cartOrdersPopup" class="hidden">
+    <div class="cart-orders-overlay"></div>
+    <div id="cartOrdersBox">
+        <div class="cart-orders-header">
+            <div class="cart-orders-header-left">
+                <i class="fas fa-shopping-cart"></i>
+                <h2>Your Cart</h2>
+            </div>
+            <button class="cart-orders-close" onclick="closeCartOrdersPopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="cartOrdersItems"></div>
+        <div id="cartOrdersTotal"></div>
+        <div class="cart-orders-actions">
+            <button id="cartOrdersFinalize" class="cart-orders-finalize-btn">
+                <i class="fas fa-check-circle"></i>
+                Finalize Order
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- COMPACT NAVIGATION BAR -->
 <div id="compactNav">
     <div class="nav-items">

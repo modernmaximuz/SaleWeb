@@ -146,21 +146,117 @@ if (window.firebase && firebase.auth) {
 
 const popup = document.getElementById("cartPopup");
 const cartIcon = document.getElementById("cartIcon");
+const cartOrdersPopup = document.getElementById("cartOrdersPopup");
 
 cartIcon?.addEventListener("click", (e) => {
     e.stopPropagation();
-    popup.classList.toggle("hidden");
-    renderCartPopup();
+    cartOrdersPopup.classList.toggle("hidden");
+    renderCartOrdersPopup();
 });
 
 document.addEventListener("click", (e) => {
-    if (!popup || popup.classList.contains("hidden")) return;
-    const clickedInsidePopup = popup.contains(e.target);
+    if (!cartOrdersPopup || cartOrdersPopup.classList.contains("hidden")) return;
+    const clickedInsidePopup = cartOrdersPopup.contains(e.target);
     const clickedCartIcon = cartIcon && cartIcon.contains(e.target);
     if (!clickedInsidePopup && !clickedCartIcon) {
-        popup.classList.add("hidden");
+        cartOrdersPopup.classList.add("hidden");
     }
 });
+
+window.closeCartOrdersPopup = function() {
+    cartOrdersPopup.classList.add("hidden");
+};
+
+function renderCartOrdersPopup() {
+    if (cartDisabledForEmailLogin) return;
+    const cart = [...cartCache];
+    const box = document.getElementById("cartOrdersItems");
+    const totalEl = document.getElementById("cartOrdersTotal");
+
+    if (!box) return;
+
+    box.innerHTML = "";
+    let total = 0;
+
+    const formatPeso = (value) => Number((Number(value || 0) + Number.EPSILON).toFixed(2)).toString();
+
+    if (cart.length === 0) {
+        box.innerHTML = `
+            <div class="cart-orders-empty">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Your cart is empty</p>
+            </div>
+        `;
+        totalEl.innerHTML = `
+            <div class="cart-orders-total-row">
+                <span>Total:</span>
+                <span>₱0.00</span>
+            </div>
+        `;
+        return;
+    }
+
+    cart.forEach(i => {
+        const subtotal = i.price * i.qty;
+        total += subtotal;
+
+        box.innerHTML += `
+        <div class="cart-orders-item">
+            <img src="${i.img}" alt="${i.name}">
+            <div class="cart-orders-item-details">
+                <div class="cart-orders-item-name">${i.name}</div>
+                <div class="cart-orders-item-qty">x${i.qty}</div>
+                <div class="cart-orders-item-price">₱${formatPeso(i.price)} each</div>
+            </div>
+            <div class="cart-orders-item-subtotal">₱${formatPeso(subtotal)}</div>
+            <button class="cart-orders-item-remove" onclick="removeCartItemAndRefresh('${i.name.replace(/'/g, "\\'")}')">Remove</button>
+        </div>
+        `;
+    });
+
+    // Apply discount if available
+    const discountPercentage = parseFloat(localStorage.getItem('discountPercentage')) || 0;
+    const discountCode = localStorage.getItem('discountCode') || '';
+    let discountAmount = 0;
+    let finalTotal = total;
+
+    if (discountPercentage > 0) {
+        discountAmount = total * (discountPercentage / 100);
+        finalTotal = total - discountAmount;
+    }
+
+    // Build total text with discount info
+    let totalHTML = '';
+    if (discountPercentage > 0) {
+        totalHTML += `
+            <div class="cart-orders-total-row" style="font-size: 16px; color: #888; margin-bottom: 10px;">
+                <span>Subtotal:</span>
+                <span>₱${formatPeso(total)}</span>
+            </div>
+            <div class="cart-orders-total-row" style="font-size: 16px; color: #90EE90; margin-bottom: 10px;">
+                <span>Discount (${discountPercentage}%):</span>
+                <span>-₱${formatPeso(discountAmount)}</span>
+            </div>
+        `;
+        if (discountCode) {
+            totalHTML += `
+                <div class="cart-orders-total-row" style="font-size: 14px; color: #FF4500; margin-bottom: 10px;">
+                    <span>Code:</span>
+                    <span>${discountCode}</span>
+                </div>
+            `;
+        }
+    }
+
+    totalHTML += `
+        <div class="cart-orders-total-row">
+            <span>Total:</span>
+            <span>₱${formatPeso(finalTotal)}</span>
+        </div>
+    `;
+
+    totalEl.innerHTML = totalHTML;
+}
 
 function renderCartPopup() {
     if (cartDisabledForEmailLogin) return;
@@ -221,6 +317,7 @@ function renderCartPopup() {
 window.removeCartItemAndRefresh = function (name) {
     removeFromCart(name);
     renderCartPopup();
+    renderCartOrdersPopup();
 };
 
 document.getElementById("finalizeOrder")?.addEventListener("click", async () => {
@@ -235,6 +332,26 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
         alert("Cart is empty!");
         return;
     }
+
+    // Show the finalize order popup
+    showFinalizeOrderPopup(cart);
+});
+
+document.getElementById("cartOrdersFinalize")?.addEventListener("click", async () => {
+    if (cartDisabledForEmailLogin) {
+        alert("Order placement is disabled for email login.");
+        return;
+    }
+
+    const cart = [...cartCache];
+
+    if (!cart.length) {
+        alert("Cart is empty!");
+        return;
+    }
+
+    // Close the cart orders popup
+    cartOrdersPopup.classList.add("hidden");
 
     // Show the finalize order popup
     showFinalizeOrderPopup(cart);
