@@ -486,8 +486,12 @@ async function updateSidebarAuthState() {
     const loginRequiredItems = document.querySelectorAll('.requires-login');
     const logoutButton = document.getElementById('sidebarLogout');
 
+    // Also check Firebase auth directly to ensure logout button shows
+    const hasFirebaseAuth = firebase.auth().currentUser !== null;
+    const isActuallyLoggedIn = isLoggedIn || hasFirebaseAuth;
+
     loginRequiredItems.forEach(item => {
-        if (isLoggedIn) {
+        if (isActuallyLoggedIn) {
             item.classList.remove('requires-login');
             item.style.opacity = '1';
             item.style.pointerEvents = 'auto';
@@ -499,7 +503,7 @@ async function updateSidebarAuthState() {
 
     // Hide logout button if not logged in
     if (logoutButton) {
-        logoutButton.style.display = isLoggedIn ? 'flex' : 'none';
+        logoutButton.style.display = isActuallyLoggedIn ? 'flex' : 'none';
     }
 }
 
