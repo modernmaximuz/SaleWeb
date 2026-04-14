@@ -229,7 +229,6 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
         return;
     }
 
-    const user = await (await fetch("/me")).json();
     const cart = [...cartCache];
 
     if (!cart.length) {
@@ -237,16 +236,109 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
         return;
     }
 
-    // Get discount information
+    // Show the finalize order popup
+    showFinalizeOrderPopup(cart);
+});
+
+function showFinalizeOrderPopup(cart) {
+    const popup = document.getElementById("finalizeOrderPopup");
+    const summary = document.getElementById("finalizeOrderSummary");
+
+    if (!popup || !summary) return;
+
+    // Build order summary HTML
+    let total = 0;
+    let summaryHTML = '';
+
+    const formatPeso = (value) => Number((Number(value || 0) + Number.EPSILON).toFixed(2)).toString();
+
+    cart.forEach(item => {
+        const subtotal = item.price * item.qty;
+        total += subtotal;
+        summaryHTML += `
+            <div class="order-item">
+                <span class="order-item-name">${item.name} x${item.qty}</span>
+                <span class="order-item-price">₱${formatPeso(subtotal)}</span>
+            </div>
+        `;
+    });
+
+    // Apply discount if available
     const discountPercentage = parseFloat(localStorage.getItem('discountPercentage')) || 0;
     const discountCode = localStorage.getItem('discountCode') || '';
+    let discountAmount = 0;
+    let finalTotal = total;
 
+    if (discountPercentage > 0) {
+        discountAmount = total * (discountPercentage / 100);
+        finalTotal = total - discountAmount;
+    }
+
+    // Add total row
+    summaryHTML += `
+        <div class="order-total">
+            <span class="total-label">Total:</span>
+            <span class="total-amount">₱${formatPeso(finalTotal)}</span>
+        </div>
+    `;
+
+    if (discountPercentage > 0) {
+        summaryHTML += `
+            <div style="margin-top: 10px; color: #90EE90; font-size: 14px;">
+                Discount (${discountPercentage}%): -₱${formatPeso(discountAmount)}
+            </div>
+        `;
+        if (discountCode) {
+            summaryHTML += `
+                <div style="margin-top: 5px; color: #FF4500; font-size: 12px;">
+                    Code: ${discountCode}
+                </div>
+            `;
+        }
+    }
+
+    summary.innerHTML = summaryHTML;
+
+    // Show popup with animation
+    popup.classList.add("active");
+
+    // Store cart data for confirmation
+    popup.dataset.cartData = JSON.stringify(cart);
+    popup.dataset.discountPercentage = discountPercentage || '';
+    popup.dataset.discountCode = discountCode || '';
+}
+
+// Cancel button handler
+document.getElementById("cancelOrder")?.addEventListener("click", () => {
+    const popup = document.getElementById("finalizeOrderPopup");
+    if (popup) {
+        popup.classList.remove("active");
+    }
+});
+
+// Confirm button handler
+document.getElementById("confirmOrder")?.addEventListener("click", async () => {
+    const popup = document.getElementById("finalizeOrderPopup");
+    if (!popup) return;
+
+    const cartData = popup.dataset.cartData;
+    const discountPercentage = popup.dataset.discountPercentage;
+    const discountCode = popup.dataset.discountCode;
+
+    if (!cartData) return;
+
+    const cart = JSON.parse(cartData);
+
+    // Close popup
+    popup.classList.remove("active");
+
+    // Finalize the order
     const finalizeRes = await fetch("/orders/finalize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             items: cart,
-            discountPercentage: discountPercentage || null,
+            discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null,
             discountCode: discountCode || null
         })
     });
@@ -261,6 +353,7 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
     await fetch("/cart", { method: "DELETE" }).catch(() => {});
     document.dispatchEvent(new CustomEvent("cartUpdated"));
     renderCartIcon();
+    renderCartPopup();
 
     // Clear discount from localStorage after successful order
     localStorage.removeItem('discountPercentage');
@@ -268,7 +361,7 @@ document.getElementById("finalizeOrder")?.addEventListener("click", async () => 
 
     alert("Order placed!");
 
-    location.href = "/tabs/orders"; // now THIS is correct usage
+    location.href = "/tabs/orders";
 });
 
 window.addToCart = addToCart;
