@@ -988,7 +988,9 @@ body.video-bg::before {
     #cartPopup {
         min-width: 220px;
         max-width: 260px;
-        right: -10px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
         padding: 15px;
     }
 
@@ -1071,7 +1073,9 @@ body.video-bg::before {
     #cartPopup {
         min-width: 200px;
         max-width: 240px;
-        right: -15px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
         padding: 12px;
     }
 

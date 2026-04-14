@@ -269,6 +269,7 @@
 .welcome-content {
     flex: 1;
     z-index: 1;
+    text-align: center;
 }
 
 .welcome-content h1 {
@@ -277,6 +278,7 @@
     font-weight: 700;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
 }
 
