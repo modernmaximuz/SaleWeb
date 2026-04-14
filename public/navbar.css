@@ -859,27 +859,27 @@ body.video-bg::before {
 
 /* ==================== CART POPUP ==================== */
 #cartPopup {
-    position: absolute;
-    top: 100%;
-    right: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
     background: linear-gradient(180deg, #1c1c29 0%, #14141d 100%);
     border: 1px solid #31314a;
     border-radius: 16px;
     padding: 25px;
-    margin-top: 12px;
     min-width: 350px;
     max-width: 420px;
+    width: 90%;
     z-index: 3000;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     opacity: 0;
-    transform: translateY(-10px) scale(0.95);
     visibility: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #cartPopup:not(.hidden) {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, -50%) scale(1);
     visibility: visible;
 }
 
@@ -1278,10 +1278,14 @@ body.video-bg::before {
         max-width: 320px;
         width: 90%;
         left: 50%;
-        transform: translateX(-50%);
-        top: 70px;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
         padding: 20px;
         z-index: 10000;
+    }
+
+    #cartPopup:not(.hidden) {
+        transform: translate(-50%, -50%) scale(1);
     }
 
     #cartBox h2 {
@@ -1402,10 +1406,14 @@ body.video-bg::before {
         max-width: 300px;
         width: 90%;
         left: 50%;
-        transform: translateX(-50%);
-        top: 70px;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
         padding: 18px;
         z-index: 10000;
+    }
+
+    #cartPopup:not(.hidden) {
+        transform: translate(-50%, -50%) scale(1);
     }
 
     #cartBox h2 {
