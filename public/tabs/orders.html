@@ -167,21 +167,21 @@
     <div class="sidebar-content">
         <div class="menu-section">
             <h4>Navigation</h4>
-            <a href="/" onclick="toggleSidebar()">Home</a>
+            <a href="/" class="requires-login" onclick="if(window.requireLogin) window.requireLogin(event, '/', this); else { window.location.href='/'; toggleSidebar(); }">Home</a>
             <a href="#" class="requires-login" onclick="if(window.requireLogin) window.requireLogin(event, null, this); else openRedeemPopup(); toggleSidebar()">Redeem Code</a>
             <a href="#" class="requires-login" onclick="if(window.requireLogin) window.requireLogin(event, null, this); else openProfileConfig(); toggleSidebar()">Configure Profile</a>
-            <a href="/events" onclick="toggleSidebar()">Events</a>
-            <a href="/credits" onclick="toggleSidebar()">Credits</a>
+            <a href="/events" class="requires-login" onclick="if(window.requireLogin) window.requireLogin(event, '/events', this); else { window.location.href='/events'; toggleSidebar(); }">Events</a>
+            <a href="/credits" class="requires-login" onclick="if(window.requireLogin) window.requireLogin(event, '/credits', this); else { window.location.href='/credits'; toggleSidebar(); }">Credits</a>
         </div>
         <div class="menu-section">
             <h4>Social Links</h4>
-            <a href="https://facebook.com" target="_blank" onclick="toggleSidebar()">
+            <a href="https://facebook.com" class="requires-login" target="_blank" onclick="if(window.requireLogin) window.requireLogin(event, 'https://facebook.com', this); else toggleSidebar()">
                 <i class="fab fa-facebook"></i> Facebook
             </a>
-            <a href="https://tiktok.com" target="_blank" onclick="toggleSidebar()">
+            <a href="https://tiktok.com" class="requires-login" target="_blank" onclick="if(window.requireLogin) window.requireLogin(event, 'https://tiktok.com', this); else toggleSidebar()">
                 <i class="fab fa-tiktok"></i> TikTok
             </a>
-            <a href="https://discord.com" target="_blank" onclick="toggleSidebar()">
+            <a href="https://discord.com" class="requires-login" target="_blank" onclick="if(window.requireLogin) window.requireLogin(event, 'https://discord.com', this); else toggleSidebar()">
                 <i class="fab fa-discord"></i> Discord
             </a>
         </div>
