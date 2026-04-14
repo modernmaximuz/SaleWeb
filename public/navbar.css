@@ -990,13 +990,15 @@ body.video-bg::before {
     }
     
     #cartPopup {
-        position: absolute;
-        min-width: 180px;
-        max-width: 200px;
+        position: fixed;
+        min-width: 280px;
+        max-width: 320px;
+        width: 90%;
         left: 50%;
         transform: translateX(-50%);
-        padding: 12px;
-        z-index: 3000;
+        top: 70px;
+        padding: 15px;
+        z-index: 10000;
     }
 
     #cartBox h2 {
@@ -1080,13 +1082,15 @@ body.video-bg::before {
     }
 
     #cartPopup {
-        position: absolute;
-        min-width: 160px;
-        max-width: 180px;
+        position: fixed;
+        min-width: 260px;
+        max-width: 300px;
+        width: 90%;
         left: 50%;
         transform: translateX(-50%);
-        padding: 10px;
-        z-index: 3000;
+        top: 70px;
+        padding: 12px;
+        z-index: 10000;
     }
 
     #cartBox h2 {
